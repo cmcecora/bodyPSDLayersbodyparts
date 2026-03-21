@@ -19,7 +19,13 @@
       "mcp__playwright-mcp__playwright_screenshot",
       "mcp__playwright-mcp__playwright_click",
       "Bash(pkill:*)",
-      "mcp__playwright-mcp__playwright_evaluate"
+      "mcp__playwright-mcp__playwright_evaluate",
+      "WebFetch(domain:code.claude.com)",
+      "Bash(claude config --help)",
+      "Bash(claude config list)",
+      "Bash(timeout 10s claude --print \"show available commands or features for remote control\")",
+      "Bash(bun --version)",
+      "Skill(telegram:access)"
     ]
   }
 }
