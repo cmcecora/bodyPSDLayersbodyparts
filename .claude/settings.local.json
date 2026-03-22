@@ -25,7 +25,8 @@
       "Bash(claude config list)",
       "Bash(timeout 10s claude --print \"show available commands or features for remote control\")",
       "Bash(bun --version)",
-      "Skill(telegram:access)"
+      "Skill(telegram:access)",
+      "Bash(mgrep:*)"
     ]
   }
 }
