@@ -336,21 +336,28 @@
       .tooltip-panel-content.visible {
         display: block;
       }
-      .tooltip-panel-icon-row {
-        margin-bottom: 12px;
+      .tooltip-panel-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
       }
       .tooltip-panel-thumb {
         width: 56px;
         height: 56px;
         border-radius: 50%;
         object-fit: cover;
+        flex-shrink: 0;
       }
       .tooltip-panel-title {
         font-size: 20px;
         font-weight: 700;
         color: #434448;
-        margin: 0 0 16px 0;
+        margin: 0;
         line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .tooltip-panel-close {
         position: absolute;
@@ -377,6 +384,90 @@
         font-size: 13px;
         line-height: 20px;
         color: #434448;
+      }
+      /* Body Processes section */
+      .tooltip-panel-processes {
+        display: none;
+      }
+      .tooltip-panel-processes.visible {
+        display: block;
+      }
+      .tooltip-processes-divider {
+        width: 75%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #d0d0d0, transparent);
+        margin: 20px auto 18px;
+      }
+      .tooltip-processes-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #434448;
+        text-align: center;
+        margin: 0 0 14px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .tooltip-processes-key-parts {
+        font-size: 11px;
+        color: #888;
+        text-align: center;
+        margin: 0 0 14px;
+        line-height: 1.4;
+      }
+      .tooltip-processes-key-parts strong {
+        color: #666;
+        font-weight: 600;
+      }
+      .tooltip-processes-category {
+        font-size: 12px;
+        font-weight: 600;
+        color: #555;
+        margin: 12px 0 6px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #eee;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      .tooltip-processes-category-desc {
+        font-size: 11px;
+        color: #777;
+        margin: 0 0 6px;
+        font-style: italic;
+      }
+      .tooltip-processes-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 8px;
+      }
+      .tooltip-processes-list li {
+        font-size: 12px;
+        line-height: 1.4;
+        color: #434448;
+        padding: 5px 0 5px 12px;
+        position: relative;
+        border-bottom: 1px solid #f5f5f5;
+      }
+      .tooltip-processes-list li:last-child {
+        border-bottom: none;
+      }
+      .tooltip-processes-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 11px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--system-color, #999);
+      }
+      .tooltip-processes-list .process-name {
+        font-weight: 600;
+        color: #333;
+      }
+      .tooltip-processes-list .process-desc {
+        color: #777;
+        font-size: 11px;
+        margin-left: 2px;
       }
       .tooltip-system-image {
         width: 100%;
@@ -604,7 +695,10 @@
         letter-spacing: 0.3px;
         cursor: pointer;
         line-height: 1.2;
-        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        transition:
+          background 0.2s ease,
+          color 0.2s ease,
+          border-color 0.2s ease;
       }
       .body-parts-sort-toggle:hover {
         border-color: rgba(255, 255, 255, 0.8);
@@ -723,6 +817,157 @@
         color: #4b5563;
         margin: 0;
       }
+
+      /* === Symptom Modal === */
+      .symptom-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      .symptom-modal-overlay.active {
+        display: flex;
+        opacity: 1;
+      }
+      .symptom-modal {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        width: 340px;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+        transform: translateY(20px);
+        transition: transform 0.2s ease;
+        overflow: hidden;
+      }
+      .symptom-modal-overlay.active .symptom-modal {
+        transform: translateY(0);
+      }
+      .symptom-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px 12px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .symptom-modal-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+      }
+      .symptom-modal-close {
+        background: none;
+        border: none;
+        font-size: 22px;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0 4px;
+        line-height: 1;
+      }
+      .symptom-modal-close:hover {
+        color: #111;
+      }
+      .symptom-modal-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .symptom-modal-list li {
+        padding: 12px 20px;
+        font-size: 14px;
+        color: #374151;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.15s;
+      }
+      .symptom-modal-list li:hover {
+        background: #eff6ff;
+      }
+      .symptom-modal-list li:last-child {
+        border-bottom: none;
+      }
+      .symptom-modal-list li.selected {
+        background: #f0fdf4;
+        color: #166534;
+      }
+      .symptom-modal-list li .symptom-check {
+        color: #16a34a;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      /* === Current Symptoms Panel === */
+      .current-symptoms-panel {
+        margin-top: 12px;
+        padding: 0 8px;
+      }
+      .current-symptoms-panel h2 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #92400e;
+        margin: 0 0 8px 0;
+        padding: 0 4px;
+      }
+      .symptoms-list-container {
+        max-height: 260px;
+        overflow-y: auto;
+      }
+      .symptoms-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .symptom-section-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 6px 4px 2px;
+        margin-top: 4px;
+      }
+      .symptom-section-label:first-child {
+        margin-top: 0;
+      }
+      .symptoms-list .symptom-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
+        margin: 2px 0;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 6px;
+        font-size: 12px;
+        color: #92400e;
+      }
+      .symptoms-list .symptom-pill .symptom-pill-name {
+        flex: 1;
+      }
+      .symptoms-list .symptom-pill .symptom-pill-remove {
+        background: none;
+        border: none;
+        color: #d97706;
+        cursor: pointer;
+        font-size: 15px;
+        padding: 0 2px;
+        line-height: 1;
+      }
+      .symptoms-list .symptom-pill .symptom-pill-remove:hover {
+        color: #b91c1c;
+      }
     </style>
   </head>
   <body>
@@ -731,7 +976,9 @@
       <div class="left-column">
         <!-- Body Systems sidebar -->
         <div class="systems-panel" id="systemsPanel">
-          <h2 id="systemsHeader">Body Systems <i class="systems-chevron">&#9660;</i></h2>
+          <h2 id="systemsHeader">
+            Body Systems <i class="systems-chevron">&#9660;</i>
+          </h2>
           <ul class="systems-list" id="systemsList"></ul>
         </div>
 
@@ -765,6 +1012,18 @@
           <p class="body-parts-empty" id="bodyPartsEmpty">
             Click on body parts to add them
           </p>
+        </div>
+
+        <!-- Current Symptoms pill list -->
+        <div
+          class="current-symptoms-panel"
+          id="currentSymptomsPanel"
+          style="display: none"
+        >
+          <h2>Current Symptoms</h2>
+          <div class="symptoms-list-container">
+            <ol class="symptoms-list" id="symptomsList"></ol>
+          </div>
         </div>
       </div>
 
@@ -1864,18 +2123,48 @@
             Click a body system to see details
           </p>
           <div class="tooltip-panel-content" id="tooltipContent">
-            <button class="tooltip-panel-close" id="tooltipClose">&times;</button>
-            <div class="tooltip-panel-icon-row">
-              <img class="tooltip-panel-thumb" id="tooltipThumb" src="" alt="" />
+            <button class="tooltip-panel-close" id="tooltipClose">
+              &times;
+            </button>
+            <div class="tooltip-panel-header">
+              <img
+                class="tooltip-panel-thumb"
+                id="tooltipThumb"
+                src=""
+                alt=""
+              />
+              <h3 class="tooltip-panel-title" id="tooltipTitle"></h3>
             </div>
-            <h3 class="tooltip-panel-title" id="tooltipTitle"></h3>
-            <img class="tooltip-system-image" id="tooltipSystemImage" src="" alt="" style="display:none" />
+            <img
+              class="tooltip-system-image"
+              id="tooltipSystemImage"
+              src=""
+              alt=""
+              style="display: none"
+            />
             <p class="tooltip-panel-description" id="tooltipDesc"></p>
+            <div class="tooltip-panel-processes" id="tooltipProcesses"></div>
           </div>
         </div>
 
         <!-- Body part detail cards (2-per-row grid) -->
-        <div class="body-part-cards-container" id="bodyPartCardsContainer"></div>
+        <div
+          class="body-part-cards-container"
+          id="bodyPartCardsContainer"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Symptom selection modal -->
+    <div class="symptom-modal-overlay" id="symptomModalOverlay">
+      <div class="symptom-modal">
+        <div class="symptom-modal-header">
+          <h3 id="symptomModalTitle"></h3>
+          <button class="symptom-modal-close" id="symptomModalClose">
+            &times;
+          </button>
+        </div>
+        <ul class="symptom-modal-list" id="symptomModalList"></ul>
       </div>
     </div>
 
@@ -1891,6 +2180,72 @@
             description:
               "Anne had been experiencing chest pains during her recovery. While she was never diagnosed with actually having a heart attack, some opioid analgesics, including morphine and meperidine, have been associated with a small increased risk of myocardial infarction or heart attack. The risk of heart attack was also found to be increased in patients who were taking multiple opioid analgesics at one time, as Anne was doing.",
             organs: ["heart"],
+            keyParts: "Heart, Blood Vessels, Blood",
+            processes: [
+              {
+                category: "Heart Function",
+                items: [
+                  {
+                    name: "Cardiac Function",
+                    desc: "Powers efficient blood pumping throughout the body",
+                  },
+                  {
+                    name: "Healthy Blood Pressure",
+                    desc: "Maintains optimal force against vessel walls",
+                  },
+                ],
+              },
+              {
+                category: "Blood Vessel Health",
+                items: [
+                  {
+                    name: "Arterial Health",
+                    desc: "Keeps arteries elastic and flexible",
+                  },
+                  {
+                    name: "Vasodilation & Vasoconstriction",
+                    desc: "Widens and narrows vessels to regulate blood flow",
+                  },
+                  {
+                    name: "Venous Return",
+                    desc: "Returns deoxygenated blood to the heart",
+                  },
+                  {
+                    name: "Angiogenesis",
+                    desc: "Forms new blood vessels for growth and healing",
+                  },
+                ],
+              },
+              {
+                category: "Blood Components & Function",
+                items: [
+                  {
+                    name: "Oxygen Transport",
+                    desc: "Delivers oxygen to tissues and returns carbon dioxide",
+                  },
+                  {
+                    name: "Red Blood Cell Production",
+                    desc: "Creates cells that carry oxygen",
+                  },
+                  {
+                    name: "Blood Clotting",
+                    desc: "Prevents excessive bleeding while avoiding harmful clots",
+                  },
+                  {
+                    name: "Platelet Aggregation",
+                    desc: "Clumps platelets to form clots when needed",
+                  },
+                  {
+                    name: "Blood Volume Regulation",
+                    desc: "Maintains proper amount of blood in circulation",
+                  },
+                  {
+                    name: "Hemoglobin Synthesis",
+                    desc: "Produces the protein that carries oxygen in red blood cells",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "digestive",
@@ -1901,6 +2256,77 @@
             description:
               "Some of the most commonly known side effects of opioid analgesics relate to the digestive system. People taking opioid analgesics will often complain of nausea, vomiting, and constipation. These symptoms are caused by several mechanisms. Opioid analgesics increase the amount of time it takes for food to pass through the stomach, leaving a feeling of fullness long after meals. Slower digestion can lead to constipation. Opioid analgesics can also have a direct effect on the vomiting center of the brain. In Anne’s case, the opioid analgesics she took caused extreme difficulties with constipation.",
             organs: ["stomach", "intestines", "gallbladder", "liver"],
+            keyParts:
+              "Stomach, Small Intestine, Large Intestine, Colon, Rectum, Anus, Liver, Gallbladder, Pancreas",
+            processes: [
+              {
+                category: "Digestion & Absorption",
+                items: [
+                  {
+                    name: "Digestion & Nutrient Absorption",
+                    desc: "Breaks down and absorbs nutrients from food",
+                  },
+                  {
+                    name: "Peristalsis",
+                    desc: "Creates wave-like contractions moving food through the digestive tract",
+                  },
+                  {
+                    name: "Gastric Acid Secretion",
+                    desc: "Produces stomach acid for digestion and pathogen defense",
+                  },
+                  {
+                    name: "Bowel Motility",
+                    desc: "Moves contents through the digestive system",
+                  },
+                ],
+              },
+              {
+                category: "Liver Functions",
+                items: [
+                  {
+                    name: "Detoxification",
+                    desc: "Removes toxins from the body",
+                  },
+                  {
+                    name: "Bile Production",
+                    desc: "Creates bile for fat digestion",
+                  },
+                  {
+                    name: "Urea Cycle",
+                    desc: "Converts ammonia to urea for elimination",
+                  },
+                  {
+                    name: "Hepatic Gluconeogenesis",
+                    desc: "Produces glucose from non-carbohydrate sources",
+                  },
+                ],
+              },
+              {
+                category: "Metabolic Processes",
+                items: [
+                  {
+                    name: "Healthy Metabolism",
+                    desc: "Converts food into energy",
+                  },
+                  {
+                    name: "Blood Sugar Regulation",
+                    desc: "Maintains stable glucose levels",
+                  },
+                  {
+                    name: "Insulin Sensitivity",
+                    desc: "Ensures proper response to insulin",
+                  },
+                  {
+                    name: "Glycogenolysis",
+                    desc: "Breaks down glycogen to release glucose",
+                  },
+                  {
+                    name: "Gluconeogenesis",
+                    desc: "Forms glucose from non-carbohydrate sources",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "endocrine",
@@ -1911,6 +2337,30 @@
             description:
               "Opioid analgesics have the potential to affect the hormones of the body. Since hormones have a role in weight control in addition to bone and muscle health, Anne’s risk of weakness increased resulting in multiple falls around her house. Decreased bone and muscle health placed her at a higher risk of not only falls, but also bone fractures.",
             organs: ["thyroid", "pancreas", "thymus"],
+            keyParts: "Pancreas, Thyroid Gland, Adrenal Gland, Pituitary Gland",
+            processes: [
+              {
+                category: null,
+                items: [
+                  {
+                    name: "Hormonal Balance",
+                    desc: "Regulates insulin, thyroid, sex, and adrenal hormones",
+                  },
+                  {
+                    name: "Endocrine Signaling",
+                    desc: "Produces and releases regulatory hormones",
+                  },
+                  {
+                    name: "Growth Factor Signaling",
+                    desc: "Communicates for cell division and tissue repair",
+                  },
+                  {
+                    name: "Appetite Regulation",
+                    desc: "Manages hunger signals and satiety",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "immune",
@@ -1921,6 +2371,38 @@
             description:
               "Immunodepression or a poorly functioning immune system places people at higher risk of having an infection. Some opioid analgesics, including morphine, fentanyl and codeine, have been found to increase the risks of pneumonia in elderly patients.",
             organs: ["spleen", "thymus"],
+            keyParts: "Lymph Nodes, Spleen, White Blood Cells",
+            processes: [
+              {
+                category: null,
+                items: [
+                  {
+                    name: "Immune Response",
+                    desc: "Defends against infections and foreign substances",
+                  },
+                  {
+                    name: "Inflammatory Response",
+                    desc: "Initiates defense and healing processes",
+                  },
+                  {
+                    name: "Lymphatic Drainage",
+                    desc: "Moves lymph fluid to remove toxins and transport immune cells",
+                  },
+                  {
+                    name: "Leukocyte Function",
+                    desc: "Enables white blood cells to fight infection",
+                  },
+                  {
+                    name: "Phagocytosis",
+                    desc: "Allows cells to engulf and digest foreign particles",
+                  },
+                  {
+                    name: "Immune Tolerance",
+                    desc: "Prevents attacks against the body's own tissues",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "integumentary",
@@ -1931,6 +2413,38 @@
             description:
               "The Integumentary System, predominantly comprised of the skin, can be affected by opioid analgesics and medications applied to the skin. In Anne’s case, one of the opioid medications she used comes in the form of a patch that is directly applied to the skin to allow for slow opioid absorption over time. The patch she used caused an allergic reaction and resultant rash that required the medication to be discontinued.",
             organs: [], // No corresponding organ in SVG model
+            keyParts: "Skin, Hair, Sweat Glands, Sebaceous Glands",
+            processes: [
+              {
+                category: null,
+                items: [
+                  {
+                    name: "Skin Regeneration & Repair",
+                    desc: "Renews skin and heals damage",
+                  },
+                  {
+                    name: "Sebum Production",
+                    desc: "Lubricates and waterproofs skin and hair",
+                  },
+                  {
+                    name: "Sweating & Thermolysis",
+                    desc: "Cools the body through sweat evaporation",
+                  },
+                  {
+                    name: "Melanin Production",
+                    desc: "Pigments skin and protects against UV radiation",
+                  },
+                  {
+                    name: "Thermoregulation",
+                    desc: "Maintains internal temperature despite external changes",
+                  },
+                  {
+                    name: "Wound Healing",
+                    desc: "Repairs and regenerates tissue after injury",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "muscular",
@@ -1941,6 +2455,31 @@
             description:
               "Anne had developed depression and excessive fatigue from her pain medications, specifically the opioid analgesics, to the point that she was no longer an active woman. Most of her days were spent reclining in a chair at home to the point that her muscles became weak and her overall endurance declined. Beyond the resultant inactivity, opioid analgesics affect the body’s hormones and can further negatively affect muscle mass and strength.",
             organs: ["muscle", "knee_joint"],
+            keyParts: "Muscles, Tissue",
+            processes: [
+              {
+                category: "Muscle Function",
+                items: [
+                  {
+                    name: "Muscle Contraction & Relaxation",
+                    desc: "Enables movement and support",
+                  },
+                  {
+                    name: "Muscle Glycogen Storage",
+                    desc: "Stores energy for physical activity",
+                  },
+                ],
+              },
+              {
+                category: "Connective Tissue",
+                items: [
+                  {
+                    name: "Connective Tissue Health",
+                    desc: "Maintains and repairs connective tissues",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "nervous",
@@ -1951,6 +2490,76 @@
             description:
               'The central nervous system, made up of the brain and spinal cord, is particularly vulnerable to the effects of opioid analgesics. For instance, opioid analgesics have been found to increase the likelihood of either developing depression or further worsening preexisting depression. Depression is often, unfortunately, accompanied by social isolation and sleep disturbances, either insomnia or excessive daytime sleepiness. One physician’s examination of Anne revealed that, "her speech was slurred and it was hard to keep her awake to carry on a conversation." Furthermore, opioid analgesics have the potential to over-sensitize the brain, leading to a condition where patients have actually had increased amounts of pain. This condition is called opioid-induced hyperalgesia. Finally, we cannot forget about the risks of dependence and addiction that frequently accompany opioid analgesic use.',
             organs: ["brain"],
+            keyParts: "Brain, Spinal Cord, Nerves",
+            processes: [
+              {
+                category: "Brain Function & Health",
+                items: [
+                  {
+                    name: "Cognitive Function",
+                    desc: "Enables thinking, reasoning, memory and learning",
+                  },
+                  {
+                    name: "Memory Formation & Retrieval",
+                    desc: "Creates and recalls memories",
+                  },
+                  {
+                    name: "Neurotransmitter Regulation",
+                    desc: "Balances brain chemicals for mood, sleep, and focus",
+                  },
+                  {
+                    name: "Neural Plasticity",
+                    desc: "Allows brain adaptation to new experiences and recovery from injury",
+                  },
+                  {
+                    name: "Synaptic Plasticity",
+                    desc: "Strengthens or weakens neural connections for learning",
+                  },
+                ],
+              },
+              {
+                category: "Nerve Function",
+                items: [
+                  {
+                    name: "Nerve Signal Transmission",
+                    desc: "Transmits signals throughout the body",
+                  },
+                  {
+                    name: "Myelin Formation",
+                    desc: "Creates protective nerve coatings for fast signal transmission",
+                  },
+                  {
+                    name: "Neurogenesis",
+                    desc: "Generates new neurons for learning and repair",
+                  },
+                ],
+              },
+              {
+                category: "Regulation Systems",
+                items: [
+                  {
+                    name: "Sleep Regulation",
+                    desc: "Controls rest patterns essential for repair and memory",
+                  },
+                  {
+                    name: "Circadian Rhythms",
+                    desc: "Maintains internal 24-hour body clock",
+                  },
+                  {
+                    name: "Autonomic Nervous System Regulation",
+                    desc: "Controls involuntary functions like heart rate and digestion",
+                  },
+                  {
+                    name: "Stress Response Management",
+                    desc: "Balances stress hormones through the HPA axis",
+                  },
+                  {
+                    name: "Neuroendocrine Regulation",
+                    desc: "Coordinates nervous and hormonal systems",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "reproductive",
@@ -1961,6 +2570,29 @@
             description:
               "Due to the effects that opioid analgesics can have on the endocrine system and the body’s hormones, both men and women are at increased risk for reproductive system abnormalities. Women, for instance, are more prone to menstrual irregularities and carry a two-times higher risk of having children with birth defects. Men and women are both at higher risk for sexual dysfunction and problems with intimacy.",
             organs: ["male_reproductive", "female_reproductive"],
+            keyParts:
+              "Male: Penis, Testicles, Prostate, Sperm | Female: Vagina, Ovaries, Uterus, Eggs, Breasts, Mammary Glands",
+            processes: [
+              {
+                category: null,
+                items: [
+                  {
+                    name: "Fertility & Reproduction",
+                    desc: "Enables offspring production",
+                  },
+                  { name: "Spermatogenesis", desc: "Produces sperm in males" },
+                  { name: "Oogenesis", desc: "Develops eggs in females" },
+                  {
+                    name: "Menstrual Cycle Regulation",
+                    desc: "Regulates female reproductive cycle",
+                  },
+                  {
+                    name: "Lactation",
+                    desc: "Produces milk for infant nutrition",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "respiratory",
@@ -1971,6 +2603,30 @@
             description:
               "Due to the number of opioid analgesics and potentially deadly combination of muscle relaxants and opioid analgesics, Anne was at a high risk of overdose and respiratory depression. Opioid analgesics decrease the brain’s ability to sense high levels of carbon dioxide in the blood and also diminish the amount of air breathed in by the lungs. This is the most common way that people die from opioid overdose — their breathing slows down, their breathing stops and they ultimately suffocate.",
             organs: ["lungs_left", "lungs_right", "larynx_trachea"],
+            keyParts: "Lungs, Bronchi, Trachea",
+            processes: [
+              {
+                category: null,
+                items: [
+                  {
+                    name: "Respiratory Gas Exchange",
+                    desc: "Exchanges oxygen and carbon dioxide between blood and lungs",
+                  },
+                  {
+                    name: "Lung Capacity & Efficiency",
+                    desc: "Enables efficient lung expansion and contraction",
+                  },
+                  {
+                    name: "Tissue Oxygenation",
+                    desc: "Delivers oxygen to all body tissues",
+                  },
+                  {
+                    name: "Prostaglandin Synthesis",
+                    desc: "Produces compounds for inflammation and tissue regulation",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "skeletal",
@@ -1981,6 +2637,35 @@
             description:
               "The body’s skeletal system is in an almost constant state of turnover. That is, older bone tissue is broken down and stronger bone tissue is formed, resulting in stronger bones. Opioid analgesics have been found not only to impair this process by having a direct effect on bone-generating cells, called osteoblasts, but also negatively affect the hormones of the body that help regulate bone growth. Anne’s cognition was significantly impaired by her medications, causing her to fall multiple times. While she did not directly sustain any fractures, she was at a much higher risk for bone injury as a result of the opioid analgesics being taken.",
             organs: ["knee_joint"],
+            keyParts: "Bones, Joints",
+            processes: [
+              {
+                category: "Bone Health",
+                items: [
+                  {
+                    name: "Bone Remodeling",
+                    desc: "Continuously forms and resorbs bone tissue",
+                  },
+                  {
+                    name: "Calcium Homeostasis",
+                    desc: "Maintains calcium levels for bone strength",
+                  },
+                ],
+              },
+              {
+                category: "Joint Health",
+                items: [
+                  {
+                    name: "Joint Lubrication",
+                    desc: "Produces fluid for smooth movement",
+                  },
+                  {
+                    name: "Synovial Fluid Production",
+                    desc: "Lubricates and nourishes cartilage and bones",
+                  },
+                ],
+              },
+            ],
           },
           {
             id: "urinary",
@@ -1991,6 +2676,144 @@
             description:
               "The ability to void or urinate can be affected by opioid analgesics as it was in Anne’s case. She had developed a condition called urinary retention or failure to completely empty her bladder. Opioid analgesics can decrease the sensation of a full bladder by limiting the amount of discomfort that is noticed. They can also cause increased resistance to urine flow out of the bladder. Both situations, as well as more complicated spinal cord involvement, can result in urinary retention that, when left untreated for long periods of time, can contribute to urinary tract infections and kidney damage.",
             organs: ["kidneys", "bladder"],
+            keyParts: "Kidneys, Bladder, Ureters, Urethra",
+            processes: [
+              {
+                category: null,
+                items: [
+                  {
+                    name: "Proper Kidney Function",
+                    desc: "Filters waste and regulates fluids",
+                  },
+                  {
+                    name: "Micturition (Urination)",
+                    desc: "Expels urine from the bladder",
+                  },
+                  {
+                    name: "Waste Product Elimination",
+                    desc: "Removes waste through urine",
+                  },
+                  {
+                    name: "Electrolyte Balance",
+                    desc: "Regulates important minerals",
+                  },
+                  {
+                    name: "Fluid Balance",
+                    desc: "Maintains correct water volume",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: "other",
+            title: "Other",
+            color: "#888888",
+            thumbnail: null,
+            description:
+              "These processes span across all body systems or involve multiple systems working together. They are essential for maintaining overall health and homeostasis.",
+            organs: [],
+            keyParts: null,
+            processes: [
+              {
+                category: "Cellular & Molecular Processes",
+                categoryDesc:
+                  "These processes occur throughout all body systems",
+                items: [
+                  {
+                    name: "Cellular Respiration",
+                    desc: "Produces energy from glucose and oxygen",
+                  },
+                  {
+                    name: "Protein Synthesis",
+                    desc: "Creates proteins for growth and repair",
+                  },
+                  {
+                    name: "DNA Repair & Maintenance",
+                    desc: "Corrects DNA damage",
+                  },
+                  {
+                    name: "Methylation",
+                    desc: "Supports DNA repair and immune regulation",
+                  },
+                  {
+                    name: "Autophagy",
+                    desc: "Degrades and recycles cellular components",
+                  },
+                  {
+                    name: "Cell Division",
+                    desc: "Enables growth, repair, and reproduction",
+                  },
+                  {
+                    name: "Antioxidant Defense",
+                    desc: "Combats free radical damage",
+                  },
+                  {
+                    name: "Sodium-Potassium Pump Activity",
+                    desc: "Maintains cell function and volume",
+                  },
+                  {
+                    name: "Oxidative Phosphorylation",
+                    desc: "Produces cellular energy (ATP)",
+                  },
+                  {
+                    name: "Nucleotide Synthesis",
+                    desc: "Creates DNA and RNA building blocks",
+                  },
+                  {
+                    name: "Enzyme Regulation",
+                    desc: "Controls chemical processes in the body",
+                  },
+                ],
+              },
+              {
+                category: "Cross-System Processes",
+                categoryDesc:
+                  "These processes involve multiple systems working together",
+                items: [
+                  {
+                    name: "pH Balance",
+                    desc: "Maintains acid-base levels in body fluids",
+                  },
+                  {
+                    name: "Hydration",
+                    desc: "Sustains proper fluid balance",
+                  },
+                  {
+                    name: "Ion Homeostasis",
+                    desc: "Regulates sodium, potassium, and calcium levels",
+                  },
+                  {
+                    name: "Vitamin & Mineral Utilization",
+                    desc: "Absorbs and uses essential nutrients",
+                  },
+                  {
+                    name: "Body Composition Regulation",
+                    desc: "Balances muscle, fat, and bone",
+                  },
+                  {
+                    name: "Lipid Metabolism",
+                    desc: "Breaks down or synthesizes fats",
+                  },
+                  {
+                    name: "Lipoprotein Metabolism",
+                    desc: "Transports fats and cholesterol",
+                  },
+                  {
+                    name: "Capillary Exchange",
+                    desc: "Transfers substances between blood and tissues",
+                  },
+                  {
+                    name: "Mucosal Barrier Integrity",
+                    desc: "Maintains protective mucous membranes",
+                  },
+                  {
+                    name: "Cholesterol Metabolism",
+                    desc: "Manages cholesterol production and use",
+                  },
+                ],
+              },
+            ],
           },
         ];
 
@@ -2018,11 +2841,13 @@
             dot.style.backgroundColor = sys.color;
             a.appendChild(dot);
 
-            const thumb = document.createElement("img");
-            thumb.className = "system-thumb";
-            thumb.src = sys.thumbnail;
-            thumb.alt = sys.title;
-            a.appendChild(thumb);
+            if (sys.thumbnail) {
+              const thumb = document.createElement("img");
+              thumb.className = "system-thumb";
+              thumb.src = sys.thumbnail;
+              thumb.alt = sys.title;
+              a.appendChild(thumb);
+            }
 
             const text = document.createTextNode(sys.title);
             a.appendChild(text);
@@ -2049,8 +2874,13 @@
 
           document.getElementById("tooltipTitle").textContent = sys.title;
           document.getElementById("tooltipDesc").textContent = sys.description;
-          document.getElementById("tooltipThumb").src = sys.thumbnail;
-          document.getElementById("tooltipThumb").alt = sys.title;
+          if (sys.thumbnail) {
+            document.getElementById("tooltipThumb").src = sys.thumbnail;
+            document.getElementById("tooltipThumb").alt = sys.title;
+            document.getElementById("tooltipThumb").style.display = "";
+          } else {
+            document.getElementById("tooltipThumb").style.display = "none";
+          }
           document.getElementById("tooltipSystemBar").style.backgroundColor =
             sys.color;
 
@@ -2062,9 +2892,10 @@
             integumentary: "bodyimage/integumentary_system.png",
             muscular: "bodyimage/muscular_system.png",
             nervous: "bodyimage/nervous_system.png",
-            reproductive: currentGender === "female"
-              ? "bodyimage/female_reproductive_system.png"
-              : "bodyimage/male_reproductive_system.png",
+            reproductive:
+              currentGender === "female"
+                ? "bodyimage/female_reproductive_system.png"
+                : "bodyimage/male_reproductive_system.png",
             respiratory: "bodyimage/respiratory_system.png",
             skeletal: "bodyimage/skeletal_system.png",
             urinary: "bodyimage/urinary_system.png",
@@ -2078,6 +2909,72 @@
           } else {
             sysImg.style.display = "none";
           }
+
+          // Render Body Processes section
+          var processesEl = document.getElementById("tooltipProcesses");
+          if (sys.processes && sys.processes.length > 0) {
+            // Clear previous content
+            processesEl.textContent = "";
+
+            // Divider
+            var divider = document.createElement("div");
+            divider.className = "tooltip-processes-divider";
+            processesEl.appendChild(divider);
+
+            // Title
+            var title = document.createElement("h4");
+            title.className = "tooltip-processes-title";
+            title.textContent = "Body Processes";
+            processesEl.appendChild(title);
+
+            // Key parts
+            if (sys.keyParts) {
+              var keyPartsP = document.createElement("p");
+              keyPartsP.className = "tooltip-processes-key-parts";
+              var strong = document.createElement("strong");
+              strong.textContent = "Key Parts: ";
+              keyPartsP.appendChild(strong);
+              keyPartsP.appendChild(document.createTextNode(sys.keyParts));
+              processesEl.appendChild(keyPartsP);
+            }
+
+            // Process groups
+            sys.processes.forEach(function (group) {
+              if (group.category) {
+                var catDiv = document.createElement("div");
+                catDiv.className = "tooltip-processes-category";
+                catDiv.textContent = group.category;
+                processesEl.appendChild(catDiv);
+              }
+              if (group.categoryDesc) {
+                var catDescP = document.createElement("p");
+                catDescP.className = "tooltip-processes-category-desc";
+                catDescP.textContent = group.categoryDesc;
+                processesEl.appendChild(catDescP);
+              }
+              var ul = document.createElement("ul");
+              ul.className = "tooltip-processes-list";
+              ul.style.setProperty("--system-color", sys.color);
+              group.items.forEach(function (item) {
+                var li = document.createElement("li");
+                var nameSpan = document.createElement("span");
+                nameSpan.className = "process-name";
+                nameSpan.textContent = item.name;
+                var descSpan = document.createElement("span");
+                descSpan.className = "process-desc";
+                descSpan.textContent = " \u2014 " + item.desc;
+                li.appendChild(nameSpan);
+                li.appendChild(descSpan);
+                ul.appendChild(li);
+              });
+              processesEl.appendChild(ul);
+            });
+
+            processesEl.classList.add("visible");
+          } else {
+            processesEl.textContent = "";
+            processesEl.classList.remove("visible");
+          }
         }
 
         // --- Hide tooltip panel ---
@@ -2090,6 +2987,9 @@
           const sysImg = document.getElementById("tooltipSystemImage");
           sysImg.style.display = "none";
           sysImg.src = "";
+          var processesEl = document.getElementById("tooltipProcesses");
+          processesEl.textContent = "";
+          processesEl.classList.remove("visible");
         }
 
         // --- Select a body system ---
@@ -2262,9 +3162,133 @@
           "back_lower_extremities",
         ];
 
+        const SECTION_SYMPTOMS = {
+          head_neck: [
+            "Headache",
+            "Dizziness",
+            "Sore throat",
+            "Neck stiffness",
+            "Sinus pain or pressure",
+            "Face pain",
+            "Blurred vision",
+            "Earache",
+            "Jaw pain",
+            "Swollen lymph nodes",
+          ],
+          upper_body: [
+            "Chest pain",
+            "Shortness of breath",
+            "Cough",
+            "Heart palpitations",
+            "Upper back pain",
+            "Rib pain",
+            "Difficulty breathing",
+            "Chest tightness",
+            "Wheezing",
+            "Shoulder pain",
+          ],
+          midsection_lower_torso: [
+            "Abdominal pain",
+            "Nausea",
+            "Bloating",
+            "Constipation",
+            "Diarrhea",
+            "Heartburn",
+            "Loss of appetite",
+            "Cramping",
+            "Lower back pain",
+            "Pelvic pain",
+          ],
+          upper_extremities: [
+            "Arm pain",
+            "Numbness in hands",
+            "Tingling in fingers",
+            "Elbow pain",
+            "Wrist pain",
+            "Swollen joints",
+            "Muscle weakness",
+            "Stiffness",
+            "Shoulder pain",
+            "Grip weakness",
+          ],
+          lower_extremities: [
+            "Knee pain",
+            "Leg cramps",
+            "Ankle swelling",
+            "Hip pain",
+            "Numbness in feet",
+            "Shin pain",
+            "Varicose veins",
+            "Muscle soreness",
+            "Joint stiffness",
+            "Difficulty walking",
+          ],
+          back_head: [
+            "Headache",
+            "Neck pain",
+            "Stiff neck",
+            "Tension headache",
+            "Occipital neuralgia",
+            "Scalp tenderness",
+            "Neck cracking",
+            "Limited neck movement",
+            "Migraine",
+            "Dizziness",
+          ],
+          back_upper_back: [
+            "Upper back pain",
+            "Shoulder blade pain",
+            "Muscle tension",
+            "Thoracic spine pain",
+            "Postural pain",
+            "Stiffness between shoulders",
+            "Radiating pain",
+            "Muscle spasm",
+            "Burning sensation",
+            "Limited mobility",
+          ],
+          back_middle_lower_back: [
+            "Lower back pain",
+            "Sciatica",
+            "Muscle spasm",
+            "Stiffness",
+            "Herniated disc pain",
+            "Tailbone pain",
+            "Hip pain",
+            "Radiating leg pain",
+            "Numbness",
+            "Difficulty bending",
+          ],
+          back_upper_extremities: [
+            "Arm pain",
+            "Numbness",
+            "Tingling",
+            "Elbow pain",
+            "Wrist pain",
+            "Shoulder pain",
+            "Muscle weakness",
+            "Swelling",
+            "Joint stiffness",
+            "Reduced range of motion",
+          ],
+          back_lower_extremities: [
+            "Leg pain",
+            "Calf cramps",
+            "Knee pain",
+            "Hamstring tightness",
+            "Achilles pain",
+            "Hip pain",
+            "Sciatica",
+            "Numbness",
+            "Swelling",
+            "Muscle soreness",
+          ],
+        };
+
         // === SHARED STATE ===
         const selectedOrgans = new Set();
         const selectedSections = new Set();
+        const selectedSymptoms = new Map(); // key: "sectionId::symptomName", value: { section, symptom, sectionName }
         let currentView = "organs"; // 'organs' or 'sections'
         let currentGender = "male";
         let isFlipped = false;
@@ -2401,7 +3425,7 @@
               e.stopPropagation();
 
               const allGroups = getSectionGroups(partId);
-              const wasSelected = selectedSections.has(partId);
+              const partName = group.dataset.name;
 
               // Deselect all currently selected sections first (single-select)
               selectedSections.forEach((prevPartId) => {
@@ -2413,16 +3437,17 @@
               });
               selectedSections.clear();
 
-              // If it wasn't already selected, select it
-              if (!wasSelected) {
-                selectedSections.add(partId);
-                allGroups.forEach((g) => {
-                  g.classList.add("selected");
-                  const img = g.querySelector(".section-image");
-                  if (img) img.style.opacity = "0.45";
-                });
-              }
+              // Select this section
+              selectedSections.add(partId);
+              allGroups.forEach((g) => {
+                g.classList.add("selected");
+                const img = g.querySelector(".section-image");
+                if (img) img.style.opacity = "0.45";
+              });
               renderSelectedList();
+
+              // Open symptom modal
+              openSymptomModal(partId, partName);
             });
 
             // Hover: show/hide ALL paired section overlay images
@@ -2444,6 +3469,151 @@
             });
           });
 
+        // --- Symptom Modal Functions ---
+        const symptomModalOverlay = document.getElementById(
+          "symptomModalOverlay",
+        );
+        const symptomModalTitle = document.getElementById("symptomModalTitle");
+        const symptomModalList = document.getElementById("symptomModalList");
+        const symptomModalClose = document.getElementById("symptomModalClose");
+
+        function openSymptomModal(sectionId, sectionName) {
+          symptomModalTitle.textContent = sectionName;
+          const symptoms = SECTION_SYMPTOMS[sectionId] || [];
+
+          // Build list items using DOM methods
+          symptomModalList.textContent = "";
+          symptoms.forEach(function (symptom) {
+            const key = sectionId + "::" + symptom;
+            const isSelected = selectedSymptoms.has(key);
+            const li = document.createElement("li");
+            if (isSelected) li.className = "selected";
+            li.dataset.key = key;
+
+            const nameSpan = document.createElement("span");
+            nameSpan.textContent = symptom;
+            li.appendChild(nameSpan);
+
+            if (isSelected) {
+              const checkSpan = document.createElement("span");
+              checkSpan.className = "symptom-check";
+              checkSpan.textContent = "\u2713";
+              li.appendChild(checkSpan);
+            }
+
+            li.addEventListener("click", function () {
+              window._selectSymptom(sectionId, sectionName, symptom);
+            });
+
+            symptomModalList.appendChild(li);
+          });
+
+          // Show with animation
+          symptomModalOverlay.classList.add("active");
+        }
+
+        function closeSymptomModal() {
+          symptomModalOverlay.classList.remove("active");
+        }
+
+        window._selectSymptom = function (sectionId, sectionName, symptom) {
+          const key = sectionId + "::" + symptom;
+          if (selectedSymptoms.has(key)) {
+            selectedSymptoms.delete(key);
+          } else {
+            selectedSymptoms.set(key, {
+              section: sectionId,
+              symptom: symptom,
+              sectionName: sectionName,
+            });
+          }
+          // Re-render the modal list to update checkmarks
+          openSymptomModal(sectionId, sectionName);
+          renderSymptomsList();
+        };
+
+        window._removeSymptom = function (key) {
+          selectedSymptoms.delete(key);
+          renderSymptomsList();
+        };
+
+        function renderSymptomsList() {
+          const panel = document.getElementById("currentSymptomsPanel");
+          const listEl = document.getElementById("symptomsList");
+
+          if (selectedSymptoms.size === 0) {
+            panel.style.display = "none";
+            listEl.textContent = "";
+            return;
+          }
+
+          panel.style.display = "block";
+
+          // Group by section
+          const groups = {};
+          selectedSymptoms.forEach(function (val, key) {
+            if (!groups[val.section]) {
+              groups[val.section] = { sectionName: val.sectionName, items: [] };
+            }
+            groups[val.section].items.push({ key: key, symptom: val.symptom });
+          });
+
+          // Build pills using DOM methods
+          listEl.textContent = "";
+          for (var sectionId in groups) {
+            var g = groups[sectionId];
+            var label = document.createElement("li");
+            label.className = "symptom-section-label";
+            label.textContent = g.sectionName;
+            listEl.appendChild(label);
+
+            g.items.forEach(function (item) {
+              var pill = document.createElement("li");
+              pill.className = "symptom-pill";
+
+              var nameSpan = document.createElement("span");
+              nameSpan.className = "symptom-pill-name";
+              nameSpan.textContent = item.symptom;
+              pill.appendChild(nameSpan);
+
+              var removeBtn = document.createElement("button");
+              removeBtn.className = "symptom-pill-remove";
+              removeBtn.textContent = "\u00d7";
+              removeBtn.addEventListener(
+                "click",
+                (function (k) {
+                  return function () {
+                    window._removeSymptom(k);
+                  };
+                })(item.key),
+              );
+              pill.appendChild(removeBtn);
+
+              listEl.appendChild(pill);
+            });
+          }
+        }
+
+        // Close modal on X button
+        symptomModalClose.addEventListener("click", closeSymptomModal);
+
+        // Close modal on overlay click (not on modal card itself)
+        symptomModalOverlay.addEventListener("click", function (e) {
+          if (e.target === symptomModalOverlay) {
+            closeSymptomModal();
+          }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener("keydown", function (e) {
+          if (
+            e.key === "Escape" &&
+            symptomModalOverlay.classList.contains("active")
+          ) {
+            closeSymptomModal();
+          }
+        });
+
         // --- Render selected list (view-aware) ---
         function renderSelectedList() {
           const listEl = document.getElementById("selectedList");
@@ -2461,19 +3631,25 @@
           });
 
           // Collect nav-only body parts (those with no organIds, only visible in organs view)
-          const navOnlyItems = currentView === "organs"
-            ? [...(typeof selectedBodyParts !== "undefined" ? selectedBodyParts : [])].map(bpId => {
-                if (typeof BODY_PARTS_DATA === "undefined") return null;
-                const bp = BODY_PARTS_DATA.find(b => b.id === bpId);
-                return (bp && bp.organIds.length === 0) ? bp : null;
-              }).filter(Boolean)
-            : [];
+          const navOnlyItems =
+            currentView === "organs"
+              ? [
+                  ...(typeof selectedBodyParts !== "undefined"
+                    ? selectedBodyParts
+                    : []),
+                ]
+                  .map((bpId) => {
+                    if (typeof BODY_PARTS_DATA === "undefined") return null;
+                    const bp = BODY_PARTS_DATA.find((b) => b.id === bpId);
+                    return bp && bp.organIds.length === 0 ? bp : null;
+                  })
+                  .filter(Boolean)
+              : [];
 
           const hasAny = sorted.length > 0 || navOnlyItems.length > 0;
           container.classList.toggle("has-items", hasAny);
           const emptyMsg = document.getElementById("bodyPartsEmpty");
-          if (emptyMsg)
-            emptyMsg.style.display = hasAny ? "none" : "block";
+          if (emptyMsg) emptyMsg.style.display = hasAny ? "none" : "block";
 
           const organPills = sorted
             .map((partId, i) => {
@@ -2559,69 +3735,455 @@
         renderSystemsSidebar();
 
         // --- Collapsible panels ---
-        document.getElementById("systemsHeader").addEventListener("click", function () {
-          document.getElementById("systemsPanel").classList.toggle("collapsed");
-        });
-        document.getElementById("bodyPartsNavHeader").addEventListener("click", function () {
-          document.getElementById("bodyPartsNavPanel").classList.toggle("collapsed");
-        });
+        document
+          .getElementById("systemsHeader")
+          .addEventListener("click", function () {
+            document
+              .getElementById("systemsPanel")
+              .classList.toggle("collapsed");
+          });
+        document
+          .getElementById("bodyPartsNavHeader")
+          .addEventListener("click", function () {
+            document
+              .getElementById("bodyPartsNavPanel")
+              .classList.toggle("collapsed");
+          });
 
         // --- Body Parts nav panel data ---
         const BODY_PARTS_DATA = [
-          { id: "bp_head",       name: "Head",            image: "bpart_images/head.png",                  organIds: [],                                    description: "The head houses the brain, sensory organs, and facial structures. It is protected by the skull and connected to the body via the neck and spinal column." },
-          { id: "bp_face",       name: "Face",            image: "bpart_images/face.png",                  organIds: [],                                    description: "The face contains the eyes, nose, mouth, and cheeks. Facial muscles enable expressions and control eating, breathing, and communication." },
-          { id: "bp_ears",       name: "Ears",            image: "bpart_images/ear.png",                   organIds: [],                                    description: "The ears are responsible for hearing and balance. Sound waves are captured by the outer ear and transmitted to the cochlea, which converts vibrations into nerve signals." },
-          { id: "bp_eyes",       name: "Eyes",            image: "bpart_images/eye.png",                   organIds: [],                                    description: "The eyes are sensory organs that detect light and convert it into electrical signals sent to the brain. They enable vision, depth perception, and color recognition." },
-          { id: "bp_nose",       name: "Nose",            image: "bpart_images/nose.png",                  organIds: [],                                    description: "The nose filters, warms, and humidifies inhaled air. It also houses olfactory receptors that detect scents and is connected to the sinuses." },
-          { id: "bp_mouth",      name: "Mouth",           image: "bpart_images/mouthteethgums.png",        organIds: [],                                    description: "The mouth is the entry point of the digestive system, used for eating, drinking, speaking, and breathing. It contains the teeth, tongue, and gums." },
-          { id: "bp_gums",       name: "Gums",            image: "bpart_images/mouthteethgums.png",        organIds: [],                                    description: "Gums (gingiva) are soft tissue lining the mouth and surround the base of the teeth. Healthy gums provide a protective seal around each tooth." },
-          { id: "bp_teeth",      name: "Teeth",           image: "bpart_images/mouthteethgums.png",        organIds: [],                                    description: "Teeth are hard, calcified structures used for biting and chewing food. Adults typically have 32 permanent teeth including incisors, canines, premolars, and molars." },
-          { id: "bp_neck",       name: "Neck",            image: "bpart_images/neck.png",                  organIds: ["larynx_trachea"],                    description: "The neck connects the head to the torso, housing the cervical spine, esophagus, trachea, and major blood vessels supplying the brain." },
-          { id: "bp_throat",     name: "Throat",          image: "bpart_images/esophagus.png",             organIds: ["larynx_trachea"],                    description: "The throat (pharynx and larynx) is a passageway for both air and food. It connects the nasal cavity and mouth to the trachea and esophagus." },
-          { id: "bp_brain",      name: "Brain",           image: "bpart_images/brain.png",                 organIds: ["brain"],                             description: "The brain is the body's command center, controlling thoughts, memory, movement, and involuntary functions. It weighs about 3 pounds and contains approximately 86 billion neurons." },
-          { id: "bp_heart",      name: "Heart",           image: "bpart_images/heart.png",                 organIds: ["heart"],                             description: "The heart is a muscular organ that pumps blood throughout the body. It beats roughly 100,000 times per day, circulating oxygen and nutrients to every cell." },
-          { id: "bp_blood",      name: "Blood",           image: "bpart_images/bloodvessel.png",           organIds: [],                                    description: "Blood is a fluid connective tissue composed of red blood cells, white blood cells, platelets, and plasma. It transports oxygen, nutrients, hormones, and waste products throughout the body." },
-          { id: "bp_lungs",      name: "Lungs",           image: "bpart_images/lungs.png",                 organIds: ["lungs_right", "lungs_left"],          description: "The lungs are paired organs responsible for gas exchange — taking in oxygen and expelling carbon dioxide. Together they hold about 6 liters of air at full capacity." },
-          { id: "bp_pancreas",   name: "Pancreas",        image: "bpart_images/pancreas.png",              organIds: ["pancreas"],                          description: "The pancreas is a gland that produces digestive enzymes and hormones. It secretes insulin and glucagon to regulate blood sugar levels and digestive juices to break down food." },
-          { id: "bp_adrenal",    name: "Adrenal Gland",   image: "bpart_images/adrenal-gland.png",         organIds: [],                                    description: "The adrenal glands sit atop each kidney and produce hormones including adrenaline and cortisol. They regulate stress response, metabolism, blood pressure, and immune function." },
-          { id: "bp_parathyroid",name: "Parathyroid Gland",image: "bpart_images/parathyroid.png",          organIds: [],                                    description: "The four parathyroid glands regulate calcium levels in the blood by secreting parathyroid hormone (PTH). Calcium balance is essential for bone health, nerve function, and muscle contraction." },
-          { id: "bp_pituitary",  name: "Pituitary Gland", image: "bpart_images/pituitary.png",             organIds: [],                                    description: "Often called the 'master gland,' the pituitary gland controls many other endocrine glands. It regulates growth, reproduction, blood pressure, and metabolism through hormone secretion." },
-          { id: "bp_thyroid",    name: "Thyroid",         image: "bpart_images/thyroid.png",               organIds: ["thyroid"],                           description: "The thyroid gland produces hormones that regulate metabolism, heart rate, and body temperature. Located in the neck, it is essential for normal growth and development." },
-          { id: "bp_esophagus",  name: "Esophagus",       image: "bpart_images/esophagus.png",             organIds: ["larynx_trachea"],                    description: "The esophagus is a muscular tube connecting the throat to the stomach. Muscular contractions (peristalsis) propel food downward, even allowing swallowing upside down." },
-          { id: "bp_abdomen",    name: "Abdomen",         image: "bpart_images/abdomen.png",               organIds: [],                                    description: "The abdomen is the body cavity between the chest and pelvis, containing the stomach, intestines, liver, kidneys, and other vital organs. It is bounded by the abdominal muscles." },
-          { id: "bp_stomach",    name: "Stomach",         image: "bpart_images/stomach.png",               organIds: ["stomach"],                           description: "The stomach is a muscular sac that stores and begins digesting food. Gastric acid and enzymes break down proteins, and churning motion mixes food into a semi-liquid called chyme." },
-          { id: "bp_liver",      name: "Liver",           image: "bpart_images/liver.png",                 organIds: ["liver"],                             description: "The liver is the largest internal organ, performing over 500 functions including detoxifying the blood, producing bile for digestion, metabolizing nutrients, and synthesizing proteins." },
-          { id: "bp_intestines", name: "Intestines",      image: "bpart_images/intestines.png",            organIds: ["intestines"],                        description: "The intestines consist of the small and large intestine. The small intestine absorbs nutrients; the large intestine absorbs water and prepares waste for elimination." },
-          { id: "bp_gallbladder",name: "Gallbladder",     image: "bpart_images/gallbladder.png",           organIds: ["gallbladder"],                       description: "The gallbladder stores bile produced by the liver and releases it into the small intestine during digestion. Bile emulsifies fats to aid absorption." },
-          { id: "bp_colon",      name: "Colon",           image: "bpart_images/colon.png",                 organIds: ["intestines"],                        description: "The colon (large intestine) is approximately 5 feet long and absorbs water and electrolytes from indigestible food. Bacteria in the colon aid in fermentation and produce vitamins." },
-          { id: "bp_bladder",    name: "Bladder",         image: "bpart_images/bladder.png",               organIds: ["bladder"],                           description: "The urinary bladder is a hollow muscular organ that stores urine produced by the kidneys. It can hold up to about 2 cups (500 ml) and signals the brain when it is time to urinate." },
-          { id: "bp_urethra",    name: "Urethra",         image: "bpart_images/urethra.png",               organIds: [],                                    description: "The urethra is the tube that carries urine from the bladder out of the body. In males it also carries semen; in females it is solely for urine elimination." },
-          { id: "bp_lymphnode",  name: "Lymph Node",      image: "bpart_images/lymphnode.png",             organIds: [],                                    description: "Lymph nodes are small, bean-shaped structures that filter lymph fluid and house immune cells. They swell during infections as the immune system mounts a response." },
-          { id: "bp_spleen",     name: "Spleen",          image: "bpart_images/spleen.png",                organIds: ["spleen"],                            description: "The spleen filters blood, removes old red blood cells, and stores platelets. It plays an important role in the immune response, producing lymphocytes and antibodies." },
-          { id: "bp_appendix",   name: "Appendix",        image: "bpart_images/appendix.png",              organIds: [],                                    description: "The appendix is a finger-shaped pouch attached to the large intestine. Its exact function is debated; it may support gut bacteria and immune function. Appendicitis requires surgical removal." },
-          { id: "bp_muscles",    name: "Muscles",         image: "bpart_images/upperextremitymuscle.png",  organIds: ["muscle"],                            description: "The body has over 600 muscles that enable movement, posture, and internal organ function. Skeletal muscles are voluntary; cardiac and smooth muscles are involuntary." },
-          { id: "bp_skin",       name: "Skin & Tissue",   image: "bpart_images/skin.png",                  organIds: [],                                    description: "The skin is the body's largest organ, providing a protective barrier against the environment. It regulates temperature, prevents water loss, detects sensation, and synthesizes vitamin D." },
-          { id: "bp_bones",      name: "Bones",           image: "bpart_images/bonesjoints.png",           organIds: ["knee_joint"],                        description: "The adult skeleton has 206 bones that provide structure, protect organs, enable movement, produce blood cells in the marrow, and store minerals like calcium and phosphorus." },
-          { id: "bp_joints",     name: "Joints",          image: "bpart_images/bonesjoints.png",           organIds: ["knee_joint"],                        description: "Joints are connections between bones that allow movement and provide flexibility. They include cartilage, ligaments, and synovial fluid to absorb shock and reduce friction." },
-          { id: "bp_spine",      name: "Spine",           image: "bpart_images/spine.png",                 organIds: [],                                    description: "The spine (vertebral column) consists of 33 vertebrae that protect the spinal cord, support the body's weight, and enable flexible movement. It forms the central axis of the skeleton." },
-          { id: "bp_ankles",     name: "Ankles",          image: "bpart_images/ankle.png",                 organIds: [],                                    description: "The ankle joint connects the leg to the foot, enabling dorsiflexion, plantarflexion, inversion, and eversion movements. It bears the full weight of the body during standing and walking." },
-          { id: "bp_arms",       name: "Arms",            image: "bpart_images/forearm.png",               organIds: [],                                    description: "The arms consist of the upper arm (humerus), forearm (radius and ulna), and hand. They provide strength and dexterity for lifting, carrying, pushing, and fine motor tasks." },
-          { id: "bp_chest",      name: "Chest",           image: "bpart_images/chest.png",                 organIds: [],                                    description: "The chest (thorax) is the body region between the neck and abdomen, housing the heart, lungs, and major blood vessels. It is protected by the ribcage and sternum." },
-          { id: "bp_elbow",      name: "Elbow",           image: "bpart_images/elbow.png",                 organIds: [],                                    description: "The elbow is a hinge joint connecting the upper and lower arm. It allows bending, straightening, and rotation of the forearm, essential for most arm movements." },
-          { id: "bp_feet",       name: "Feet",            image: "bpart_images/foot.png",                  organIds: [],                                    description: "Each foot contains 26 bones, 33 joints, and over 100 muscles, tendons, and ligaments. The feet support body weight, absorb impact, and propel the body during movement." },
-          { id: "bp_hands",      name: "Hands",           image: "bpart_images/hand.png",                  organIds: [],                                    description: "The hand has 27 bones and numerous muscles enabling precise grip and fine motor control. Human hands are uniquely adapted for tool use, complex tasks, and communication through gesture." },
-          { id: "bp_hips",       name: "Hips",            image: "bpart_images/pelvis.png",                organIds: [],                                    description: "The hip joint is a ball-and-socket joint connecting the femur to the pelvis. It bears body weight and enables walking, running, and a wide range of leg movements." },
-          { id: "bp_kidneys",    name: "Kidneys",         image: "bpart_images/kidneys.png",               organIds: ["kidneys"],                           description: "The kidneys are bean-shaped organs that filter about 200 liters of blood daily, removing waste as urine. They also regulate blood pressure, electrolyte balance, and red blood cell production." },
-          { id: "bp_legs",       name: "Legs",            image: "bpart_images/legbone.png",               organIds: [],                                    description: "The legs consist of the thigh (femur), lower leg (tibia and fibula), and foot. They support body weight, enable locomotion, and are among the strongest structures in the body." },
-          { id: "bp_pelvis",     name: "Pelvis",          image: "bpart_images/pelvis.png",                organIds: [],                                    description: "The pelvis is a basin-shaped bony structure at the base of the spine that supports the abdominal organs, anchors the leg muscles, and in females forms the birth canal." },
-          { id: "bp_ribs",       name: "Ribs",            image: "bpart_images/ribs.png",                  organIds: [],                                    description: "The 12 pairs of ribs form the ribcage, protecting the heart, lungs, and liver. They are connected to the sternum and spine, expanding and contracting with every breath." },
-          { id: "bp_shoulders",  name: "Shoulders",       image: "bpart_images/shoulder.png",              organIds: [],                                    description: "The shoulder is the most mobile joint in the body, enabling arm rotation in all directions. It includes the clavicle, scapula, and humerus, supported by the rotator cuff muscles." },
-          { id: "bp_breasts",    name: "Breasts",         image: "bpart_images/breastultra.png",           organIds: [],                                    description: "Breasts are glandular tissue structures on the chest that produce milk for infant feeding. They consist of lobules, ducts, fatty tissue, and are monitored for changes in health." },
-          { id: "bp_mammary",    name: "Mammary Glands",  image: "bpart_images/mammary.png",               organIds: [],                                    description: "Mammary glands are specialized milk-producing glands located in the breasts. They are activated by hormonal changes during pregnancy and lactation to produce breast milk." },
-          { id: "bp_uterus",     name: "Uterus",          image: "bpart_images/uterus.png",                organIds: ["female_reproductive"],               description: "The uterus is a hollow muscular organ where a fertilized egg implants and a fetus develops. Its inner lining (endometrium) sheds during menstruation when pregnancy does not occur." },
-          { id: "bp_penis",      name: "Penis",           image: "bpart_images/malerepro.png",             organIds: ["male_reproductive"],                 description: "The penis is the male external reproductive and urinary organ. It contains the urethra for urine and semen passage and becomes erect during sexual arousal to enable intercourse." },
-          { id: "bp_prostate",   name: "Prostate",        image: "bpart_images/prostate.png",              organIds: ["male_reproductive"],                 description: "The prostate is a walnut-sized gland in males that produces fluid nourishing and protecting sperm. It surrounds the urethra below the bladder and tends to enlarge with age." },
-          { id: "bp_testicles",  name: "Testicles",       image: "bpart_images/malerepro.png",             organIds: ["male_reproductive"],                 description: "The testicles are male reproductive glands that produce sperm and the hormone testosterone. They are housed in the scrotum, which maintains a temperature slightly lower than body temperature." },
+          {
+            id: "bp_head",
+            name: "Head",
+            image: "bpart_images/head.png",
+            organIds: [],
+            description:
+              "The head houses the brain, sensory organs, and facial structures. It is protected by the skull and connected to the body via the neck and spinal column.",
+          },
+          {
+            id: "bp_face",
+            name: "Face",
+            image: "bpart_images/face.png",
+            organIds: [],
+            description:
+              "The face contains the eyes, nose, mouth, and cheeks. Facial muscles enable expressions and control eating, breathing, and communication.",
+          },
+          {
+            id: "bp_ears",
+            name: "Ears",
+            image: "bpart_images/ear.png",
+            organIds: [],
+            description:
+              "The ears are responsible for hearing and balance. Sound waves are captured by the outer ear and transmitted to the cochlea, which converts vibrations into nerve signals.",
+          },
+          {
+            id: "bp_eyes",
+            name: "Eyes",
+            image: "bpart_images/eye.png",
+            organIds: [],
+            description:
+              "The eyes are sensory organs that detect light and convert it into electrical signals sent to the brain. They enable vision, depth perception, and color recognition.",
+          },
+          {
+            id: "bp_nose",
+            name: "Nose",
+            image: "bpart_images/nose.png",
+            organIds: [],
+            description:
+              "The nose filters, warms, and humidifies inhaled air. It also houses olfactory receptors that detect scents and is connected to the sinuses.",
+          },
+          {
+            id: "bp_mouth",
+            name: "Mouth",
+            image: "bpart_images/mouthteethgums.png",
+            organIds: [],
+            description:
+              "The mouth is the entry point of the digestive system, used for eating, drinking, speaking, and breathing. It contains the teeth, tongue, and gums.",
+          },
+          {
+            id: "bp_gums",
+            name: "Gums",
+            image: "bpart_images/mouthteethgums.png",
+            organIds: [],
+            description:
+              "Gums (gingiva) are soft tissue lining the mouth and surround the base of the teeth. Healthy gums provide a protective seal around each tooth.",
+          },
+          {
+            id: "bp_teeth",
+            name: "Teeth",
+            image: "bpart_images/mouthteethgums.png",
+            organIds: [],
+            description:
+              "Teeth are hard, calcified structures used for biting and chewing food. Adults typically have 32 permanent teeth including incisors, canines, premolars, and molars.",
+          },
+          {
+            id: "bp_neck",
+            name: "Neck",
+            image: "bpart_images/neck.png",
+            organIds: ["larynx_trachea"],
+            description:
+              "The neck connects the head to the torso, housing the cervical spine, esophagus, trachea, and major blood vessels supplying the brain.",
+          },
+          {
+            id: "bp_throat",
+            name: "Throat",
+            image: "bpart_images/esophagus.png",
+            organIds: ["larynx_trachea"],
+            description:
+              "The throat (pharynx and larynx) is a passageway for both air and food. It connects the nasal cavity and mouth to the trachea and esophagus.",
+          },
+          {
+            id: "bp_brain",
+            name: "Brain",
+            image: "bpart_images/brain.png",
+            organIds: ["brain"],
+            description:
+              "The brain is the body's command center, controlling thoughts, memory, movement, and involuntary functions. It weighs about 3 pounds and contains approximately 86 billion neurons.",
+          },
+          {
+            id: "bp_heart",
+            name: "Heart",
+            image: "bpart_images/heart.png",
+            organIds: ["heart"],
+            description:
+              "The heart is a muscular organ that pumps blood throughout the body. It beats roughly 100,000 times per day, circulating oxygen and nutrients to every cell.",
+          },
+          {
+            id: "bp_blood",
+            name: "Blood",
+            image: "bpart_images/bloodvessel.png",
+            organIds: [],
+            description:
+              "Blood is a fluid connective tissue composed of red blood cells, white blood cells, platelets, and plasma. It transports oxygen, nutrients, hormones, and waste products throughout the body.",
+          },
+          {
+            id: "bp_lungs",
+            name: "Lungs",
+            image: "bpart_images/lungs.png",
+            organIds: ["lungs_right", "lungs_left"],
+            description:
+              "The lungs are paired organs responsible for gas exchange — taking in oxygen and expelling carbon dioxide. Together they hold about 6 liters of air at full capacity.",
+          },
+          {
+            id: "bp_pancreas",
+            name: "Pancreas",
+            image: "bpart_images/pancreas.png",
+            organIds: ["pancreas"],
+            description:
+              "The pancreas is a gland that produces digestive enzymes and hormones. It secretes insulin and glucagon to regulate blood sugar levels and digestive juices to break down food.",
+          },
+          {
+            id: "bp_adrenal",
+            name: "Adrenal Gland",
+            image: "bpart_images/adrenal-gland.png",
+            organIds: [],
+            description:
+              "The adrenal glands sit atop each kidney and produce hormones including adrenaline and cortisol. They regulate stress response, metabolism, blood pressure, and immune function.",
+          },
+          {
+            id: "bp_parathyroid",
+            name: "Parathyroid Gland",
+            image: "bpart_images/parathyroid.png",
+            organIds: [],
+            description:
+              "The four parathyroid glands regulate calcium levels in the blood by secreting parathyroid hormone (PTH). Calcium balance is essential for bone health, nerve function, and muscle contraction.",
+          },
+          {
+            id: "bp_pituitary",
+            name: "Pituitary Gland",
+            image: "bpart_images/pituitary.png",
+            organIds: [],
+            description:
+              "Often called the 'master gland,' the pituitary gland controls many other endocrine glands. It regulates growth, reproduction, blood pressure, and metabolism through hormone secretion.",
+          },
+          {
+            id: "bp_thyroid",
+            name: "Thyroid",
+            image: "bpart_images/thyroid.png",
+            organIds: ["thyroid"],
+            description:
+              "The thyroid gland produces hormones that regulate metabolism, heart rate, and body temperature. Located in the neck, it is essential for normal growth and development.",
+          },
+          {
+            id: "bp_esophagus",
+            name: "Esophagus",
+            image: "bpart_images/esophagus.png",
+            organIds: ["larynx_trachea"],
+            description:
+              "The esophagus is a muscular tube connecting the throat to the stomach. Muscular contractions (peristalsis) propel food downward, even allowing swallowing upside down.",
+          },
+          {
+            id: "bp_abdomen",
+            name: "Abdomen",
+            image: "bpart_images/abdomen.png",
+            organIds: [],
+            description:
+              "The abdomen is the body cavity between the chest and pelvis, containing the stomach, intestines, liver, kidneys, and other vital organs. It is bounded by the abdominal muscles.",
+          },
+          {
+            id: "bp_stomach",
+            name: "Stomach",
+            image: "bpart_images/stomach.png",
+            organIds: ["stomach"],
+            description:
+              "The stomach is a muscular sac that stores and begins digesting food. Gastric acid and enzymes break down proteins, and churning motion mixes food into a semi-liquid called chyme.",
+          },
+          {
+            id: "bp_liver",
+            name: "Liver",
+            image: "bpart_images/liver.png",
+            organIds: ["liver"],
+            description:
+              "The liver is the largest internal organ, performing over 500 functions including detoxifying the blood, producing bile for digestion, metabolizing nutrients, and synthesizing proteins.",
+          },
+          {
+            id: "bp_intestines",
+            name: "Intestines",
+            image: "bpart_images/intestines.png",
+            organIds: ["intestines"],
+            description:
+              "The intestines consist of the small and large intestine. The small intestine absorbs nutrients; the large intestine absorbs water and prepares waste for elimination.",
+          },
+          {
+            id: "bp_gallbladder",
+            name: "Gallbladder",
+            image: "bpart_images/gallbladder.png",
+            organIds: ["gallbladder"],
+            description:
+              "The gallbladder stores bile produced by the liver and releases it into the small intestine during digestion. Bile emulsifies fats to aid absorption.",
+          },
+          {
+            id: "bp_colon",
+            name: "Colon",
+            image: "bpart_images/colon.png",
+            organIds: ["intestines"],
+            description:
+              "The colon (large intestine) is approximately 5 feet long and absorbs water and electrolytes from indigestible food. Bacteria in the colon aid in fermentation and produce vitamins.",
+          },
+          {
+            id: "bp_bladder",
+            name: "Bladder",
+            image: "bpart_images/bladder.png",
+            organIds: ["bladder"],
+            description:
+              "The urinary bladder is a hollow muscular organ that stores urine produced by the kidneys. It can hold up to about 2 cups (500 ml) and signals the brain when it is time to urinate.",
+          },
+          {
+            id: "bp_urethra",
+            name: "Urethra",
+            image: "bpart_images/urethra.png",
+            organIds: [],
+            description:
+              "The urethra is the tube that carries urine from the bladder out of the body. In males it also carries semen; in females it is solely for urine elimination.",
+          },
+          {
+            id: "bp_lymphnode",
+            name: "Lymph Node",
+            image: "bpart_images/lymphnode.png",
+            organIds: [],
+            description:
+              "Lymph nodes are small, bean-shaped structures that filter lymph fluid and house immune cells. They swell during infections as the immune system mounts a response.",
+          },
+          {
+            id: "bp_spleen",
+            name: "Spleen",
+            image: "bpart_images/spleen.png",
+            organIds: ["spleen"],
+            description:
+              "The spleen filters blood, removes old red blood cells, and stores platelets. It plays an important role in the immune response, producing lymphocytes and antibodies.",
+          },
+          {
+            id: "bp_appendix",
+            name: "Appendix",
+            image: "bpart_images/appendix.png",
+            organIds: [],
+            description:
+              "The appendix is a finger-shaped pouch attached to the large intestine. Its exact function is debated; it may support gut bacteria and immune function. Appendicitis requires surgical removal.",
+          },
+          {
+            id: "bp_muscles",
+            name: "Muscles",
+            image: "bpart_images/upperextremitymuscle.png",
+            organIds: ["muscle"],
+            description:
+              "The body has over 600 muscles that enable movement, posture, and internal organ function. Skeletal muscles are voluntary; cardiac and smooth muscles are involuntary.",
+          },
+          {
+            id: "bp_skin",
+            name: "Skin & Tissue",
+            image: "bpart_images/skin.png",
+            organIds: [],
+            description:
+              "The skin is the body's largest organ, providing a protective barrier against the environment. It regulates temperature, prevents water loss, detects sensation, and synthesizes vitamin D.",
+          },
+          {
+            id: "bp_bones",
+            name: "Bones",
+            image: "bpart_images/bonesjoints.png",
+            organIds: ["knee_joint"],
+            description:
+              "The adult skeleton has 206 bones that provide structure, protect organs, enable movement, produce blood cells in the marrow, and store minerals like calcium and phosphorus.",
+          },
+          {
+            id: "bp_joints",
+            name: "Joints",
+            image: "bpart_images/bonesjoints.png",
+            organIds: ["knee_joint"],
+            description:
+              "Joints are connections between bones that allow movement and provide flexibility. They include cartilage, ligaments, and synovial fluid to absorb shock and reduce friction.",
+          },
+          {
+            id: "bp_spine",
+            name: "Spine",
+            image: "bpart_images/spine.png",
+            organIds: [],
+            description:
+              "The spine (vertebral column) consists of 33 vertebrae that protect the spinal cord, support the body's weight, and enable flexible movement. It forms the central axis of the skeleton.",
+          },
+          {
+            id: "bp_ankles",
+            name: "Ankles",
+            image: "bpart_images/ankle.png",
+            organIds: [],
+            description:
+              "The ankle joint connects the leg to the foot, enabling dorsiflexion, plantarflexion, inversion, and eversion movements. It bears the full weight of the body during standing and walking.",
+          },
+          {
+            id: "bp_arms",
+            name: "Arms",
+            image: "bpart_images/forearm.png",
+            organIds: [],
+            description:
+              "The arms consist of the upper arm (humerus), forearm (radius and ulna), and hand. They provide strength and dexterity for lifting, carrying, pushing, and fine motor tasks.",
+          },
+          {
+            id: "bp_chest",
+            name: "Chest",
+            image: "bpart_images/chest.png",
+            organIds: [],
+            description:
+              "The chest (thorax) is the body region between the neck and abdomen, housing the heart, lungs, and major blood vessels. It is protected by the ribcage and sternum.",
+          },
+          {
+            id: "bp_elbow",
+            name: "Elbow",
+            image: "bpart_images/elbow.png",
+            organIds: [],
+            description:
+              "The elbow is a hinge joint connecting the upper and lower arm. It allows bending, straightening, and rotation of the forearm, essential for most arm movements.",
+          },
+          {
+            id: "bp_feet",
+            name: "Feet",
+            image: "bpart_images/foot.png",
+            organIds: [],
+            description:
+              "Each foot contains 26 bones, 33 joints, and over 100 muscles, tendons, and ligaments. The feet support body weight, absorb impact, and propel the body during movement.",
+          },
+          {
+            id: "bp_hands",
+            name: "Hands",
+            image: "bpart_images/hand.png",
+            organIds: [],
+            description:
+              "The hand has 27 bones and numerous muscles enabling precise grip and fine motor control. Human hands are uniquely adapted for tool use, complex tasks, and communication through gesture.",
+          },
+          {
+            id: "bp_hips",
+            name: "Hips",
+            image: "bpart_images/pelvis.png",
+            organIds: [],
+            description:
+              "The hip joint is a ball-and-socket joint connecting the femur to the pelvis. It bears body weight and enables walking, running, and a wide range of leg movements.",
+          },
+          {
+            id: "bp_kidneys",
+            name: "Kidneys",
+            image: "bpart_images/kidneys.png",
+            organIds: ["kidneys"],
+            description:
+              "The kidneys are bean-shaped organs that filter about 200 liters of blood daily, removing waste as urine. They also regulate blood pressure, electrolyte balance, and red blood cell production.",
+          },
+          {
+            id: "bp_legs",
+            name: "Legs",
+            image: "bpart_images/legbone.png",
+            organIds: [],
+            description:
+              "The legs consist of the thigh (femur), lower leg (tibia and fibula), and foot. They support body weight, enable locomotion, and are among the strongest structures in the body.",
+          },
+          {
+            id: "bp_pelvis",
+            name: "Pelvis",
+            image: "bpart_images/pelvis.png",
+            organIds: [],
+            description:
+              "The pelvis is a basin-shaped bony structure at the base of the spine that supports the abdominal organs, anchors the leg muscles, and in females forms the birth canal.",
+          },
+          {
+            id: "bp_ribs",
+            name: "Ribs",
+            image: "bpart_images/ribs.png",
+            organIds: [],
+            description:
+              "The 12 pairs of ribs form the ribcage, protecting the heart, lungs, and liver. They are connected to the sternum and spine, expanding and contracting with every breath.",
+          },
+          {
+            id: "bp_shoulders",
+            name: "Shoulders",
+            image: "bpart_images/shoulder.png",
+            organIds: [],
+            description:
+              "The shoulder is the most mobile joint in the body, enabling arm rotation in all directions. It includes the clavicle, scapula, and humerus, supported by the rotator cuff muscles.",
+          },
+          {
+            id: "bp_breasts",
+            name: "Breasts",
+            image: "bpart_images/breastultra.png",
+            organIds: [],
+            description:
+              "Breasts are glandular tissue structures on the chest that produce milk for infant feeding. They consist of lobules, ducts, fatty tissue, and are monitored for changes in health.",
+          },
+          {
+            id: "bp_mammary",
+            name: "Mammary Glands",
+            image: "bpart_images/mammary.png",
+            organIds: [],
+            description:
+              "Mammary glands are specialized milk-producing glands located in the breasts. They are activated by hormonal changes during pregnancy and lactation to produce breast milk.",
+          },
+          {
+            id: "bp_uterus",
+            name: "Uterus",
+            image: "bpart_images/uterus.png",
+            organIds: ["female_reproductive"],
+            description:
+              "The uterus is a hollow muscular organ where a fertilized egg implants and a fetus develops. Its inner lining (endometrium) sheds during menstruation when pregnancy does not occur.",
+          },
+          {
+            id: "bp_penis",
+            name: "Penis",
+            image: "bpart_images/malerepro.png",
+            organIds: ["male_reproductive"],
+            description:
+              "The penis is the male external reproductive and urinary organ. It contains the urethra for urine and semen passage and becomes erect during sexual arousal to enable intercourse.",
+          },
+          {
+            id: "bp_prostate",
+            name: "Prostate",
+            image: "bpart_images/prostate.png",
+            organIds: ["male_reproductive"],
+            description:
+              "The prostate is a walnut-sized gland in males that produces fluid nourishing and protecting sperm. It surrounds the urethra below the bladder and tends to enlarge with age.",
+          },
+          {
+            id: "bp_testicles",
+            name: "Testicles",
+            image: "bpart_images/malerepro.png",
+            organIds: ["male_reproductive"],
+            description:
+              "The testicles are male reproductive glands that produce sperm and the hormone testosterone. They are housed in the scrotum, which maintains a temperature slightly lower than body temperature.",
+          },
         ];
 
         // --- Body Parts nav state ---
@@ -2629,9 +4191,9 @@
         let isBodyPartsNavSorted = false;
 
         function getBodyPartIdsForOrgan(organId) {
-          return BODY_PARTS_DATA
-            .filter((bp) => bp.organIds.includes(organId))
-            .map((bp) => bp.id);
+          return BODY_PARTS_DATA.filter((bp) =>
+            bp.organIds.includes(organId),
+          ).map((bp) => bp.id);
         }
 
         function syncBodyPartsFromOrgan(organId, isSelected) {
@@ -2660,19 +4222,25 @@
           const listEl = document.getElementById("bodyPartsNavList");
           const bodyPartsForView = isBodyPartsNavSorted
             ? [...BODY_PARTS_DATA].sort((a, b) =>
-                a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+                a.name.localeCompare(b.name, undefined, {
+                  sensitivity: "base",
+                }),
               )
             : BODY_PARTS_DATA;
 
-          listEl.innerHTML = bodyPartsForView.map(bp => `
+          listEl.innerHTML = bodyPartsForView
+            .map(
+              (bp) => `
             <li class="body-parts-nav-item ${selectedBodyParts.has(bp.id) ? "active" : ""}" data-bp-id="${bp.id}" onclick="toggleBodyPart('${bp.id}')">
               <img class="body-parts-nav-icon" src="${bp.image}" alt="${bp.name}" onerror="this.style.display='none'" />
               <span class="body-parts-nav-name">${bp.name}</span>
             </li>
-          `).join("");
+          `,
+            )
+            .join("");
         }
 
-        window.toggleBodyPartsSort = function(event) {
+        window.toggleBodyPartsSort = function (event) {
           if (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -2687,20 +4255,23 @@
         };
 
         // --- Toggle a body part from the nav panel ---
-        window.toggleBodyPart = function(bpId) {
-          const bp = BODY_PARTS_DATA.find(b => b.id === bpId);
+        window.toggleBodyPart = function (bpId) {
+          const bp = BODY_PARTS_DATA.find((b) => b.id === bpId);
           if (!bp) return;
 
           if (selectedBodyParts.has(bpId)) {
             // Deselect
             selectedBodyParts.delete(bpId);
             // Remove organ highlights (only if not kept by active system or other nav selection)
-            bp.organIds.forEach(organId => {
-              const keptBySystem = activeSystem &&
-                BODY_SYSTEMS.find(s => s.id === activeSystem) &&
-                BODY_SYSTEMS.find(s => s.id === activeSystem).organs.includes(organId);
-              const keptByOtherNav = [...selectedBodyParts].some(otherId => {
-                const other = BODY_PARTS_DATA.find(b => b.id === otherId);
+            bp.organIds.forEach((organId) => {
+              const keptBySystem =
+                activeSystem &&
+                BODY_SYSTEMS.find((s) => s.id === activeSystem) &&
+                BODY_SYSTEMS.find((s) => s.id === activeSystem).organs.includes(
+                  organId,
+                );
+              const keptByOtherNav = [...selectedBodyParts].some((otherId) => {
+                const other = BODY_PARTS_DATA.find((b) => b.id === otherId);
                 return other && other.organIds.includes(organId);
               });
               if (!keptBySystem && !keptByOtherNav) {
@@ -2708,27 +4279,34 @@
                 const group = document.getElementById("group-" + organId);
                 if (group) group.classList.remove("selected");
                 // Also handle paired groups (lungs etc)
-                document.querySelectorAll(`[data-part="${organId}"]`).forEach(g => {
-                  if (!selectedOrgans.has(organId)) g.classList.remove("selected");
-                });
+                document
+                  .querySelectorAll(`[data-part="${organId}"]`)
+                  .forEach((g) => {
+                    if (!selectedOrgans.has(organId))
+                      g.classList.remove("selected");
+                  });
               }
             });
           } else {
             // Select
             selectedBodyParts.add(bpId);
-            bp.organIds.forEach(organId => {
+            bp.organIds.forEach((organId) => {
               selectedOrgans.add(organId);
               const group = document.getElementById("group-" + organId);
               if (group) group.classList.add("selected");
               // Handle paired groups (e.g. lungs_left / lungs_right have separate group els)
-              document.querySelectorAll(`[data-part="${organId}"]`).forEach(g => {
-                g.classList.add("selected");
-              });
+              document
+                .querySelectorAll(`[data-part="${organId}"]`)
+                .forEach((g) => {
+                  g.classList.add("selected");
+                });
             });
           }
 
           // Sync nav item active state
-          const li = document.querySelector(`.body-parts-nav-item[data-bp-id="${bpId}"]`);
+          const li = document.querySelector(
+            `.body-parts-nav-item[data-bp-id="${bpId}"]`,
+          );
           if (li) li.classList.toggle("active", selectedBodyParts.has(bpId));
 
           renderBodyPartCards();
@@ -2738,16 +4316,18 @@
         // --- Render body part cards as 2-per-row grid ---
         function renderBodyPartCards() {
           const container = document.getElementById("bodyPartCardsContainer");
-          container.innerHTML = [...selectedBodyParts].map(bpId => {
-            const bp = BODY_PARTS_DATA.find(b => b.id === bpId);
-            if (!bp) return "";
-            return `<div class="body-part-card">
+          container.innerHTML = [...selectedBodyParts]
+            .map((bpId) => {
+              const bp = BODY_PARTS_DATA.find((b) => b.id === bpId);
+              if (!bp) return "";
+              return `<div class="body-part-card">
               <button class="body-part-card-close" onclick="toggleBodyPart('${bp.id}')">&times;</button>
               <h4 class="body-part-card-title">${bp.name}</h4>
               <img class="body-part-card-image" src="${bp.image}" alt="${bp.name}" />
               <p class="body-part-card-desc">${bp.description}</p>
             </div>`;
-          }).join("");
+            })
+            .join("");
         }
 
         renderBodyPartsNavPanel();
