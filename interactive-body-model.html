@@ -979,8 +979,10 @@
 
       /* === Current Symptoms Panel === */
       .current-symptoms-panel {
-        margin-top: 12px;
-        padding: 0 8px;
+        margin-top: 10px;
+        padding: 0 10px;
+        width: 100%;
+        box-sizing: border-box;
       }
       .current-symptoms-panel h2 {
         font-size: 13px;
@@ -1081,18 +1083,6 @@
           <p class="body-parts-empty" id="bodyPartsEmpty">
             Click on body parts to add them
           </p>
-        </div>
-
-        <!-- Current Symptoms pill list -->
-        <div
-          class="current-symptoms-panel"
-          id="currentSymptomsPanel"
-          style="display: none"
-        >
-          <h2>Current Symptoms</h2>
-          <div class="symptoms-list-container">
-            <ol class="symptoms-list" id="symptomsList"></ol>
-          </div>
         </div>
       </div>
 
@@ -1994,7 +1984,7 @@
                   />
                 </filter>
               </defs>
-              <g id="back-sections-layer">
+              <g id="back-sections-layer" style="display: none">
                 <image
                   id="back-sections-base-body"
                   x="0"
@@ -2182,6 +2172,18 @@
         >
           &#x21BB; Rotate Model
         </a>
+
+        <!-- Current Symptoms pill list -->
+        <div
+          class="current-symptoms-panel"
+          id="currentSymptomsPanel"
+          style="display: none"
+        >
+          <h2>Current Symptoms</h2>
+          <div class="symptoms-list-container">
+            <ol class="symptoms-list" id="symptomsList"></ol>
+          </div>
+        </div>
       </div>
 
       <!-- Right column: System detail + Body parts -->
@@ -3999,7 +4001,9 @@
             ? ""
             : "none";
           document.getElementById("sections-layer").style.display =
-            view === "sections" ? "" : "none";
+            view === "sections" && !isFlipped ? "" : "none";
+          document.getElementById("back-sections-layer").style.display =
+            view === "sections" && isFlipped ? "" : "none";
 
           // Toggle active tab
           const btnOrgans = document.getElementById("btn-organs");
@@ -4068,7 +4072,26 @@
         // --- Rotate model ---
         window.rotateModel = function () {
           const inner = document.getElementById("svgInner");
+          const sectionsLayer = document.getElementById("sections-layer");
+          const backSectionsLayer = document.getElementById(
+            "back-sections-layer",
+          );
+          const flipDuration = 700; // matches CSS transition: 0.7s
+
           isFlipped = !isFlipped;
+
+          if (currentView === "sections") {
+            // Show both layers during the flip so backface-visibility handles it
+            sectionsLayer.style.display = "";
+            backSectionsLayer.style.display = "";
+
+            // After the animation completes, hide the inactive layer
+            setTimeout(function () {
+              sectionsLayer.style.display = isFlipped ? "none" : "";
+              backSectionsLayer.style.display = isFlipped ? "" : "none";
+            }, flipDuration);
+          }
+
           inner.classList.toggle("flipped", isFlipped);
 
           const link = document.getElementById("rotateLink");
@@ -4151,6 +4174,19 @@
 
               const allGroups = getSectionGroups(partId);
               const partName = group.dataset.name;
+
+              // If already selected, deselect it (toggle off)
+              if (selectedSections.has(partId)) {
+                selectedSections.delete(partId);
+                allGroups.forEach((g) => {
+                  g.classList.remove("selected");
+                  const img = g.querySelector(".section-image");
+                  if (img) img.style.opacity = "0";
+                });
+                renderSelectedList();
+                closeSymptomModal();
+                return;
+              }
 
               // Deselect all currently selected sections first (single-select)
               selectedSections.forEach((prevPartId) => {
