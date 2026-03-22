@@ -16,7 +16,7 @@
           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         background: #f5f5f5;
         display: flex;
-        justify-content: center;
+        justify-content: flex-start;
         padding: 20px;
         min-height: 100vh;
       }
@@ -24,20 +24,19 @@
       /* Three-column layout wrapper */
       .page-layout {
         display: flex;
-        gap: 32px;
+        gap: 24px;
         width: 100%;
-        max-width: 1100px;
         align-items: flex-start;
       }
 
       /* Left column wrapper */
       .left-column {
-        flex: 0 0 260px;
+        flex: 0 0 240px;
         position: sticky;
         top: 20px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 16px;
       }
 
       /* Body Systems sidebar */
@@ -101,7 +100,7 @@
         object-fit: cover;
       }
 
-      /* Left column: My Body Parts */
+      /* Body Parts selected list */
       .body-parts-panel {
         width: 100%;
       }
@@ -119,12 +118,12 @@
         font-style: italic;
       }
 
-      /* Right column: Body model */
+      /* Center column: Body model */
       .body-model-container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        flex: 1;
+        flex: 0 0 auto;
         max-width: 380px;
       }
 
@@ -304,17 +303,24 @@
         }
       }
 
-      /* Right column: Tooltip detail panel */
+      /* Right column wrapper */
+      .right-column {
+        flex: 0 0 375px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-self: flex-start;
+      }
+
+      /* System description card */
       .tooltip-panel {
-        flex: 0 0 300px;
-        position: sticky;
-        top: 20px;
+        width: 100%;
         background: #fff;
         border: 1px solid #e0e0e0;
         border-radius: 8px;
         padding: 0;
-        min-height: 200px;
         overflow: hidden;
+        position: relative;
       }
       .tooltip-panel-empty {
         color: #999;
@@ -330,24 +336,20 @@
       .tooltip-panel-content.visible {
         display: block;
       }
-      .tooltip-panel-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 16px;
+      .tooltip-panel-icon-row {
+        margin-bottom: 12px;
       }
       .tooltip-panel-thumb {
-        width: 48px;
-        height: 48px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
-        margin-right: 12px;
-        flex-shrink: 0;
         object-fit: cover;
       }
       .tooltip-panel-title {
         font-size: 20px;
-        font-weight: 600;
+        font-weight: 700;
         color: #434448;
-        margin: 0;
+        margin: 0 0 16px 0;
         line-height: 1.3;
       }
       .tooltip-panel-close {
@@ -379,7 +381,7 @@
       .tooltip-system-image {
         width: 100%;
         height: auto;
-        margin-top: 16px;
+        margin: 0 0 16px 0;
         border-radius: 8px;
         display: block;
       }
@@ -467,10 +469,9 @@
           width: 100%;
           position: static;
         }
-        .tooltip-panel {
+        .right-column {
           flex: none;
           width: 100%;
-          position: static;
         }
         body {
           padding: 10px;
@@ -586,6 +587,34 @@
         justify-content: space-between;
         align-items: center;
       }
+      .body-parts-header-left,
+      .body-parts-header-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .body-parts-sort-toggle {
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        background: transparent;
+        color: rgba(255, 255, 255, 0.9);
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        cursor: pointer;
+        line-height: 1.2;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      }
+      .body-parts-sort-toggle:hover {
+        border-color: rgba(255, 255, 255, 0.8);
+        color: #ffffff;
+      }
+      .body-parts-sort-toggle.active {
+        background: #dbeafe;
+        border-color: #dbeafe;
+        color: #1e3a8a;
+      }
       .body-parts-nav-panel.collapsed .systems-chevron {
         transform: rotate(-90deg);
       }
@@ -642,12 +671,11 @@
         font-weight: 600;
       }
 
-      /* --- Body part cards in right column --- */
+      /* --- Body part cards --- */
       .body-part-cards-container {
         display: flex;
         flex-direction: column;
-        gap: 10px;
-        margin-bottom: 12px;
+        gap: 12px;
       }
       .body-part-card {
         background: #fff;
@@ -655,6 +683,8 @@
         border-radius: 8px;
         padding: 14px;
         position: relative;
+        display: flex;
+        flex-direction: column;
       }
       .body-part-card-close {
         position: absolute;
@@ -672,15 +702,15 @@
         color: #ef4444;
       }
       .body-part-card-title {
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 700;
         color: #1e293b;
         margin: 0 0 10px 0;
         padding-right: 20px;
       }
       .body-part-card-image {
-        width: 200px;
-        height: 200px;
+        width: 100%;
+        height: 140px;
         object-fit: contain;
         display: block;
         margin: 0 auto 10px;
@@ -707,11 +737,26 @@
 
         <!-- Body Parts nav panel -->
         <div class="body-parts-nav-panel" id="bodyPartsNavPanel">
-          <h2 id="bodyPartsNavHeader">Body Parts <i class="systems-chevron">&#9660;</i></h2>
+          <h2 id="bodyPartsNavHeader">
+            <span class="body-parts-header-left">Body Parts</span>
+            <span class="body-parts-header-actions">
+              <button
+                id="bodyPartsSortToggle"
+                class="body-parts-sort-toggle"
+                type="button"
+                aria-pressed="false"
+                title="Sort body parts A-Z"
+                onclick="toggleBodyPartsSort(event)"
+              >
+                A-Z
+              </button>
+              <i class="systems-chevron">&#9660;</i>
+            </span>
+          </h2>
           <ul class="body-parts-nav-list" id="bodyPartsNavList"></ul>
         </div>
 
-        <!-- Existing body parts pill list -->
+        <!-- Selected body parts pill list -->
         <div class="body-parts-panel">
           <h2>My Body Parts</h2>
           <div class="selected-list-container" id="selectedListContainer">
@@ -1810,22 +1855,27 @@
         </a>
       </div>
 
-      <!-- Right column: System detail tooltip -->
-      <div class="tooltip-panel" id="tooltipPanel">
-        <div class="tooltip-panel-system-bar" id="tooltipSystemBar"></div>
-        <div class="body-part-cards-container" id="bodyPartCardsContainer"></div>
-        <p class="tooltip-panel-empty" id="tooltipEmpty">
-          Click a body system to see details
-        </p>
-        <div class="tooltip-panel-content" id="tooltipContent">
-          <button class="tooltip-panel-close" id="tooltipClose">&times;</button>
-          <div class="tooltip-panel-header">
-            <img class="tooltip-panel-thumb" id="tooltipThumb" src="" alt="" />
+      <!-- Right column: System detail + Body parts -->
+      <div class="right-column">
+        <!-- System description card -->
+        <div class="tooltip-panel" id="tooltipPanel">
+          <div class="tooltip-panel-system-bar" id="tooltipSystemBar"></div>
+          <p class="tooltip-panel-empty" id="tooltipEmpty">
+            Click a body system to see details
+          </p>
+          <div class="tooltip-panel-content" id="tooltipContent">
+            <button class="tooltip-panel-close" id="tooltipClose">&times;</button>
+            <div class="tooltip-panel-icon-row">
+              <img class="tooltip-panel-thumb" id="tooltipThumb" src="" alt="" />
+            </div>
             <h3 class="tooltip-panel-title" id="tooltipTitle"></h3>
+            <img class="tooltip-system-image" id="tooltipSystemImage" src="" alt="" style="display:none" />
+            <p class="tooltip-panel-description" id="tooltipDesc"></p>
           </div>
-          <p class="tooltip-panel-description" id="tooltipDesc"></p>
-          <img class="tooltip-system-image" id="tooltipSystemImage" src="" alt="" style="display:none" />
         </div>
+
+        <!-- Body part detail cards (2-per-row grid) -->
+        <div class="body-part-cards-container" id="bodyPartCardsContainer"></div>
       </div>
     </div>
 
@@ -2122,6 +2172,15 @@
           renderSelectedList();
         }
 
+        function clearActiveSystemUI() {
+          if (!activeSystem) return;
+          activeSystem = null;
+          document.querySelectorAll(".systems-list li").forEach(function (li) {
+            li.classList.remove("active");
+          });
+          hideTooltip();
+        }
+
         // --- Bridge: organ click updates system ---
         function updateSystemFromOrgan(organId) {
           const systems = ORGAN_TO_SYSTEM[organId];
@@ -2318,7 +2377,8 @@
                 selectedOrgans.add(partId);
                 group.classList.add("selected");
               }
-              updateSystemFromOrgan(partId);
+              clearActiveSystemUI();
+              syncBodyPartsFromOrgan(partId, selectedOrgans.has(partId));
               renderSelectedList();
             });
           });
@@ -2451,23 +2511,8 @@
             selectedOrgans.delete(partId);
             const group = document.getElementById("group-" + partId);
             if (group) group.classList.remove("selected");
-            updateSystemFromOrgan(partId);
-            // Sync body parts nav: if any nav body part mapped to this organ is now without
-            // all its organIds in selectedOrgans, remove it from selectedBodyParts
-            if (typeof selectedBodyParts !== "undefined" && typeof BODY_PARTS_DATA !== "undefined") {
-              [...selectedBodyParts].forEach(bpId => {
-                const bp = BODY_PARTS_DATA.find(b => b.id === bpId);
-                if (bp && bp.organIds.includes(partId)) {
-                  const allGone = bp.organIds.every(oid => !selectedOrgans.has(oid));
-                  if (allGone) {
-                    selectedBodyParts.delete(bpId);
-                    const li = document.querySelector(`.body-parts-nav-item[data-bp-id="${bpId}"]`);
-                    if (li) li.classList.remove("active");
-                  }
-                }
-              });
-              if (typeof renderBodyPartCards === "function") renderBodyPartCards();
-            }
+            clearActiveSystemUI();
+            syncBodyPartsFromOrgan(partId, false);
           } else {
             selectedSections.delete(partId);
             // Handle paired groups (e.g. both arms)
@@ -2581,17 +2626,65 @@
 
         // --- Body Parts nav state ---
         const selectedBodyParts = new Set(); // tracks nav-selected body part IDs
+        let isBodyPartsNavSorted = false;
+
+        function getBodyPartIdsForOrgan(organId) {
+          return BODY_PARTS_DATA
+            .filter((bp) => bp.organIds.includes(organId))
+            .map((bp) => bp.id);
+        }
+
+        function syncBodyPartsFromOrgan(organId, isSelected) {
+          const mappedBodyPartIds = getBodyPartIdsForOrgan(organId);
+          if (!mappedBodyPartIds.length) return;
+
+          if (isSelected) {
+            mappedBodyPartIds.forEach((bpId) => selectedBodyParts.add(bpId));
+          } else {
+            mappedBodyPartIds.forEach((bpId) => {
+              const bp = BODY_PARTS_DATA.find((item) => item.id === bpId);
+              if (!bp) return;
+              const stillMappedToSelectedOrgan = bp.organIds.some((oid) =>
+                selectedOrgans.has(oid),
+              );
+              if (!stillMappedToSelectedOrgan) selectedBodyParts.delete(bpId);
+            });
+          }
+
+          renderBodyPartsNavPanel();
+          renderBodyPartCards();
+        }
 
         // --- Render Body Parts nav list ---
         function renderBodyPartsNavPanel() {
           const listEl = document.getElementById("bodyPartsNavList");
-          listEl.innerHTML = BODY_PARTS_DATA.map(bp => `
-            <li class="body-parts-nav-item" data-bp-id="${bp.id}" onclick="toggleBodyPart('${bp.id}')">
+          const bodyPartsForView = isBodyPartsNavSorted
+            ? [...BODY_PARTS_DATA].sort((a, b) =>
+                a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+              )
+            : BODY_PARTS_DATA;
+
+          listEl.innerHTML = bodyPartsForView.map(bp => `
+            <li class="body-parts-nav-item ${selectedBodyParts.has(bp.id) ? "active" : ""}" data-bp-id="${bp.id}" onclick="toggleBodyPart('${bp.id}')">
               <img class="body-parts-nav-icon" src="${bp.image}" alt="${bp.name}" onerror="this.style.display='none'" />
               <span class="body-parts-nav-name">${bp.name}</span>
             </li>
           `).join("");
         }
+
+        window.toggleBodyPartsSort = function(event) {
+          if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          isBodyPartsNavSorted = !isBodyPartsNavSorted;
+          const sortBtn = document.getElementById("bodyPartsSortToggle");
+          if (sortBtn) {
+            sortBtn.classList.toggle("active", isBodyPartsNavSorted);
+            sortBtn.setAttribute("aria-pressed", String(isBodyPartsNavSorted));
+          }
+          renderBodyPartsNavPanel();
+        };
 
         // --- Toggle a body part from the nav panel ---
         window.toggleBodyPart = function(bpId) {
@@ -2642,7 +2735,7 @@
           renderSelectedList();
         };
 
-        // --- Render body part cards in right column ---
+        // --- Render body part cards as 2-per-row grid ---
         function renderBodyPartCards() {
           const container = document.getElementById("bodyPartCardsContainer");
           container.innerHTML = [...selectedBodyParts].map(bpId => {
