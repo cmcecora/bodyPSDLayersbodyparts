@@ -544,6 +544,155 @@
       .back-section-group.selected .section-image {
         filter: drop-shadow(0 0 6px rgba(76, 175, 80, 0.7));
       }
+      /* --- Collapsible systems panel --- */
+      .systems-panel h2 {
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .systems-chevron {
+        font-style: normal;
+        font-size: 14px;
+        transition: transform 0.25s ease;
+        display: inline-block;
+      }
+      .systems-panel.collapsed .systems-chevron {
+        transform: rotate(-90deg);
+      }
+      .systems-panel.collapsed .systems-list {
+        display: none;
+      }
+
+      /* --- Body Parts nav panel --- */
+      .body-parts-nav-panel {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .body-parts-nav-panel h2 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        background: #6b7280;
+        margin: 0;
+        padding: 12px 16px;
+        border-bottom: 2px solid #9ca3af;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .body-parts-nav-panel.collapsed .systems-chevron {
+        transform: rotate(-90deg);
+      }
+      .body-parts-nav-panel.collapsed .body-parts-nav-list {
+        display: none;
+      }
+      .body-parts-nav-list {
+        list-style: none;
+        padding: 6px 0;
+        margin: 0;
+        max-height: 320px;
+        overflow-y: auto;
+      }
+      .body-parts-nav-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .body-parts-nav-list::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 2px;
+      }
+      .body-parts-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 14px;
+        cursor: pointer;
+        transition: background 0.15s;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .body-parts-nav-item:last-child {
+        border-bottom: none;
+      }
+      .body-parts-nav-item:hover {
+        background: #f5f8fc;
+      }
+      .body-parts-nav-item.active {
+        background: #eef4fb;
+      }
+      .body-parts-nav-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: #f0f0f0;
+      }
+      .body-parts-nav-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #374151;
+      }
+      .body-parts-nav-item.active .body-parts-nav-name {
+        color: #1a5fb4;
+        font-weight: 600;
+      }
+
+      /* --- Body part cards in right column --- */
+      .body-part-cards-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .body-part-card {
+        background: #fff;
+        border: 1px solid #dde3ec;
+        border-radius: 8px;
+        padding: 14px;
+        position: relative;
+      }
+      .body-part-card-close {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: #9ca3af;
+        line-height: 1;
+        padding: 0;
+      }
+      .body-part-card-close:hover {
+        color: #ef4444;
+      }
+      .body-part-card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 10px 0;
+        padding-right: 20px;
+      }
+      .body-part-card-image {
+        width: 200px;
+        height: 200px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto 10px;
+        border-radius: 6px;
+        background: #f8f9fa;
+      }
+      .body-part-card-desc {
+        font-size: 12px;
+        line-height: 1.6;
+        color: #4b5563;
+        margin: 0;
+      }
     </style>
   </head>
   <body>
@@ -551,9 +700,15 @@
       <!-- Left column: Systems menu + Body parts list -->
       <div class="left-column">
         <!-- Body Systems sidebar -->
-        <div class="systems-panel">
-          <h2>Body Systems</h2>
+        <div class="systems-panel" id="systemsPanel">
+          <h2 id="systemsHeader">Body Systems <i class="systems-chevron">&#9660;</i></h2>
           <ul class="systems-list" id="systemsList"></ul>
+        </div>
+
+        <!-- Body Parts nav panel -->
+        <div class="body-parts-nav-panel" id="bodyPartsNavPanel">
+          <h2 id="bodyPartsNavHeader">Body Parts <i class="systems-chevron">&#9660;</i></h2>
+          <ul class="body-parts-nav-list" id="bodyPartsNavList"></ul>
         </div>
 
         <!-- Existing body parts pill list -->
@@ -1658,6 +1813,7 @@
       <!-- Right column: System detail tooltip -->
       <div class="tooltip-panel" id="tooltipPanel">
         <div class="tooltip-panel-system-bar" id="tooltipSystemBar"></div>
+        <div class="body-part-cards-container" id="bodyPartCardsContainer"></div>
         <p class="tooltip-panel-empty" id="tooltipEmpty">
           Click a body system to see details
         </p>
@@ -2244,12 +2400,22 @@
             return sortOrder.indexOf(a) - sortOrder.indexOf(b);
           });
 
-          container.classList.toggle("has-items", sorted.length > 0);
+          // Collect nav-only body parts (those with no organIds, only visible in organs view)
+          const navOnlyItems = currentView === "organs"
+            ? [...(typeof selectedBodyParts !== "undefined" ? selectedBodyParts : [])].map(bpId => {
+                if (typeof BODY_PARTS_DATA === "undefined") return null;
+                const bp = BODY_PARTS_DATA.find(b => b.id === bpId);
+                return (bp && bp.organIds.length === 0) ? bp : null;
+              }).filter(Boolean)
+            : [];
+
+          const hasAny = sorted.length > 0 || navOnlyItems.length > 0;
+          container.classList.toggle("has-items", hasAny);
           const emptyMsg = document.getElementById("bodyPartsEmpty");
           if (emptyMsg)
-            emptyMsg.style.display = sorted.length > 0 ? "none" : "block";
+            emptyMsg.style.display = hasAny ? "none" : "block";
 
-          listEl.innerHTML = sorted
+          const organPills = sorted
             .map((partId, i) => {
               let group = document.getElementById(idPrefix + partId);
               if (!group) {
@@ -2264,6 +2430,19 @@
       </li>`;
             })
             .join("");
+
+          const navPills = navOnlyItems
+            .map((bp, j) => {
+              const num = sorted.length + j + 1;
+              return `<li data-nav-part="${bp.id}">
+        <span class="pill-number">${num}</span>
+        <span class="pill-name">${bp.name}</span>
+        <span class="pill-remove" onclick="toggleBodyPart('${bp.id}')">&times;</span>
+      </li>`;
+            })
+            .join("");
+
+          listEl.innerHTML = organPills + navPills;
         }
 
         // --- Deselect from pill list (view-aware) ---
@@ -2273,6 +2452,22 @@
             const group = document.getElementById("group-" + partId);
             if (group) group.classList.remove("selected");
             updateSystemFromOrgan(partId);
+            // Sync body parts nav: if any nav body part mapped to this organ is now without
+            // all its organIds in selectedOrgans, remove it from selectedBodyParts
+            if (typeof selectedBodyParts !== "undefined" && typeof BODY_PARTS_DATA !== "undefined") {
+              [...selectedBodyParts].forEach(bpId => {
+                const bp = BODY_PARTS_DATA.find(b => b.id === bpId);
+                if (bp && bp.organIds.includes(partId)) {
+                  const allGone = bp.organIds.every(oid => !selectedOrgans.has(oid));
+                  if (allGone) {
+                    selectedBodyParts.delete(bpId);
+                    const li = document.querySelector(`.body-parts-nav-item[data-bp-id="${bpId}"]`);
+                    if (li) li.classList.remove("active");
+                  }
+                }
+              });
+              if (typeof renderBodyPartCards === "function") renderBodyPartCards();
+            }
           } else {
             selectedSections.delete(partId);
             // Handle paired groups (e.g. both arms)
@@ -2317,6 +2512,153 @@
             deselectSystem();
           });
         renderSystemsSidebar();
+
+        // --- Collapsible panels ---
+        document.getElementById("systemsHeader").addEventListener("click", function () {
+          document.getElementById("systemsPanel").classList.toggle("collapsed");
+        });
+        document.getElementById("bodyPartsNavHeader").addEventListener("click", function () {
+          document.getElementById("bodyPartsNavPanel").classList.toggle("collapsed");
+        });
+
+        // --- Body Parts nav panel data ---
+        const BODY_PARTS_DATA = [
+          { id: "bp_head",       name: "Head",            image: "bpart_images/head.png",                  organIds: [],                                    description: "The head houses the brain, sensory organs, and facial structures. It is protected by the skull and connected to the body via the neck and spinal column." },
+          { id: "bp_face",       name: "Face",            image: "bpart_images/face.png",                  organIds: [],                                    description: "The face contains the eyes, nose, mouth, and cheeks. Facial muscles enable expressions and control eating, breathing, and communication." },
+          { id: "bp_ears",       name: "Ears",            image: "bpart_images/ear.png",                   organIds: [],                                    description: "The ears are responsible for hearing and balance. Sound waves are captured by the outer ear and transmitted to the cochlea, which converts vibrations into nerve signals." },
+          { id: "bp_eyes",       name: "Eyes",            image: "bpart_images/eye.png",                   organIds: [],                                    description: "The eyes are sensory organs that detect light and convert it into electrical signals sent to the brain. They enable vision, depth perception, and color recognition." },
+          { id: "bp_nose",       name: "Nose",            image: "bpart_images/nose.png",                  organIds: [],                                    description: "The nose filters, warms, and humidifies inhaled air. It also houses olfactory receptors that detect scents and is connected to the sinuses." },
+          { id: "bp_mouth",      name: "Mouth",           image: "bpart_images/mouthteethgums.png",        organIds: [],                                    description: "The mouth is the entry point of the digestive system, used for eating, drinking, speaking, and breathing. It contains the teeth, tongue, and gums." },
+          { id: "bp_gums",       name: "Gums",            image: "bpart_images/mouthteethgums.png",        organIds: [],                                    description: "Gums (gingiva) are soft tissue lining the mouth and surround the base of the teeth. Healthy gums provide a protective seal around each tooth." },
+          { id: "bp_teeth",      name: "Teeth",           image: "bpart_images/mouthteethgums.png",        organIds: [],                                    description: "Teeth are hard, calcified structures used for biting and chewing food. Adults typically have 32 permanent teeth including incisors, canines, premolars, and molars." },
+          { id: "bp_neck",       name: "Neck",            image: "bpart_images/neck.png",                  organIds: ["larynx_trachea"],                    description: "The neck connects the head to the torso, housing the cervical spine, esophagus, trachea, and major blood vessels supplying the brain." },
+          { id: "bp_throat",     name: "Throat",          image: "bpart_images/esophagus.png",             organIds: ["larynx_trachea"],                    description: "The throat (pharynx and larynx) is a passageway for both air and food. It connects the nasal cavity and mouth to the trachea and esophagus." },
+          { id: "bp_brain",      name: "Brain",           image: "bpart_images/brain.png",                 organIds: ["brain"],                             description: "The brain is the body's command center, controlling thoughts, memory, movement, and involuntary functions. It weighs about 3 pounds and contains approximately 86 billion neurons." },
+          { id: "bp_heart",      name: "Heart",           image: "bpart_images/heart.png",                 organIds: ["heart"],                             description: "The heart is a muscular organ that pumps blood throughout the body. It beats roughly 100,000 times per day, circulating oxygen and nutrients to every cell." },
+          { id: "bp_blood",      name: "Blood",           image: "bpart_images/bloodvessel.png",           organIds: [],                                    description: "Blood is a fluid connective tissue composed of red blood cells, white blood cells, platelets, and plasma. It transports oxygen, nutrients, hormones, and waste products throughout the body." },
+          { id: "bp_lungs",      name: "Lungs",           image: "bpart_images/lungs.png",                 organIds: ["lungs_right", "lungs_left"],          description: "The lungs are paired organs responsible for gas exchange — taking in oxygen and expelling carbon dioxide. Together they hold about 6 liters of air at full capacity." },
+          { id: "bp_pancreas",   name: "Pancreas",        image: "bpart_images/pancreas.png",              organIds: ["pancreas"],                          description: "The pancreas is a gland that produces digestive enzymes and hormones. It secretes insulin and glucagon to regulate blood sugar levels and digestive juices to break down food." },
+          { id: "bp_adrenal",    name: "Adrenal Gland",   image: "bpart_images/adrenal-gland.png",         organIds: [],                                    description: "The adrenal glands sit atop each kidney and produce hormones including adrenaline and cortisol. They regulate stress response, metabolism, blood pressure, and immune function." },
+          { id: "bp_parathyroid",name: "Parathyroid Gland",image: "bpart_images/parathyroid.png",          organIds: [],                                    description: "The four parathyroid glands regulate calcium levels in the blood by secreting parathyroid hormone (PTH). Calcium balance is essential for bone health, nerve function, and muscle contraction." },
+          { id: "bp_pituitary",  name: "Pituitary Gland", image: "bpart_images/pituitary.png",             organIds: [],                                    description: "Often called the 'master gland,' the pituitary gland controls many other endocrine glands. It regulates growth, reproduction, blood pressure, and metabolism through hormone secretion." },
+          { id: "bp_thyroid",    name: "Thyroid",         image: "bpart_images/thyroid.png",               organIds: ["thyroid"],                           description: "The thyroid gland produces hormones that regulate metabolism, heart rate, and body temperature. Located in the neck, it is essential for normal growth and development." },
+          { id: "bp_esophagus",  name: "Esophagus",       image: "bpart_images/esophagus.png",             organIds: ["larynx_trachea"],                    description: "The esophagus is a muscular tube connecting the throat to the stomach. Muscular contractions (peristalsis) propel food downward, even allowing swallowing upside down." },
+          { id: "bp_abdomen",    name: "Abdomen",         image: "bpart_images/abdomen.png",               organIds: [],                                    description: "The abdomen is the body cavity between the chest and pelvis, containing the stomach, intestines, liver, kidneys, and other vital organs. It is bounded by the abdominal muscles." },
+          { id: "bp_stomach",    name: "Stomach",         image: "bpart_images/stomach.png",               organIds: ["stomach"],                           description: "The stomach is a muscular sac that stores and begins digesting food. Gastric acid and enzymes break down proteins, and churning motion mixes food into a semi-liquid called chyme." },
+          { id: "bp_liver",      name: "Liver",           image: "bpart_images/liver.png",                 organIds: ["liver"],                             description: "The liver is the largest internal organ, performing over 500 functions including detoxifying the blood, producing bile for digestion, metabolizing nutrients, and synthesizing proteins." },
+          { id: "bp_intestines", name: "Intestines",      image: "bpart_images/intestines.png",            organIds: ["intestines"],                        description: "The intestines consist of the small and large intestine. The small intestine absorbs nutrients; the large intestine absorbs water and prepares waste for elimination." },
+          { id: "bp_gallbladder",name: "Gallbladder",     image: "bpart_images/gallbladder.png",           organIds: ["gallbladder"],                       description: "The gallbladder stores bile produced by the liver and releases it into the small intestine during digestion. Bile emulsifies fats to aid absorption." },
+          { id: "bp_colon",      name: "Colon",           image: "bpart_images/colon.png",                 organIds: ["intestines"],                        description: "The colon (large intestine) is approximately 5 feet long and absorbs water and electrolytes from indigestible food. Bacteria in the colon aid in fermentation and produce vitamins." },
+          { id: "bp_bladder",    name: "Bladder",         image: "bpart_images/bladder.png",               organIds: ["bladder"],                           description: "The urinary bladder is a hollow muscular organ that stores urine produced by the kidneys. It can hold up to about 2 cups (500 ml) and signals the brain when it is time to urinate." },
+          { id: "bp_urethra",    name: "Urethra",         image: "bpart_images/urethra.png",               organIds: [],                                    description: "The urethra is the tube that carries urine from the bladder out of the body. In males it also carries semen; in females it is solely for urine elimination." },
+          { id: "bp_lymphnode",  name: "Lymph Node",      image: "bpart_images/lymphnode.png",             organIds: [],                                    description: "Lymph nodes are small, bean-shaped structures that filter lymph fluid and house immune cells. They swell during infections as the immune system mounts a response." },
+          { id: "bp_spleen",     name: "Spleen",          image: "bpart_images/spleen.png",                organIds: ["spleen"],                            description: "The spleen filters blood, removes old red blood cells, and stores platelets. It plays an important role in the immune response, producing lymphocytes and antibodies." },
+          { id: "bp_appendix",   name: "Appendix",        image: "bpart_images/appendix.png",              organIds: [],                                    description: "The appendix is a finger-shaped pouch attached to the large intestine. Its exact function is debated; it may support gut bacteria and immune function. Appendicitis requires surgical removal." },
+          { id: "bp_muscles",    name: "Muscles",         image: "bpart_images/upperextremitymuscle.png",  organIds: ["muscle"],                            description: "The body has over 600 muscles that enable movement, posture, and internal organ function. Skeletal muscles are voluntary; cardiac and smooth muscles are involuntary." },
+          { id: "bp_skin",       name: "Skin & Tissue",   image: "bpart_images/skin.png",                  organIds: [],                                    description: "The skin is the body's largest organ, providing a protective barrier against the environment. It regulates temperature, prevents water loss, detects sensation, and synthesizes vitamin D." },
+          { id: "bp_bones",      name: "Bones",           image: "bpart_images/bonesjoints.png",           organIds: ["knee_joint"],                        description: "The adult skeleton has 206 bones that provide structure, protect organs, enable movement, produce blood cells in the marrow, and store minerals like calcium and phosphorus." },
+          { id: "bp_joints",     name: "Joints",          image: "bpart_images/bonesjoints.png",           organIds: ["knee_joint"],                        description: "Joints are connections between bones that allow movement and provide flexibility. They include cartilage, ligaments, and synovial fluid to absorb shock and reduce friction." },
+          { id: "bp_spine",      name: "Spine",           image: "bpart_images/spine.png",                 organIds: [],                                    description: "The spine (vertebral column) consists of 33 vertebrae that protect the spinal cord, support the body's weight, and enable flexible movement. It forms the central axis of the skeleton." },
+          { id: "bp_ankles",     name: "Ankles",          image: "bpart_images/ankle.png",                 organIds: [],                                    description: "The ankle joint connects the leg to the foot, enabling dorsiflexion, plantarflexion, inversion, and eversion movements. It bears the full weight of the body during standing and walking." },
+          { id: "bp_arms",       name: "Arms",            image: "bpart_images/forearm.png",               organIds: [],                                    description: "The arms consist of the upper arm (humerus), forearm (radius and ulna), and hand. They provide strength and dexterity for lifting, carrying, pushing, and fine motor tasks." },
+          { id: "bp_chest",      name: "Chest",           image: "bpart_images/chest.png",                 organIds: [],                                    description: "The chest (thorax) is the body region between the neck and abdomen, housing the heart, lungs, and major blood vessels. It is protected by the ribcage and sternum." },
+          { id: "bp_elbow",      name: "Elbow",           image: "bpart_images/elbow.png",                 organIds: [],                                    description: "The elbow is a hinge joint connecting the upper and lower arm. It allows bending, straightening, and rotation of the forearm, essential for most arm movements." },
+          { id: "bp_feet",       name: "Feet",            image: "bpart_images/foot.png",                  organIds: [],                                    description: "Each foot contains 26 bones, 33 joints, and over 100 muscles, tendons, and ligaments. The feet support body weight, absorb impact, and propel the body during movement." },
+          { id: "bp_hands",      name: "Hands",           image: "bpart_images/hand.png",                  organIds: [],                                    description: "The hand has 27 bones and numerous muscles enabling precise grip and fine motor control. Human hands are uniquely adapted for tool use, complex tasks, and communication through gesture." },
+          { id: "bp_hips",       name: "Hips",            image: "bpart_images/pelvis.png",                organIds: [],                                    description: "The hip joint is a ball-and-socket joint connecting the femur to the pelvis. It bears body weight and enables walking, running, and a wide range of leg movements." },
+          { id: "bp_kidneys",    name: "Kidneys",         image: "bpart_images/kidneys.png",               organIds: ["kidneys"],                           description: "The kidneys are bean-shaped organs that filter about 200 liters of blood daily, removing waste as urine. They also regulate blood pressure, electrolyte balance, and red blood cell production." },
+          { id: "bp_legs",       name: "Legs",            image: "bpart_images/legbone.png",               organIds: [],                                    description: "The legs consist of the thigh (femur), lower leg (tibia and fibula), and foot. They support body weight, enable locomotion, and are among the strongest structures in the body." },
+          { id: "bp_pelvis",     name: "Pelvis",          image: "bpart_images/pelvis.png",                organIds: [],                                    description: "The pelvis is a basin-shaped bony structure at the base of the spine that supports the abdominal organs, anchors the leg muscles, and in females forms the birth canal." },
+          { id: "bp_ribs",       name: "Ribs",            image: "bpart_images/ribs.png",                  organIds: [],                                    description: "The 12 pairs of ribs form the ribcage, protecting the heart, lungs, and liver. They are connected to the sternum and spine, expanding and contracting with every breath." },
+          { id: "bp_shoulders",  name: "Shoulders",       image: "bpart_images/shoulder.png",              organIds: [],                                    description: "The shoulder is the most mobile joint in the body, enabling arm rotation in all directions. It includes the clavicle, scapula, and humerus, supported by the rotator cuff muscles." },
+          { id: "bp_breasts",    name: "Breasts",         image: "bpart_images/breastultra.png",           organIds: [],                                    description: "Breasts are glandular tissue structures on the chest that produce milk for infant feeding. They consist of lobules, ducts, fatty tissue, and are monitored for changes in health." },
+          { id: "bp_mammary",    name: "Mammary Glands",  image: "bpart_images/mammary.png",               organIds: [],                                    description: "Mammary glands are specialized milk-producing glands located in the breasts. They are activated by hormonal changes during pregnancy and lactation to produce breast milk." },
+          { id: "bp_uterus",     name: "Uterus",          image: "bpart_images/uterus.png",                organIds: ["female_reproductive"],               description: "The uterus is a hollow muscular organ where a fertilized egg implants and a fetus develops. Its inner lining (endometrium) sheds during menstruation when pregnancy does not occur." },
+          { id: "bp_penis",      name: "Penis",           image: "bpart_images/malerepro.png",             organIds: ["male_reproductive"],                 description: "The penis is the male external reproductive and urinary organ. It contains the urethra for urine and semen passage and becomes erect during sexual arousal to enable intercourse." },
+          { id: "bp_prostate",   name: "Prostate",        image: "bpart_images/prostate.png",              organIds: ["male_reproductive"],                 description: "The prostate is a walnut-sized gland in males that produces fluid nourishing and protecting sperm. It surrounds the urethra below the bladder and tends to enlarge with age." },
+          { id: "bp_testicles",  name: "Testicles",       image: "bpart_images/malerepro.png",             organIds: ["male_reproductive"],                 description: "The testicles are male reproductive glands that produce sperm and the hormone testosterone. They are housed in the scrotum, which maintains a temperature slightly lower than body temperature." },
+        ];
+
+        // --- Body Parts nav state ---
+        const selectedBodyParts = new Set(); // tracks nav-selected body part IDs
+
+        // --- Render Body Parts nav list ---
+        function renderBodyPartsNavPanel() {
+          const listEl = document.getElementById("bodyPartsNavList");
+          listEl.innerHTML = BODY_PARTS_DATA.map(bp => `
+            <li class="body-parts-nav-item" data-bp-id="${bp.id}" onclick="toggleBodyPart('${bp.id}')">
+              <img class="body-parts-nav-icon" src="${bp.image}" alt="${bp.name}" onerror="this.style.display='none'" />
+              <span class="body-parts-nav-name">${bp.name}</span>
+            </li>
+          `).join("");
+        }
+
+        // --- Toggle a body part from the nav panel ---
+        window.toggleBodyPart = function(bpId) {
+          const bp = BODY_PARTS_DATA.find(b => b.id === bpId);
+          if (!bp) return;
+
+          if (selectedBodyParts.has(bpId)) {
+            // Deselect
+            selectedBodyParts.delete(bpId);
+            // Remove organ highlights (only if not kept by active system or other nav selection)
+            bp.organIds.forEach(organId => {
+              const keptBySystem = activeSystem &&
+                BODY_SYSTEMS.find(s => s.id === activeSystem) &&
+                BODY_SYSTEMS.find(s => s.id === activeSystem).organs.includes(organId);
+              const keptByOtherNav = [...selectedBodyParts].some(otherId => {
+                const other = BODY_PARTS_DATA.find(b => b.id === otherId);
+                return other && other.organIds.includes(organId);
+              });
+              if (!keptBySystem && !keptByOtherNav) {
+                selectedOrgans.delete(organId);
+                const group = document.getElementById("group-" + organId);
+                if (group) group.classList.remove("selected");
+                // Also handle paired groups (lungs etc)
+                document.querySelectorAll(`[data-part="${organId}"]`).forEach(g => {
+                  if (!selectedOrgans.has(organId)) g.classList.remove("selected");
+                });
+              }
+            });
+          } else {
+            // Select
+            selectedBodyParts.add(bpId);
+            bp.organIds.forEach(organId => {
+              selectedOrgans.add(organId);
+              const group = document.getElementById("group-" + organId);
+              if (group) group.classList.add("selected");
+              // Handle paired groups (e.g. lungs_left / lungs_right have separate group els)
+              document.querySelectorAll(`[data-part="${organId}"]`).forEach(g => {
+                g.classList.add("selected");
+              });
+            });
+          }
+
+          // Sync nav item active state
+          const li = document.querySelector(`.body-parts-nav-item[data-bp-id="${bpId}"]`);
+          if (li) li.classList.toggle("active", selectedBodyParts.has(bpId));
+
+          renderBodyPartCards();
+          renderSelectedList();
+        };
+
+        // --- Render body part cards in right column ---
+        function renderBodyPartCards() {
+          const container = document.getElementById("bodyPartCardsContainer");
+          container.innerHTML = [...selectedBodyParts].map(bpId => {
+            const bp = BODY_PARTS_DATA.find(b => b.id === bpId);
+            if (!bp) return "";
+            return `<div class="body-part-card">
+              <button class="body-part-card-close" onclick="toggleBodyPart('${bp.id}')">&times;</button>
+              <h4 class="body-part-card-title">${bp.name}</h4>
+              <img class="body-part-card-image" src="${bp.image}" alt="${bp.name}" />
+              <p class="body-part-card-desc">${bp.description}</p>
+            </div>`;
+          }).join("");
+        }
+
+        renderBodyPartsNavPanel();
+        renderBodyPartCards();
       })();
     </script>
   </body>
