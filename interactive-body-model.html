@@ -823,42 +823,88 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.35);
         z-index: 1000;
-        justify-content: center;
-        align-items: center;
-        opacity: 0;
-        transition: opacity 0.2s ease;
+        pointer-events: none;
       }
       .symptom-modal-overlay.active {
-        display: flex;
+        display: block;
+        pointer-events: auto;
+      }
+      .symptom-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.08);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .symptom-modal-overlay.active .symptom-modal-backdrop {
         opacity: 1;
       }
+      .symptom-modal-overlay.closing .symptom-modal-backdrop {
+        opacity: 0;
+      }
       .symptom-modal {
+        position: fixed;
         background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-        width: 340px;
-        max-height: 70vh;
+        border-radius: 14px;
+        box-shadow:
+          0 12px 48px rgba(0, 0, 0, 0.15),
+          0 2px 8px rgba(0, 0, 0, 0.08);
+        width: 520px;
+        max-width: calc(100vw - 32px);
+        max-height: min(440px, 70vh);
         display: flex;
         flex-direction: column;
-        transform: translateY(20px);
-        transition: transform 0.2s ease;
         overflow: hidden;
+        z-index: 1001;
+        opacity: 0;
+        transform: translateY(16px);
+        transition:
+          opacity 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+          transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
       }
       .symptom-modal-overlay.active .symptom-modal {
+        opacity: 1;
         transform: translateY(0);
+      }
+      .symptom-modal-overlay.closing .symptom-modal {
+        opacity: 0;
+        transform: translateY(-10px);
+        transition:
+          opacity 0.22s cubic-bezier(0.4, 0, 1, 1),
+          transform 0.22s cubic-bezier(0.4, 0, 1, 1);
+      }
+      /* Carat arrow */
+      .symptom-modal-carat {
+        position: fixed;
+        width: 14px;
+        height: 14px;
+        background: #f3f4f6;
+        transform: rotate(45deg);
+        z-index: 1002;
+        box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.06);
+        opacity: 0;
+        transition: opacity 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .symptom-modal-overlay.active .symptom-modal-carat {
+        opacity: 1;
+      }
+      .symptom-modal-overlay.closing .symptom-modal-carat {
+        opacity: 0;
+        transition: opacity 0.22s cubic-bezier(0.4, 0, 1, 1);
       }
       .symptom-modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 16px 20px 12px;
+        padding: 16px 24px 14px;
+        background: #f3f4f6;
         border-bottom: 1px solid #e5e7eb;
+        flex-shrink: 0;
       }
       .symptom-modal-header h3 {
         margin: 0;
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 600;
         color: #1f2937;
       }
@@ -866,13 +912,18 @@
         background: none;
         border: none;
         font-size: 22px;
-        color: #6b7280;
+        color: #9ca3af;
         cursor: pointer;
-        padding: 0 4px;
+        padding: 2px 6px;
         line-height: 1;
+        border-radius: 6px;
+        transition:
+          color 0.15s,
+          background 0.15s;
       }
       .symptom-modal-close:hover {
-        color: #111;
+        color: #374151;
+        background: rgba(0, 0, 0, 0.06);
       }
       .symptom-modal-list {
         list-style: none;
@@ -882,8 +933,8 @@
         flex: 1;
       }
       .symptom-modal-list li {
-        padding: 12px 20px;
-        font-size: 14px;
+        padding: 14px 24px;
+        font-size: 15px;
         color: #374151;
         cursor: pointer;
         border-bottom: 1px solid #f3f4f6;
@@ -906,6 +957,21 @@
         color: #16a34a;
         font-weight: bold;
         font-size: 16px;
+      }
+
+      @media (max-width: 700px) {
+        .symptom-modal {
+          width: calc(100vw - 24px);
+          max-height: 60vh;
+          left: 12px !important;
+          right: 12px !important;
+          bottom: 12px !important;
+          top: auto !important;
+          border-radius: 14px 14px 10px 10px;
+        }
+        .symptom-modal-carat {
+          display: none;
+        }
       }
 
       /* === Current Symptoms Panel === */
@@ -2157,7 +2223,9 @@
 
     <!-- Symptom selection modal -->
     <div class="symptom-modal-overlay" id="symptomModalOverlay">
-      <div class="symptom-modal">
+      <div class="symptom-modal-backdrop" id="symptomModalBackdrop"></div>
+      <div class="symptom-modal-carat" id="symptomModalCarat"></div>
+      <div class="symptom-modal" id="symptomModal">
         <div class="symptom-modal-header">
           <h3 id="symptomModalTitle"></h3>
           <button class="symptom-modal-close" id="symptomModalClose">
@@ -3446,8 +3514,8 @@
               });
               renderSelectedList();
 
-              // Open symptom modal
-              openSymptomModal(partId, partName);
+              // Open symptom modal at click position
+              openSymptomModal(partId, partName, e);
             });
 
             // Hover: show/hide ALL paired section overlay images
@@ -3473,11 +3541,83 @@
         const symptomModalOverlay = document.getElementById(
           "symptomModalOverlay",
         );
+        const symptomModal = document.getElementById("symptomModal");
+        const symptomModalCarat = document.getElementById("symptomModalCarat");
+        const symptomModalBackdrop = document.getElementById(
+          "symptomModalBackdrop",
+        );
         const symptomModalTitle = document.getElementById("symptomModalTitle");
         const symptomModalList = document.getElementById("symptomModalList");
         const symptomModalClose = document.getElementById("symptomModalClose");
 
-        function openSymptomModal(sectionId, sectionName) {
+        // Store last click position for re-renders (symptom toggle)
+        let lastModalClickEvent = null;
+
+        function positionModal(e) {
+          if (!e) return;
+
+          const clickX = e.clientX;
+          const clickY = e.clientY;
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          const modalW = Math.min(520, vw - 32);
+          const modalH = Math.min(440, vh * 0.7);
+          const caratSize = 14;
+          const gap = 12;
+
+          // Decide: place modal to the LEFT or RIGHT of click
+          const placeRight = clickX < vw / 2;
+
+          let modalLeft, modalTop, caratLeft, caratTop;
+
+          if (placeRight) {
+            // Modal to the right of the click
+            modalLeft = clickX + gap + caratSize;
+          } else {
+            // Modal to the left of the click
+            modalLeft = clickX - gap - caratSize - modalW;
+          }
+
+          // Vertical: center modal on click Y, then clamp
+          modalTop = clickY - 40;
+
+          // Clamp within viewport
+          modalLeft = Math.max(12, Math.min(modalLeft, vw - modalW - 12));
+          modalTop = Math.max(12, Math.min(modalTop, vh - modalH - 12));
+
+          // Position carat
+          if (placeRight) {
+            caratLeft = modalLeft - caratSize / 2 + 1;
+          } else {
+            caratLeft = modalLeft + modalW - caratSize / 2 - 1;
+          }
+          caratTop = clickY - caratSize / 2;
+
+          // Clamp carat vertically within the modal's header area
+          const headerBottom = modalTop + 48;
+          caratTop = Math.max(modalTop + 12, Math.min(caratTop, headerBottom));
+
+          // Apply styles
+          symptomModal.style.left = modalLeft + "px";
+          symptomModal.style.top = modalTop + "px";
+          symptomModal.style.width = modalW + "px";
+          symptomModal.style.maxHeight = modalH + "px";
+
+          symptomModalCarat.style.left = caratLeft + "px";
+          symptomModalCarat.style.top = caratTop + "px";
+
+          // Adjust carat shadow direction based on side
+          if (placeRight) {
+            symptomModalCarat.style.boxShadow =
+              "-2px -2px 4px rgba(0, 0, 0, 0.06)";
+          } else {
+            symptomModalCarat.style.boxShadow =
+              "2px 2px 4px rgba(0, 0, 0, 0.06)";
+          }
+        }
+
+        function openSymptomModal(sectionId, sectionName, e) {
+          if (e) lastModalClickEvent = e;
           symptomModalTitle.textContent = sectionName;
           const symptoms = SECTION_SYMPTOMS[sectionId] || [];
 
@@ -3508,12 +3648,21 @@
             symptomModalList.appendChild(li);
           });
 
+          // Position modal near the click point
+          positionModal(lastModalClickEvent);
+
           // Show with animation
+          symptomModalOverlay.classList.remove("closing");
           symptomModalOverlay.classList.add("active");
         }
 
         function closeSymptomModal() {
-          symptomModalOverlay.classList.remove("active");
+          symptomModalOverlay.classList.add("closing");
+          // Wait for close animation to finish then hide
+          setTimeout(function () {
+            symptomModalOverlay.classList.remove("active");
+            symptomModalOverlay.classList.remove("closing");
+          }, 240);
         }
 
         window._selectSymptom = function (sectionId, sectionName, symptom) {
@@ -3597,12 +3746,8 @@
         // Close modal on X button
         symptomModalClose.addEventListener("click", closeSymptomModal);
 
-        // Close modal on overlay click (not on modal card itself)
-        symptomModalOverlay.addEventListener("click", function (e) {
-          if (e.target === symptomModalOverlay) {
-            closeSymptomModal();
-          }
-        });
+        // Close modal on backdrop click
+        symptomModalBackdrop.addEventListener("click", closeSymptomModal);
 
         // Close modal on Escape key
         document.addEventListener("keydown", function (e) {
