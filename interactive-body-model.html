@@ -376,6 +376,13 @@
         line-height: 20px;
         color: #434448;
       }
+      .tooltip-system-image {
+        width: 100%;
+        height: auto;
+        margin-top: 16px;
+        border-radius: 8px;
+        display: block;
+      }
       .tooltip-panel-system-bar {
         height: 4px;
         width: 100%;
@@ -1642,6 +1649,7 @@
           id="rotateLink"
           href="javascript:void(0)"
           onclick="rotateModel()"
+          style="display: none"
         >
           &#x21BB; Rotate Model
         </a>
@@ -1660,6 +1668,7 @@
             <h3 class="tooltip-panel-title" id="tooltipTitle"></h3>
           </div>
           <p class="tooltip-panel-description" id="tooltipDesc"></p>
+          <img class="tooltip-system-image" id="tooltipSystemImage" src="" alt="" style="display:none" />
         </div>
       </div>
     </div>
@@ -1838,6 +1847,31 @@
           document.getElementById("tooltipThumb").alt = sys.title;
           document.getElementById("tooltipSystemBar").style.backgroundColor =
             sys.color;
+
+          const SYSTEM_IMAGE_MAP = {
+            cardiovascular: "bodyimage/cardiovascular_system.png",
+            digestive: "bodyimage/digestive_system.png",
+            endocrine: "bodyimage/endocrine_system.png",
+            immune: "bodyimage/immune_lymphatic_systems.png",
+            integumentary: "bodyimage/integumentary_system.png",
+            muscular: "bodyimage/muscular_system.png",
+            nervous: "bodyimage/nervous_system.png",
+            reproductive: currentGender === "female"
+              ? "bodyimage/female_reproductive_system.png"
+              : "bodyimage/male_reproductive_system.png",
+            respiratory: "bodyimage/respiratory_system.png",
+            skeletal: "bodyimage/skeletal_system.png",
+            urinary: "bodyimage/urinary_system.png",
+          };
+          const sysImg = document.getElementById("tooltipSystemImage");
+          const imgSrc = SYSTEM_IMAGE_MAP[sys.id];
+          if (imgSrc) {
+            sysImg.src = imgSrc;
+            sysImg.alt = sys.title;
+            sysImg.style.display = "";
+          } else {
+            sysImg.style.display = "none";
+          }
         }
 
         // --- Hide tooltip panel ---
@@ -1847,6 +1881,9 @@
           content.classList.remove("visible");
           document.getElementById("tooltipSystemBar").style.backgroundColor =
             "";
+          const sysImg = document.getElementById("tooltipSystemImage");
+          sysImg.style.display = "none";
+          sysImg.src = "";
         }
 
         // --- Select a body system ---
@@ -2037,6 +2074,10 @@
           // Toggle gender controls (only relevant for organs)
           document.querySelector(".gender-toggle").style.display =
             view === "organs" ? "flex" : "none";
+
+          // Hide rotate button on organs tab, show on sections tab
+          document.getElementById("rotateLink").style.display =
+            view === "sections" ? "" : "none";
 
           // Update left panel
           const panel = document.querySelector(".body-parts-panel");
