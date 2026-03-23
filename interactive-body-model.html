@@ -100,24 +100,6 @@
         object-fit: cover;
       }
 
-      /* Body Parts selected list */
-      .body-parts-panel {
-        width: 100%;
-      }
-      .body-parts-panel h2 {
-        font-size: 18px;
-        font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #4a90d9;
-      }
-      .body-parts-empty {
-        font-size: 13px;
-        color: #999;
-        font-style: italic;
-      }
-
       /* Center column: Body model */
       .body-model-container {
         display: flex;
@@ -219,88 +201,6 @@
       .rotate-link:hover {
         background: #4a90d9;
         color: #fff;
-      }
-
-      /* Selected parts list in left panel */
-      .selected-list-container {
-        width: 100%;
-        min-height: 0;
-        transition: all 0.3s ease;
-      }
-      .selected-list-container.has-items {
-        min-height: 30px;
-      }
-      .selected-list {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        width: 100%;
-      }
-      .selected-list li {
-        display: flex;
-        align-items: center;
-        background: #fff;
-        border: 1px solid #d4e4f7;
-        border-radius: 20px;
-        padding: 6px 12px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #2c3e50;
-        transition: all 0.25s ease;
-        animation: pillIn 0.25s ease forwards;
-        cursor: pointer;
-      }
-      .selected-list li:hover {
-        background: #eef4fb;
-        border-color: #a8c8e8;
-      }
-      .selected-list li .pill-number {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #4a90d9;
-        color: #fff;
-        font-size: 10px;
-        font-weight: 600;
-        margin-right: 8px;
-        flex-shrink: 0;
-      }
-      .selected-list li .pill-name {
-        flex: 1;
-      }
-      .selected-list li .pill-remove {
-        margin-left: 8px;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: #e8e8e8;
-        color: #888;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        flex-shrink: 0;
-      }
-      .selected-list li .pill-remove:hover {
-        background: #ff6b6b;
-        color: #fff;
-      }
-
-      @keyframes pillIn {
-        from {
-          opacity: 0;
-          transform: translateY(-8px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
       }
 
       /* Right column wrapper */
@@ -532,31 +432,11 @@
       .body-section-group.selected .section-hit-area:hover {
         fill: rgba(144, 238, 144, 0.55);
       }
-      /* Green theme for panel when in sections view */
-      .body-parts-panel.sections-view h2 {
-        border-bottom-color: #2a7c44;
-      }
-      .body-parts-panel.sections-view .selected-list li {
-        border-color: #b8dfc5;
-      }
-      .body-parts-panel.sections-view .selected-list li:hover {
-        background: #edf7f0;
-        border-color: #8cc9a0;
-      }
-      .body-parts-panel.sections-view .selected-list li .pill-number {
-        background: #2a7c44;
-      }
-
       /* Responsive */
       @media (max-width: 900px) {
         .page-layout {
           flex-direction: column;
           gap: 20px;
-        }
-        .body-parts-panel {
-          flex: none;
-          width: 100%;
-          position: static;
         }
         .left-column {
           flex: none;
@@ -585,11 +465,6 @@
         .view-toggle button {
           padding: 5px 10px;
           font-size: 11px;
-        }
-
-        .selected-list li {
-          font-size: 12px;
-          padding: 5px 10px;
         }
       }
       /* --- Dual-Face 3D Flip: New CSS Rules --- */
@@ -962,6 +837,84 @@
         font-size: 16px;
       }
 
+      /* === Symptom Search === */
+      .symptom-search-container {
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fff;
+        flex-shrink: 0;
+        gap: 10px;
+      }
+      .symptom-search-icon {
+        flex-shrink: 0;
+      }
+      .symptom-search-input {
+        flex: 1;
+        border: 1.5px solid #d1d5db;
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 15px;
+        font-family: inherit;
+        color: #1f2937;
+        outline: none;
+        background: #fff;
+        transition:
+          border-color 0.25s ease,
+          box-shadow 0.3s ease;
+      }
+      .symptom-search-input::placeholder {
+        color: #b0b7c3;
+        font-weight: 400;
+      }
+      .symptom-search-input:focus {
+        border-color: #60a5fa;
+        box-shadow:
+          0 0 0 3px rgba(96, 165, 250, 0.25),
+          0 0 8px rgba(96, 165, 250, 0.15);
+      }
+      /* Skeleton loading */
+      .symptom-skeleton-item {
+        padding: 14px 24px;
+        border-bottom: 1px solid #f3f4f6;
+      }
+      .symptom-skeleton-bar {
+        height: 14px;
+        border-radius: 6px;
+        background: linear-gradient(
+          90deg,
+          #e5e7eb 25%,
+          #f3f4f6 50%,
+          #e5e7eb 75%
+        );
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.2s ease-in-out infinite;
+      }
+      .symptom-skeleton-bar.short {
+        width: 55%;
+      }
+      .symptom-skeleton-bar.medium {
+        width: 72%;
+      }
+      .symptom-skeleton-bar.long {
+        width: 90%;
+      }
+      @keyframes skeleton-shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+      .symptom-modal-list .no-results {
+        padding: 20px 24px;
+        color: #9ca3af;
+        font-style: italic;
+        text-align: center;
+      }
+
       @media (max-width: 700px) {
         .symptom-modal {
           width: calc(100vw - 24px);
@@ -979,8 +932,10 @@
 
       /* === Current Symptoms Panel === */
       .current-symptoms-panel {
-        margin-top: 12px;
-        padding: 0 8px;
+        margin-top: 10px;
+        padding: 0 10px;
+        width: 100%;
+        box-sizing: border-box;
       }
       .current-symptoms-panel h2 {
         font-size: 13px;
@@ -1044,7 +999,7 @@
       <!-- Left column: Systems menu + Body parts list -->
       <div class="left-column">
         <!-- Body Systems sidebar -->
-        <div class="systems-panel" id="systemsPanel">
+        <div class="systems-panel collapsed" id="systemsPanel">
           <h2 id="systemsHeader">
             Body Systems <i class="systems-chevron">&#9660;</i>
           </h2>
@@ -1052,7 +1007,7 @@
         </div>
 
         <!-- Body Parts nav panel -->
-        <div class="body-parts-nav-panel" id="bodyPartsNavPanel">
+        <div class="body-parts-nav-panel collapsed" id="bodyPartsNavPanel">
           <h2 id="bodyPartsNavHeader">
             <span class="body-parts-header-left">Body Parts</span>
             <span class="body-parts-header-actions">
@@ -1071,40 +1026,19 @@
           </h2>
           <ul class="body-parts-nav-list" id="bodyPartsNavList"></ul>
         </div>
-
-        <!-- Selected body parts pill list -->
-        <div class="body-parts-panel">
-          <h2>My Body Parts</h2>
-          <div class="selected-list-container" id="selectedListContainer">
-            <ol class="selected-list" id="selectedList"></ol>
-          </div>
-          <p class="body-parts-empty" id="bodyPartsEmpty">
-            Click on body parts to add them
-          </p>
-        </div>
-
-        <!-- Current Symptoms pill list -->
-        <div
-          class="current-symptoms-panel"
-          id="currentSymptomsPanel"
-          style="display: none"
-        >
-          <h2>Current Symptoms</h2>
-          <div class="symptoms-list-container">
-            <ol class="symptoms-list" id="symptomsList"></ol>
-          </div>
-        </div>
       </div>
 
       <!-- Center column: Body model -->
       <div class="body-model-container">
         <!-- View Toggle -->
         <div class="view-toggle" id="viewToggle">
-          <button id="btn-organs" class="active" onclick="setView('organs')">
-            Organs
-          </button>
+          <button id="btn-organs" onclick="setView('organs')">Organs</button>
           <button id="btn-organs2" onclick="setView('organs2')">Organs2</button>
-          <button id="btn-sections" onclick="setView('sections')">
+          <button
+            id="btn-sections"
+            class="active"
+            onclick="setView('sections')"
+          >
             Body Sections
           </button>
         </div>
@@ -1994,7 +1928,7 @@
                   />
                 </filter>
               </defs>
-              <g id="back-sections-layer">
+              <g id="back-sections-layer" style="display: none">
                 <image
                   id="back-sections-base-body"
                   x="0"
@@ -2182,6 +2116,18 @@
         >
           &#x21BB; Rotate Model
         </a>
+
+        <!-- Current Symptoms pill list -->
+        <div
+          class="current-symptoms-panel"
+          id="currentSymptomsPanel"
+          style="display: none"
+        >
+          <h2>Current Symptoms</h2>
+          <div class="symptoms-list-container">
+            <ol class="symptoms-list" id="symptomsList"></ol>
+          </div>
+        </div>
       </div>
 
       <!-- Right column: System detail + Body parts -->
@@ -2236,10 +2182,34 @@
             &times;
           </button>
         </div>
+        <div class="symptom-search-container">
+          <svg
+            class="symptom-search-icon"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="#6366f1"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            class="symptom-search-input"
+            id="symptomSearchInput"
+            placeholder="Search, e.g. headache"
+            autocomplete="off"
+          />
+        </div>
         <ul class="symptom-modal-list" id="symptomModalList"></ul>
       </div>
     </div>
 
+    <script src="symptoms-data.js"></script>
     <script>
       (function () {
         const BODY_SYSTEMS = [
@@ -3981,10 +3951,111 @@
         const selectedOrgans = new Set();
         const selectedSections = new Set();
         const selectedSymptoms = new Map(); // key: "sectionId::symptomName", value: { section, symptom, sectionName }
-        let currentView = "organs"; // 'organs', 'organs2', or 'sections'
+        let currentView = "sections"; // 'organs', 'organs2', or 'sections'
         let currentGender = "male";
         let isFlipped = false;
         let organ2HighlightedGroup = null; // tracks the highlighted organ in organs2 mode
+
+        // === SYMPTOM SEARCH STATE ===
+        let searchDebounceTimer = null;
+        let currentModalContext = null; // { type: 'section'|'organ2', key, name }
+        let searchFirstKeystroke = true;
+
+        // Full symptom list loaded via <script src="symptoms-data.js">
+        var FULL_SYMPTOMS = window.SYMPTOMS_DATA || null;
+
+        function filterSymptoms(query) {
+          var lowerQuery = query.toLowerCase();
+          // Search the full 18K list if loaded, otherwise search inline arrays for current region
+          var pool;
+          if (FULL_SYMPTOMS) {
+            pool = FULL_SYMPTOMS;
+          } else {
+            var ctx = currentModalContext;
+            pool =
+              ctx.type === "section"
+                ? SECTION_SYMPTOMS[ctx.key] || []
+                : ORGAN2_SYMPTOMS[ctx.key] || [];
+          }
+          var results = [];
+          for (var i = 0; i < pool.length && results.length < 50; i++) {
+            if (pool[i].toLowerCase().indexOf(lowerQuery) !== -1) {
+              results.push(pool[i]);
+            }
+          }
+          return results;
+        }
+
+        function renderSkeletonList() {
+          symptomModalList.textContent = "";
+          var widths = [
+            "long",
+            "medium",
+            "short",
+            "long",
+            "medium",
+            "short",
+            "medium",
+          ];
+          widths.forEach(function (w) {
+            var li = document.createElement("li");
+            li.className = "symptom-skeleton-item";
+            var bar = document.createElement("div");
+            bar.className = "symptom-skeleton-bar " + w;
+            li.appendChild(bar);
+            symptomModalList.appendChild(li);
+          });
+        }
+
+        function renderModalSymptomItems(
+          symptoms,
+          regionKey,
+          displayName,
+          sourceType,
+        ) {
+          symptomModalList.textContent = "";
+          if (symptoms.length === 0) {
+            var noResults = document.createElement("li");
+            noResults.className = "no-results";
+            noResults.textContent = "No matching symptoms found";
+            symptomModalList.appendChild(noResults);
+            return;
+          }
+          symptoms.forEach(function (symptom) {
+            var key = regionKey + "::" + symptom;
+            var isSelected = selectedSymptoms.has(key);
+            var li = document.createElement("li");
+            if (isSelected) li.className = "selected";
+            li.dataset.key = key;
+
+            var nameSpan = document.createElement("span");
+            nameSpan.textContent = symptom;
+            li.appendChild(nameSpan);
+
+            if (isSelected) {
+              var checkSpan = document.createElement("span");
+              checkSpan.className = "symptom-check";
+              checkSpan.textContent = "\u2713";
+              li.appendChild(checkSpan);
+            }
+
+            li.addEventListener("click", function () {
+              if (sourceType === "section") {
+                window._selectSymptom(regionKey, displayName, symptom);
+              } else {
+                window._selectOrgan2Symptom(regionKey, displayName, symptom);
+              }
+            });
+
+            symptomModalList.appendChild(li);
+          });
+        }
+
+        function getDefaultSymptoms(ctx) {
+          return ctx.type === "section"
+            ? SECTION_SYMPTOMS[ctx.key] || []
+            : ORGAN2_SYMPTOMS[ctx.key] || [];
+        }
 
         // --- View toggle ---
         window.setView = function (view) {
@@ -3999,7 +4070,9 @@
             ? ""
             : "none";
           document.getElementById("sections-layer").style.display =
-            view === "sections" ? "" : "none";
+            view === "sections" && !isFlipped ? "" : "none";
+          document.getElementById("back-sections-layer").style.display =
+            view === "sections" && isFlipped ? "" : "none";
 
           // Toggle active tab
           const btnOrgans = document.getElementById("btn-organs");
@@ -4019,22 +4092,6 @@
           // Hide rotate button on organs/organs2 tab, show on sections tab
           document.getElementById("rotateLink").style.display =
             view === "sections" ? "" : "none";
-
-          // Update left panel
-          const panel = document.querySelector(".body-parts-panel");
-          panel.classList.toggle("sections-view", view === "sections");
-
-          const heading = panel.querySelector("h2");
-          heading.textContent =
-            view === "sections" ? "My Body Sections" : "My Body Parts";
-
-          const emptyMsg = document.getElementById("bodyPartsEmpty");
-          emptyMsg.textContent =
-            view === "sections"
-              ? "Click on body sections to add them"
-              : "Click on body parts to add them";
-
-          renderSelectedList();
         };
 
         // --- Gender toggle ---
@@ -4068,7 +4125,26 @@
         // --- Rotate model ---
         window.rotateModel = function () {
           const inner = document.getElementById("svgInner");
+          const sectionsLayer = document.getElementById("sections-layer");
+          const backSectionsLayer = document.getElementById(
+            "back-sections-layer",
+          );
+          const flipDuration = 700; // matches CSS transition: 0.7s
+
           isFlipped = !isFlipped;
+
+          if (currentView === "sections") {
+            // Show both layers during the flip so backface-visibility handles it
+            sectionsLayer.style.display = "";
+            backSectionsLayer.style.display = "";
+
+            // After the animation completes, hide the inactive layer
+            setTimeout(function () {
+              sectionsLayer.style.display = isFlipped ? "none" : "";
+              backSectionsLayer.style.display = isFlipped ? "" : "none";
+            }, flipDuration);
+          }
+
           inner.classList.toggle("flipped", isFlipped);
 
           const link = document.getElementById("rotateLink");
@@ -4151,6 +4227,19 @@
 
               const allGroups = getSectionGroups(partId);
               const partName = group.dataset.name;
+
+              // If already selected, deselect it (toggle off)
+              if (selectedSections.has(partId)) {
+                selectedSections.delete(partId);
+                allGroups.forEach((g) => {
+                  g.classList.remove("selected");
+                  const img = g.querySelector(".section-image");
+                  if (img) img.style.opacity = "0";
+                });
+                renderSelectedList();
+                closeSymptomModal();
+                return;
+              }
 
               // Deselect all currently selected sections first (single-select)
               selectedSections.forEach((prevPartId) => {
@@ -4276,34 +4365,22 @@
         function openSymptomModal(sectionId, sectionName, e) {
           if (e) lastModalClickEvent = e;
           symptomModalTitle.textContent = sectionName;
-          const symptoms = SECTION_SYMPTOMS[sectionId] || [];
 
-          // Build list items using DOM methods
-          symptomModalList.textContent = "";
-          symptoms.forEach(function (symptom) {
-            const key = sectionId + "::" + symptom;
-            const isSelected = selectedSymptoms.has(key);
-            const li = document.createElement("li");
-            if (isSelected) li.className = "selected";
-            li.dataset.key = key;
+          // Set modal context for search
+          currentModalContext = {
+            type: "section",
+            key: sectionId,
+            name: sectionName,
+          };
+          searchFirstKeystroke = true;
 
-            const nameSpan = document.createElement("span");
-            nameSpan.textContent = symptom;
-            li.appendChild(nameSpan);
+          // Reset search input
+          var searchInput = document.getElementById("symptomSearchInput");
+          searchInput.value = "";
 
-            if (isSelected) {
-              const checkSpan = document.createElement("span");
-              checkSpan.className = "symptom-check";
-              checkSpan.textContent = "\u2713";
-              li.appendChild(checkSpan);
-            }
-
-            li.addEventListener("click", function () {
-              window._selectSymptom(sectionId, sectionName, symptom);
-            });
-
-            symptomModalList.appendChild(li);
-          });
+          // Render default symptoms
+          var symptoms = SECTION_SYMPTOMS[sectionId] || [];
+          renderModalSymptomItems(symptoms, sectionId, sectionName, "section");
 
           // Position modal near the click point
           positionModal(lastModalClickEvent);
@@ -4311,12 +4388,28 @@
           // Show with animation
           symptomModalOverlay.classList.remove("closing");
           symptomModalOverlay.classList.add("active");
+
+          // Auto-focus search input
+          requestAnimationFrame(function () {
+            searchInput.focus();
+          });
+
+          // Full symptom data loaded synchronously via script tag
         }
 
         function closeSymptomModal() {
           symptomModalOverlay.classList.add("closing");
           // Clear organs2 highlight when modal closes
           clearOrgan2Highlight();
+          // Deselect any selected body sections when modal closes
+          selectedSections.forEach(function (partId) {
+            getSectionGroups(partId).forEach(function (g) {
+              g.classList.remove("selected");
+              var img = g.querySelector(".section-image");
+              if (img) img.style.opacity = "0";
+            });
+          });
+          selectedSections.clear();
           // Wait for close animation to finish then hide
           setTimeout(function () {
             symptomModalOverlay.classList.remove("active");
@@ -4341,35 +4434,23 @@
 
         // Open the symptom modal for Organs2 view
         function openOrgan2Modal(organ2Key, displayName, eventOrCoords) {
-          // Use ORGAN2_SYMPTOMS instead of SECTION_SYMPTOMS
-          const symptoms = ORGAN2_SYMPTOMS[organ2Key] || [];
-
           symptomModalTitle.textContent = displayName;
-          symptomModalList.textContent = "";
-          symptoms.forEach(function (symptom) {
-            const key = organ2Key + "::" + symptom;
-            const isSelected = selectedSymptoms.has(key);
-            const li = document.createElement("li");
-            if (isSelected) li.className = "selected";
-            li.dataset.key = key;
 
-            const nameSpan = document.createElement("span");
-            nameSpan.textContent = symptom;
-            li.appendChild(nameSpan);
+          // Set modal context for search
+          currentModalContext = {
+            type: "organ2",
+            key: organ2Key,
+            name: displayName,
+          };
+          searchFirstKeystroke = true;
 
-            if (isSelected) {
-              const checkSpan = document.createElement("span");
-              checkSpan.className = "symptom-check";
-              checkSpan.textContent = "\u2713";
-              li.appendChild(checkSpan);
-            }
+          // Reset search input
+          var searchInput = document.getElementById("symptomSearchInput");
+          searchInput.value = "";
 
-            li.addEventListener("click", function () {
-              window._selectOrgan2Symptom(organ2Key, displayName, symptom);
-            });
-
-            symptomModalList.appendChild(li);
-          });
+          // Render default symptoms
+          var symptoms = ORGAN2_SYMPTOMS[organ2Key] || [];
+          renderModalSymptomItems(symptoms, organ2Key, displayName, "organ2");
 
           // Position modal
           if (eventOrCoords && eventOrCoords.clientX !== undefined) {
@@ -4380,9 +4461,38 @@
           // Show with animation
           symptomModalOverlay.classList.remove("closing");
           symptomModalOverlay.classList.add("active");
+
+          // Auto-focus search input
+          requestAnimationFrame(function () {
+            searchInput.focus();
+          });
+
+          // Full symptom data loaded synchronously via script tag
         }
 
         // Toggle symptom selection in Organs2 mode
+        // Re-render modal list preserving current search state
+        function rerenderModalList(regionKey, displayName, sourceType) {
+          var searchInput = document.getElementById("symptomSearchInput");
+          var query = searchInput ? searchInput.value.trim() : "";
+          if (query.length > 0) {
+            var results = filterSymptoms(query);
+            renderModalSymptomItems(
+              results,
+              regionKey,
+              displayName,
+              sourceType,
+            );
+          } else {
+            renderModalSymptomItems(
+              getDefaultSymptoms(currentModalContext),
+              regionKey,
+              displayName,
+              sourceType,
+            );
+          }
+        }
+
         window._selectOrgan2Symptom = function (
           organ2Key,
           displayName,
@@ -4398,8 +4508,7 @@
               sectionName: displayName,
             });
           }
-          // Re-render the modal list to update checkmarks
-          openOrgan2Modal(organ2Key, displayName);
+          rerenderModalList(organ2Key, displayName, "organ2");
           renderSymptomsList();
         };
 
@@ -4414,8 +4523,7 @@
               sectionName: sectionName,
             });
           }
-          // Re-render the modal list to update checkmarks
-          openSymptomModal(sectionId, sectionName);
+          rerenderModalList(sectionId, sectionName, "section");
           renderSymptomsList();
         };
 
@@ -4497,95 +4605,59 @@
           }
         });
 
-        // --- Render selected list (view-aware) ---
-        function renderSelectedList() {
-          const listEl = document.getElementById("selectedList");
-          const container = document.getElementById("selectedListContainer");
+        // === Symptom search input handler ===
+        (function setupSearchHandler() {
+          var searchInput = document.getElementById("symptomSearchInput");
+          searchInput.addEventListener("input", function () {
+            var query = searchInput.value.trim();
 
-          const isOrgansLike =
-            currentView === "organs" || currentView === "organs2";
-          const selectedSet = isOrgansLike ? selectedOrgans : selectedSections;
-          const sortOrder = isOrgansLike
-            ? ORGAN_SORT_ORDER
-            : SECTION_SORT_ORDER;
-          const idPrefix = isOrgansLike ? "group-" : "section-";
-
-          // Sort selected items by order
-          const sorted = [...selectedSet].sort((a, b) => {
-            return sortOrder.indexOf(a) - sortOrder.indexOf(b);
-          });
-
-          // Collect nav-only body parts (those with no organIds, only visible in organs view)
-          const navOnlyItems = isOrgansLike
-            ? [
-                ...(typeof selectedBodyParts !== "undefined"
-                  ? selectedBodyParts
-                  : []),
-              ]
-                .map((bpId) => {
-                  if (typeof BODY_PARTS_DATA === "undefined") return null;
-                  const bp = BODY_PARTS_DATA.find((b) => b.id === bpId);
-                  return bp && bp.organIds.length === 0 ? bp : null;
-                })
-                .filter(Boolean)
-            : [];
-
-          const hasAny = sorted.length > 0 || navOnlyItems.length > 0;
-          container.classList.toggle("has-items", hasAny);
-          const emptyMsg = document.getElementById("bodyPartsEmpty");
-          if (emptyMsg) emptyMsg.style.display = hasAny ? "none" : "block";
-
-          const organPills = sorted
-            .map((partId, i) => {
-              let group = document.getElementById(idPrefix + partId);
-              if (!group) {
-                // Handle paired groups (e.g. arms split into left/right)
-                group = document.querySelector(`[data-part="${partId}"]`);
+            if (query.length === 0) {
+              // Reset to default symptom list
+              searchFirstKeystroke = true;
+              clearTimeout(searchDebounceTimer);
+              var ctx = currentModalContext;
+              if (ctx) {
+                renderModalSymptomItems(
+                  getDefaultSymptoms(ctx),
+                  ctx.key,
+                  ctx.name,
+                  ctx.type,
+                );
               }
-              const name = group ? group.dataset.name : partId;
-              return `<li data-part="${partId}">
-        <span class="pill-number">${i + 1}</span>
-        <span class="pill-name">${name}</span>
-        <span class="pill-remove" onclick="deselectPart('${partId}')">&times;</span>
-      </li>`;
-            })
-            .join("");
+              return;
+            }
 
-          const navPills = navOnlyItems
-            .map((bp, j) => {
-              const num = sorted.length + j + 1;
-              return `<li data-nav-part="${bp.id}">
-        <span class="pill-number">${num}</span>
-        <span class="pill-name">${bp.name}</span>
-        <span class="pill-remove" onclick="toggleBodyPart('${bp.id}')">&times;</span>
-      </li>`;
-            })
-            .join("");
+            // First keystroke: show skeleton for 1 second, then filter
+            if (searchFirstKeystroke) {
+              searchFirstKeystroke = false;
+              renderSkeletonList();
+              clearTimeout(searchDebounceTimer);
+              searchDebounceTimer = setTimeout(function () {
+                var q = searchInput.value.trim();
+                if (q.length === 0) return;
+                var ctx = currentModalContext;
+                var results = filterSymptoms(q);
+                renderModalSymptomItems(results, ctx.key, ctx.name, ctx.type);
+              }, 1000);
+              return;
+            }
 
-          listEl.innerHTML = organPills + navPills;
-        }
+            // Subsequent keystrokes: 250ms debounce
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(function () {
+              var q = searchInput.value.trim();
+              if (q.length === 0) return;
+              var ctx = currentModalContext;
+              var results = filterSymptoms(q);
+              renderModalSymptomItems(results, ctx.key, ctx.name, ctx.type);
+            }, 250);
+          });
+        })();
 
-        // --- Deselect from pill list (view-aware) ---
-        window.deselectPart = function (partId) {
-          if (currentView === "organs" || currentView === "organs2") {
-            selectedOrgans.delete(partId);
-            const group = document.getElementById("group-" + partId);
-            if (group) group.classList.remove("selected");
-            clearActiveSystemUI();
-            syncBodyPartsFromOrgan(partId, false);
-          } else {
-            selectedSections.delete(partId);
-            // Handle paired groups (e.g. both arms)
-            document
-              .querySelectorAll(`.body-section-group[data-part="${partId}"]`)
-              .forEach((g) => {
-                g.classList.remove("selected");
-                const img = g.querySelector(".section-image");
-                if (img) img.style.opacity = "0";
-              });
-          }
-          renderSelectedList();
-        };
+        // --- Render selected list (removed — pill panel no longer exists) ---
+        function renderSelectedList() {}
+
+        window.deselectPart = function () {};
 
         // --- Touch support for mobile ---
         document
@@ -5284,6 +5356,9 @@
 
         renderBodyPartsNavPanel();
         renderBodyPartCards();
+
+        // Set default view to Body Sections on page load
+        setView("sections");
       })();
     </script>
   </body>
