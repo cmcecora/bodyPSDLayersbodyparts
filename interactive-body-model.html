@@ -134,6 +134,14 @@
         display: block;
       }
 
+      /* Smooth crossfade transitions for SVG layers */
+      #organs-layer,
+      #sections-layer,
+      #back-sections-layer,
+      #bp-highlight-layer {
+        transition: opacity 0.35s ease-in-out;
+      }
+
       /* Hit area hover effect */
       .hit-area {
         transition:
@@ -1266,7 +1274,7 @@
                   </feMerge>
                 </filter>
               </defs>
-              <g id="organs-layer">
+              <g id="organs-layer" style="opacity: 0">
                 <image
                   id="base-body"
                   x="0"
@@ -1924,8 +1932,8 @@
               </g>
               <!-- END organs-layer -->
 
-              <!-- Body Sections Layer (hidden by default) -->
-              <g id="sections-layer" style="display: none">
+              <!-- Body Sections Layer (visible by default) -->
+              <g id="sections-layer" style="opacity: 1">
                 <!-- Green base body (non-interactive background) -->
                 <image
                   id="sections-base-body"
@@ -2107,7 +2115,7 @@
               <!-- END sections-layer -->
 
               <!-- Body-part highlight overlay (populated dynamically by toggleBodyPart) -->
-              <g id="bp-highlight-layer" style="display: none"></g>
+              <g id="bp-highlight-layer" style="opacity: 1"></g>
             </svg>
 
             <svg
@@ -4747,57 +4755,123 @@
         }
 
         // --- View toggle ---
+        let initialViewLoaded = false;
         window.setView = function (view) {
           currentView = view;
 
           // Close symptom modal when switching views
           closeSymptomModal();
 
-          // Toggle SVG layers — organs2 reuses the organs layer
-          const isOrgansView = view === "organs" || view === "organs2";
-          document.getElementById("organs-layer").style.display = isOrgansView
-            ? ""
-            : "none";
-          document.getElementById("sections-layer").style.display =
-            view === "sections" && !isFlipped ? "" : "none";
-          document.getElementById("back-sections-layer").style.display =
-            view === "sections" && isFlipped ? "" : "none";
-
-          // Show/hide body-part highlight overlay on sections view
+          // Get layer elements
+          const organsLayer = document.getElementById("organs-layer");
+          const sectionsLayer = document.getElementById("sections-layer");
+          const backSectionsLayer = document.getElementById("back-sections-layer");
           const bpLayer = document.getElementById("bp-highlight-layer");
-          if (view === "sections" && !isFlipped) {
-            bpLayer.style.display = "";
-            // Re-create ellipses for any body parts already selected
-            while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
-            selectedBodyParts.forEach((bpId) => {
-              const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
-              if (!regionData) return;
-              const regions = Array.isArray(regionData)
-                ? regionData
-                : [regionData];
-              regions.forEach((r) => {
-                const ellipse = document.createElementNS(
-                  "http://www.w3.org/2000/svg",
-                  "ellipse",
-                );
-                ellipse.setAttribute("cx", r.cx);
-                ellipse.setAttribute("cy", r.cy);
-                ellipse.setAttribute("rx", r.rx);
-                ellipse.setAttribute("ry", r.ry);
-                ellipse.setAttribute("class", "bp-highlight-ellipse");
-                ellipse.setAttribute("data-bp-id", bpId);
-                makeEllipseClickable(ellipse, bpId);
-                bpLayer.appendChild(ellipse);
+
+          const isOrgansView = view === "organs" || view === "organs2";
+          const isSectionsView = view === "sections";
+
+          // On initial load, skip the fade animation since layers are already
+          // set to correct visibility via inline styles
+          if (!initialViewLoaded) {
+            initialViewLoaded = true;
+            // Just set display properties without animation
+            organsLayer.style.display = isOrgansView ? "" : "none";
+            sectionsLayer.style.display = isSectionsView && !isFlipped ? "" : "none";
+            backSectionsLayer.style.display = isSectionsView && isFlipped ? "" : "none";
+
+            if (isSectionsView && !isFlipped) {
+              bpLayer.style.display = "";
+              // Re-create ellipses for any body parts already selected
+              while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
+              selectedBodyParts.forEach((bpId) => {
+                const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
+                if (!regionData) return;
+                const regions = Array.isArray(regionData)
+                  ? regionData
+                  : [regionData];
+                regions.forEach((r) => {
+                  const ellipse = document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "ellipse",
+                  );
+                  ellipse.setAttribute("cx", r.cx);
+                  ellipse.setAttribute("cy", r.cy);
+                  ellipse.setAttribute("rx", r.rx);
+                  ellipse.setAttribute("ry", r.ry);
+                  ellipse.setAttribute("class", "bp-highlight-ellipse");
+                  ellipse.setAttribute("data-bp-id", bpId);
+                  makeEllipseClickable(ellipse, bpId);
+                  bpLayer.appendChild(ellipse);
+                });
               });
-            });
-            updateSectionHitAreaState();
+              updateSectionHitAreaState();
+            }
+
+            // Set initial opacities
+            organsLayer.style.opacity = isOrgansView ? "1" : "0";
+            sectionsLayer.style.opacity = isSectionsView && !isFlipped ? "1" : "0";
+            backSectionsLayer.style.opacity = isSectionsView && isFlipped ? "1" : "0";
+            bpLayer.style.opacity = isSectionsView && !isFlipped ? "1" : "0";
           } else {
-            bpLayer.style.display = "none";
-            while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
-            // Remove disabled state when leaving sections view
-            document
-              .getElementById("sections-layer")
-              .classList.remove("sections-disabled");
+            // Smooth crossfade transition for subsequent view switches
+            // First, fade out all layers
+            organsLayer.style.opacity = "0";
+            sectionsLayer.style.opacity = "0";
+            backSectionsLayer.style.opacity = "0";
+            if (bpLayer) bpLayer.style.opacity = "0";
+
+            // After a brief delay, set display properties and fade in the target layer
+            setTimeout(function() {
+              // Set display properties
+              organsLayer.style.display = isOrgansView ? "" : "none";
+              sectionsLayer.style.display = isSectionsView && !isFlipped ? "" : "none";
+              backSectionsLayer.style.display = isSectionsView && isFlipped ? "" : "none";
+
+              // Show/hide body-part highlight overlay on sections view
+              if (isSectionsView && !isFlipped) {
+                bpLayer.style.display = "";
+                // Re-create ellipses for any body parts already selected
+                while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
+                selectedBodyParts.forEach((bpId) => {
+                  const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
+                  if (!regionData) return;
+                  const regions = Array.isArray(regionData)
+                    ? regionData
+                    : [regionData];
+                  regions.forEach((r) => {
+                    const ellipse = document.createElementNS(
+                      "http://www.w3.org/2000/svg",
+                      "ellipse",
+                    );
+                    ellipse.setAttribute("cx", r.cx);
+                    ellipse.setAttribute("cy", r.cy);
+                    ellipse.setAttribute("rx", r.rx);
+                    ellipse.setAttribute("ry", r.ry);
+                    ellipse.setAttribute("class", "bp-highlight-ellipse");
+                    ellipse.setAttribute("data-bp-id", bpId);
+                    makeEllipseClickable(ellipse, bpId);
+                    bpLayer.appendChild(ellipse);
+                  });
+                });
+                updateSectionHitAreaState();
+                // Fade in sections and highlight layer
+                sectionsLayer.style.opacity = "1";
+                bpLayer.style.opacity = "1";
+              } else {
+                if (bpLayer) {
+                  bpLayer.style.display = "none";
+                  while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
+                  bpLayer.style.opacity = "0";
+                }
+                // Remove disabled state when leaving sections view
+                sectionsLayer.classList.remove("sections-disabled");
+                // Fade in organs layer
+                if (isOrgansView) {
+                  organsLayer.style.opacity = "1";
+                }
+              }
+            }, 50);
           }
 
           // Toggle active tab
