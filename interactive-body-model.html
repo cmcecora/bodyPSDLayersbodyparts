@@ -588,6 +588,9 @@
           grid-row: auto;
           position: static;
         }
+        .body-part-cards-container {
+          grid-template-columns: 1fr;
+        }
         body {
           padding: 10px;
         }
@@ -787,9 +790,11 @@
 
       /* --- Body part cards --- */
       .body-part-cards-container {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-flow: row;
         gap: 12px;
+        align-items: start;
       }
       .body-part-card {
         background: #fff;
@@ -799,6 +804,8 @@
         position: relative;
         display: flex;
         flex-direction: column;
+        width: 100%;
+        box-sizing: border-box;
       }
       .body-part-card-close {
         position: absolute;
@@ -2293,7 +2300,7 @@
         </div>
       </div>
 
-      <!-- Right column: System detail + Body parts -->
+      <!-- Right column: System detail -->
       <div class="right-column">
         <!-- System description card -->
         <div class="tooltip-panel" id="tooltipPanel">
@@ -2326,15 +2333,15 @@
           </div>
         </div>
 
-        <!-- Body part detail cards (2-per-row grid) -->
+      </div>
+
+      <!-- Column 4 sections: body parts + diseases + symptoms -->
+      <div class="spanning-sections" id="spanningSections">
+        <!-- Body part detail cards -->
         <div
           class="body-part-cards-container"
           id="bodyPartCardsContainer"
         ></div>
-      </div>
-
-      <!-- Disease & Symptom spanning sections (columns 2+3) -->
-      <div class="spanning-sections" id="spanningSections">
         <!-- Diseases section -->
         <div class="disease-section" id="diseaseSection">
           <div class="disease-section-header">
