@@ -21,17 +21,19 @@
         min-height: 100vh;
       }
 
-      /* Three-column layout wrapper */
+      /* Four-column layout wrapper */
       .page-layout {
-        display: flex;
+        display: grid;
+        grid-template-columns: 240px minmax(0, 380px) 340px minmax(300px, 1fr);
         gap: 24px;
         width: 100%;
-        align-items: flex-start;
+        align-items: start;
       }
 
       /* Left column wrapper */
       .left-column {
-        flex: 0 0 240px;
+        grid-column: 1;
+        grid-row: 1 / -1;
         position: sticky;
         top: 20px;
         display: flex;
@@ -102,10 +104,11 @@
 
       /* Center column: Body model */
       .body-model-container {
+        grid-column: 2;
+        grid-row: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
-        flex: 0 0 auto;
         max-width: 380px;
       }
 
@@ -205,11 +208,124 @@
 
       /* Right column wrapper */
       .right-column {
-        flex: 0 0 375px;
+        grid-column: 3;
+        grid-row: 1;
         display: flex;
         flex-direction: column;
         gap: 20px;
-        align-self: flex-start;
+        align-self: start;
+      }
+
+      /* ── Spanning sections (diseases + symptoms, columns 2-3) ── */
+      .spanning-sections {
+        grid-column: 4;
+        grid-row: 1;
+        display: none;
+        flex-direction: column;
+        gap: 24px;
+        align-self: start;
+        position: sticky;
+        top: 20px;
+      }
+      .spanning-sections.visible {
+        display: flex;
+      }
+      .disease-section,
+      .symptom-section {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .disease-section-header,
+      .symptom-section-header {
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        background: #434448;
+        margin: 0;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .section-count-badge {
+        background: #6cb5f4;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 10px;
+        margin-left: 8px;
+      }
+      .section-search {
+        padding: 8px 12px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .section-search input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #dde3ec;
+        border-radius: 6px;
+        font-size: 13px;
+        outline: none;
+        box-sizing: border-box;
+      }
+      .section-search input:focus {
+        border-color: #6cb5f4;
+        box-shadow: 0 0 0 2px rgba(108, 181, 244, 0.15);
+      }
+      .disease-list-container,
+      .symptom-list-container {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 8px;
+      }
+      .disease-list,
+      .symptom-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .disease-list li,
+      .symptom-list li {
+        font-size: 13px;
+        color: #434448;
+        padding: 8px 12px;
+        border: 1px solid #f0f0f0;
+        border-radius: 6px;
+        background: #fafbfc;
+        line-height: 1.4;
+        cursor: default;
+        word-break: break-word;
+      }
+      .disease-list li:hover,
+      .symptom-list li:hover {
+        background: #eef4fb;
+        border-color: #d0dff0;
+      }
+      .show-more-item {
+        cursor: pointer !important;
+        font-weight: 600 !important;
+        color: #4a90d9 !important;
+        text-align: center;
+        grid-column: 1 / -1;
+        background: #f0f6ff !important;
+        border-color: #d0dff0 !important;
+      }
+      .show-more-item:hover {
+        background: #dbeafe !important;
+      }
+      .disease-list-empty,
+      .symptom-list-empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        color: #999;
+        font-style: italic;
+        padding: 24px;
       }
 
       /* System description card */
@@ -432,25 +548,41 @@
       .body-section-group.selected .section-hit-area:hover {
         fill: rgba(144, 238, 144, 0.55);
       }
+
+      .bp-highlight-ellipse {
+        fill: rgba(76, 175, 80, 0.3);
+        stroke: rgba(76, 175, 80, 0.55);
+        stroke-width: 2;
+        pointer-events: none;
+        filter: url(#bp-glow);
+      }
+
       /* Responsive */
       @media (max-width: 900px) {
         .page-layout {
-          flex-direction: column;
+          grid-template-columns: 1fr;
           gap: 20px;
         }
         .left-column {
-          flex: none;
+          grid-column: 1;
+          grid-row: auto;
           width: 100%;
           position: static;
         }
         .right-column {
-          flex: none;
+          grid-column: 1;
           width: 100%;
+        }
+        .spanning-sections {
+          grid-column: 1;
+          grid-row: auto;
+          position: static;
         }
         body {
           padding: 10px;
         }
         .body-model-container {
+          grid-column: 1;
           max-width: 100%;
         }
         .gender-toggle button {
@@ -1069,6 +1201,24 @@
                     flood-color="#4caf50"
                     flood-opacity="0.6"
                   />
+                </filter>
+
+                <filter
+                  id="bp-glow"
+                  x="-50%"
+                  y="-50%"
+                  width="200%"
+                  height="200%"
+                >
+                  <feGaussianBlur
+                    in="SourceGraphic"
+                    stdDeviation="6"
+                    result="blur"
+                  />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
                 </filter>
               </defs>
               <g id="organs-layer">
@@ -1910,6 +2060,9 @@
                 </g>
               </g>
               <!-- END sections-layer -->
+
+              <!-- Body-part highlight overlay (populated dynamically by toggleBodyPart) -->
+              <g id="bp-highlight-layer" style="display: none"></g>
             </svg>
 
             <svg
@@ -2169,6 +2322,50 @@
           id="bodyPartCardsContainer"
         ></div>
       </div>
+
+      <!-- Disease & Symptom spanning sections (columns 2+3) -->
+      <div class="spanning-sections" id="spanningSections">
+        <!-- Diseases section -->
+        <div class="disease-section" id="diseaseSection">
+          <div class="disease-section-header">
+            <span
+              >Diseases
+              <span class="section-count-badge" id="diseaseCount">0</span></span
+            >
+          </div>
+          <div class="section-search">
+            <input
+              type="text"
+              id="diseaseSearchInput"
+              placeholder="Search diseases..."
+              autocomplete="off"
+            />
+          </div>
+          <div class="disease-list-container">
+            <ul class="disease-list" id="diseaseList"></ul>
+          </div>
+        </div>
+        <!-- Symptoms section -->
+        <div class="symptom-section" id="symptomSection">
+          <div class="symptom-section-header">
+            <span
+              >Symptoms
+              <span class="section-count-badge" id="symptomCount">0</span></span
+            >
+          </div>
+          <div class="section-search">
+            <input
+              type="text"
+              id="symptomSectionSearchInput"
+              placeholder="Search symptoms..."
+              autocomplete="off"
+            />
+          </div>
+          <div class="symptom-list-container">
+            <ul class="symptom-list" id="symptomSectionList"></ul>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Symptom selection modal -->
@@ -2210,6 +2407,8 @@
     </div>
 
     <script src="symptoms-data.js"></script>
+    <script src="diseases-data.js"></script>
+    <script src="symptoms-by-bodypart-data.js"></script>
     <script>
       (function () {
         const BODY_SYSTEMS = [
@@ -3947,6 +4146,139 @@
           foot: { x: 320, y: 1400 },
         };
 
+        // Highlight ellipse regions for each body part on the Body Sections view.
+        // Each entry defines {cx, cy, rx, ry} in SVG viewBox coords (0 0 698 1698).
+        // Bilateral parts use an array of two regions (left + right, mirrored across x=349).
+        const BODY_PART_HIGHLIGHT_REGIONS = {
+          // --- Head & Neck (calibrated from zoomed grid overlay) ---
+          bp_head: { cx: 345, cy: 120, rx: 43, ry: 55 },
+          bp_face: { cx: 345, cy: 136, rx: 35, ry: 35 },
+          bp_ears: [
+            { cx: 280, cy: 180, rx: 7, ry: 12 },
+            { cx: 410, cy: 180, rx: 7, ry: 12 },
+          ],
+          bp_eyes: [
+            { cx: 310, cy: 175, rx: 10, ry: 6 },
+            { cx: 380, cy: 175, rx: 10, ry: 6 },
+          ],
+          bp_nose: { cx: 345, cy: 200, rx: 6, ry: 8 },
+          bp_mouth: { cx: 345, cy: 235, rx: 12, ry: 5 },
+          bp_gums: { cx: 345, cy: 235, rx: 15, ry: 8 },
+          bp_teeth: { cx: 345, cy: 155, rx: 10, ry: 4 },
+          bp_neck: { cx: 345, cy: 290, rx: 22, ry: 18 },
+          bp_throat: { cx: 345, cy: 195, rx: 16, ry: 18 },
+          bp_brain: { cx: 345, cy: 100, rx: 38, ry: 35 },
+          bp_pituitary: { cx: 345, cy: 112, rx: 8, ry: 8 },
+
+          // --- Chest / Upper Body (organ image positions + grid calibration) ---
+          bp_heart: { cx: 370, cy: 420, rx: 32, ry: 42 },
+          bp_blood: { cx: 345, cy: 500, rx: 80, ry: 150 },
+          bp_lungs: [
+            { cx: 290, cy: 430, rx: 50, ry: 55 },
+            { cx: 390, cy: 430, rx: 50, ry: 55 },
+          ],
+          bp_chest: { cx: 345, cy: 390, rx: 98, ry: 70 },
+          bp_ribs: { cx: 345, cy: 400, rx: 82, ry: 65 },
+          bp_breasts: [
+            { cx: 295, cy: 455, rx: 40, ry: 40 },
+            { cx: 405, cy: 455, rx: 40, ry: 40 },
+          ],
+          bp_mammary: [
+            { cx: 295, cy: 455, rx: 24, ry: 20 },
+            { cx: 405, cy: 455, rx: 24, ry: 20 },
+          ],
+          bp_thyroid: { cx: 350, cy: 215, rx: 22, ry: 20 },
+          bp_esophagus: { cx: 345, cy: 300, rx: 14, ry: 55 },
+          bp_thymus: { cx: 355, cy: 310, rx: 16, ry: 20 },
+          bp_shoulders: [
+            { cx: 230, cy: 330, rx: 32, ry: 20 },
+            { cx: 490, cy: 330, rx: 32, ry: 20 },
+          ],
+
+          // --- Abdomen (organ image positions as reference) ---
+          bp_abdomen: { cx: 345, cy: 650, rx: 78, ry: 110 },
+          bp_stomach: { cx: 370, cy: 540, rx: 50, ry: 40 },
+          bp_liver: { cx: 310, cy: 610, rx: 58, ry: 38 },
+          bp_gallbladder: { cx: 304, cy: 570, rx: 14, ry: 18 },
+          bp_spleen: { cx: 430, cy: 555, rx: 24, ry: 22 },
+          bp_pancreas: { cx: 355, cy: 565, rx: 42, ry: 24 },
+          bp_kidneys: [
+            { cx: 310, cy: 620, rx: 28, ry: 25 },
+            { cx: 410, cy: 620, rx: 28, ry: 25 },
+          ],
+          bp_adrenal: [
+            { cx: 318, cy: 595, rx: 15, ry: 10 },
+            { cx: 402, cy: 595, rx: 15, ry: 10 },
+          ],
+          bp_intestines: { cx: 355, cy: 690, rx: 80, ry: 60 },
+          bp_colon: { cx: 355, cy: 710, rx: 85, ry: 55 },
+          bp_appendix: { cx: 405, cy: 735, rx: 15, ry: 18 },
+          bp_lymphnode: { cx: 345, cy: 205, rx: 24, ry: 16 },
+          bp_parathyroid: { cx: 345, cy: 320, rx: 18, ry: 14 },
+
+          // --- Lower Torso / Pelvis ---
+          bp_pelvis: { cx: 345, cy: 760, rx: 75, ry: 40 },
+          bp_hips: [
+            { cx: 290, cy: 770, rx: 35, ry: 30 },
+            { cx: 400, cy: 770, rx: 35, ry: 30 },
+          ],
+          bp_bladder: { cx: 355, cy: 810, rx: 35, ry: 30 },
+          bp_urethra: { cx: 345, cy: 835, rx: 10, ry: 18 },
+          bp_butt: { cx: 345, cy: 770, rx: 62, ry: 35 },
+          bp_anus: { cx: 345, cy: 810, rx: 10, ry: 10 },
+          bp_uterus: { cx: 355, cy: 830, rx: 48, ry: 30 },
+          bp_penis: { cx: 355, cy: 870, rx: 30, ry: 40 },
+          bp_prostate: { cx: 355, cy: 845, rx: 22, ry: 18 },
+          bp_testicles: { cx: 355, cy: 905, rx: 26, ry: 22 },
+
+          // --- Arms (grid-calibrated from body outline) ---
+          bp_arms: [
+            { cx: 225, cy: 480, rx: 20, ry: 140 },
+            { cx: 465, cy: 480, rx: 20, ry: 140 },
+          ],
+          bp_elbow: [
+            { cx: 205, cy: 530, rx: 16, ry: 22 },
+            { cx: 485, cy: 530, rx: 16, ry: 22 },
+          ],
+          bp_hands: [
+            { cx: 135, cy: 840, rx: 22, ry: 35 },
+            { cx: 575, cy: 840, rx: 22, ry: 35 },
+          ],
+
+          // --- Legs (grid-calibrated from body outline) ---
+          bp_legs: [
+            { cx: 310, cy: 1100, rx: 30, ry: 200 },
+            { cx: 400, cy: 1100, rx: 30, ry: 200 },
+          ],
+          bp_thigh: [
+            { cx: 310, cy: 930, rx: 32, ry: 70 },
+            { cx: 400, cy: 930, rx: 32, ry: 70 },
+          ],
+          bp_knee: [
+            { cx: 305, cy: 1190, rx: 22, ry: 30 },
+            { cx: 400, cy: 1190, rx: 22, ry: 30 },
+          ],
+          bp_ankles: [
+            { cx: 300, cy: 1490, rx: 15, ry: 18 },
+            { cx: 410, cy: 1490, rx: 15, ry: 18 },
+          ],
+          bp_feet: [
+            { cx: 290, cy: 1540, rx: 28, ry: 45 },
+            { cx: 420, cy: 1540, rx: 28, ry: 45 },
+          ],
+
+          // --- Whole-body / diffuse ---
+          bp_muscles: { cx: 345, cy: 600, rx: 90, ry: 250 },
+          bp_skin: { cx: 345, cy: 600, rx: 100, ry: 280 },
+          bp_bones: { cx: 345, cy: 600, rx: 80, ry: 260 },
+          bp_joints: [
+            { cx: 305, cy: 1190, rx: 22, ry: 30 },
+            { cx: 400, cy: 1190, rx: 22, ry: 30 },
+          ],
+          bp_spine: { cx: 345, cy: 500, rx: 15, ry: 200 },
+          bp_back: { cx: 345, cy: 450, rx: 70, ry: 140 },
+        };
+
         // === SHARED STATE ===
         const selectedOrgans = new Set();
         const selectedSections = new Set();
@@ -4074,6 +4406,37 @@
           document.getElementById("back-sections-layer").style.display =
             view === "sections" && isFlipped ? "" : "none";
 
+          // Show/hide body-part highlight overlay on sections view
+          const bpLayer = document.getElementById("bp-highlight-layer");
+          if (view === "sections" && !isFlipped) {
+            bpLayer.style.display = "";
+            // Re-create ellipses for any body parts already selected
+            bpLayer.innerHTML = "";
+            selectedBodyParts.forEach((bpId) => {
+              const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
+              if (!regionData) return;
+              const regions = Array.isArray(regionData)
+                ? regionData
+                : [regionData];
+              regions.forEach((r) => {
+                const ellipse = document.createElementNS(
+                  "http://www.w3.org/2000/svg",
+                  "ellipse",
+                );
+                ellipse.setAttribute("cx", r.cx);
+                ellipse.setAttribute("cy", r.cy);
+                ellipse.setAttribute("rx", r.rx);
+                ellipse.setAttribute("ry", r.ry);
+                ellipse.setAttribute("class", "bp-highlight-ellipse");
+                ellipse.setAttribute("data-bp-id", bpId);
+                bpLayer.appendChild(ellipse);
+              });
+            });
+          } else {
+            bpLayer.style.display = "none";
+            bpLayer.innerHTML = "";
+          }
+
           // Toggle active tab
           const btnOrgans = document.getElementById("btn-organs");
           const btnOrgans2 = document.getElementById("btn-organs2");
@@ -4143,6 +4506,10 @@
               sectionsLayer.style.display = isFlipped ? "none" : "";
               backSectionsLayer.style.display = isFlipped ? "" : "none";
             }, flipDuration);
+
+            // Hide body-part highlights when flipped to back (no back regions defined yet)
+            const bpLayer = document.getElementById("bp-highlight-layer");
+            bpLayer.style.display = isFlipped ? "none" : "";
           }
 
           inner.classList.toggle("flipped", isFlipped);
@@ -5283,6 +5650,49 @@
             return;
           }
 
+          // Sections mode: highlight body part regions on the body silhouette
+          if (currentView === "sections") {
+            const bpLayer = document.getElementById("bp-highlight-layer");
+            const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
+
+            if (selectedBodyParts.has(bpId)) {
+              selectedBodyParts.delete(bpId);
+              // Remove highlight ellipses for this body part
+              bpLayer
+                .querySelectorAll(`[data-bp-id="${bpId}"]`)
+                .forEach((el) => el.remove());
+            } else {
+              selectedBodyParts.add(bpId);
+              if (regionData) {
+                const regions = Array.isArray(regionData)
+                  ? regionData
+                  : [regionData];
+                regions.forEach((r, i) => {
+                  const ellipse = document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "ellipse",
+                  );
+                  ellipse.setAttribute("cx", r.cx);
+                  ellipse.setAttribute("cy", r.cy);
+                  ellipse.setAttribute("rx", r.rx);
+                  ellipse.setAttribute("ry", r.ry);
+                  ellipse.setAttribute("class", "bp-highlight-ellipse");
+                  ellipse.setAttribute("data-bp-id", bpId);
+                  bpLayer.appendChild(ellipse);
+                });
+              }
+            }
+
+            const li = document.querySelector(
+              `.body-parts-nav-item[data-bp-id="${bpId}"]`,
+            );
+            if (li) li.classList.toggle("active", selectedBodyParts.has(bpId));
+
+            renderBodyPartCards();
+            renderSelectedList();
+            return;
+          }
+
           if (selectedBodyParts.has(bpId)) {
             // Deselect
             selectedBodyParts.delete(bpId);
@@ -5352,7 +5762,176 @@
             </div>`;
             })
             .join("");
+          renderSpanningSections();
         }
+
+        // Disease and Symptom spanning sections
+        var DISEASES_BY_BP = window.DISEASES_BY_BODY_PART || {};
+        var SYMPTOMS_BY_BP = window.SYMPTOMS_BY_BODY_PART || {};
+        var diseaseSearchTimer = null;
+        var symptomSectionSearchTimer = null;
+
+        function renderSpanningSections() {
+          var container = document.getElementById("spanningSections");
+          if (selectedBodyParts.size === 0) {
+            container.classList.remove("visible");
+            return;
+          }
+          container.classList.add("visible");
+          document.getElementById("diseaseSearchInput").value = "";
+          document.getElementById("symptomSectionSearchInput").value = "";
+          renderDiseaseList();
+          renderSymptomSectionList();
+        }
+
+        function getDiseasesForSelection() {
+          var seen = {};
+          var result = [];
+          selectedBodyParts.forEach(function (bpId) {
+            var diseases = DISEASES_BY_BP[bpId];
+            if (diseases) {
+              for (var i = 0; i < diseases.length; i++) {
+                var d = diseases[i];
+                if (!seen[d.name]) {
+                  seen[d.name] = true;
+                  result.push(d);
+                }
+              }
+            }
+          });
+          result.sort(function (a, b) {
+            return a.name.localeCompare(b.name, undefined, {
+              sensitivity: "base",
+            });
+          });
+          return result;
+        }
+
+        function getSymptomsForSelection() {
+          var seen = {};
+          var result = [];
+          selectedBodyParts.forEach(function (bpId) {
+            var symptoms = SYMPTOMS_BY_BP[bpId];
+            if (symptoms) {
+              for (var i = 0; i < symptoms.length; i++) {
+                var s = symptoms[i];
+                if (!seen[s]) {
+                  seen[s] = true;
+                  result.push(s);
+                }
+              }
+            }
+          });
+          result.sort(function (a, b) {
+            return a.localeCompare(b, undefined, { sensitivity: "base" });
+          });
+          return result;
+        }
+
+        function renderDiseaseList(filterQuery) {
+          var diseases = getDiseasesForSelection();
+          if (filterQuery) {
+            var q = filterQuery.toLowerCase();
+            diseases = diseases.filter(function (d) {
+              return (
+                d.name.toLowerCase().indexOf(q) !== -1 ||
+                d.code.toLowerCase().indexOf(q) !== -1
+              );
+            });
+          }
+          document.getElementById("diseaseCount").textContent = diseases.length;
+          var listEl = document.getElementById("diseaseList");
+          var BATCH_SIZE = 200;
+          var toRender = diseases.slice(0, BATCH_SIZE);
+          var fragment = document.createDocumentFragment();
+
+          if (diseases.length === 0) {
+            var emptyLi = document.createElement("li");
+            emptyLi.className = "disease-list-empty";
+            emptyLi.textContent = filterQuery
+              ? "No matching diseases"
+              : "No disease data for selected body parts";
+            fragment.appendChild(emptyLi);
+          } else {
+            for (var i = 0; i < toRender.length; i++) {
+              var li = document.createElement("li");
+              li.textContent = toRender[i].name;
+              li.title = toRender[i].code;
+              fragment.appendChild(li);
+            }
+            if (diseases.length > BATCH_SIZE) {
+              var moreLi = document.createElement("li");
+              moreLi.className = "show-more-item";
+              var remaining = diseases.length - BATCH_SIZE;
+              moreLi.textContent = "+ " + remaining + " more diseases...";
+              moreLi.addEventListener("click", function () {
+                var remainFrag = document.createDocumentFragment();
+                for (var j = BATCH_SIZE; j < diseases.length; j++) {
+                  var rli = document.createElement("li");
+                  rli.textContent = diseases[j].name;
+                  rli.title = diseases[j].code;
+                  remainFrag.appendChild(rli);
+                }
+                moreLi.remove();
+                listEl.appendChild(remainFrag);
+              });
+              fragment.appendChild(moreLi);
+            }
+          }
+
+          while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
+          listEl.appendChild(fragment);
+        }
+
+        function renderSymptomSectionList(filterQuery) {
+          var symptoms = getSymptomsForSelection();
+          if (filterQuery) {
+            var q = filterQuery.toLowerCase();
+            symptoms = symptoms.filter(function (s) {
+              return s.toLowerCase().indexOf(q) !== -1;
+            });
+          }
+          document.getElementById("symptomCount").textContent = symptoms.length;
+          var listEl = document.getElementById("symptomSectionList");
+          var fragment = document.createDocumentFragment();
+
+          if (symptoms.length === 0) {
+            var emptyLi = document.createElement("li");
+            emptyLi.className = "symptom-list-empty";
+            emptyLi.textContent = filterQuery
+              ? "No matching symptoms"
+              : "No symptom data for selected body parts";
+            fragment.appendChild(emptyLi);
+          } else {
+            for (var i = 0; i < symptoms.length; i++) {
+              var li = document.createElement("li");
+              li.textContent = symptoms[i];
+              fragment.appendChild(li);
+            }
+          }
+
+          while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
+          listEl.appendChild(fragment);
+        }
+
+        document
+          .getElementById("diseaseSearchInput")
+          .addEventListener("input", function () {
+            clearTimeout(diseaseSearchTimer);
+            var q = this.value.trim();
+            diseaseSearchTimer = setTimeout(function () {
+              renderDiseaseList(q);
+            }, 200);
+          });
+        document
+          .getElementById("symptomSectionSearchInput")
+          .addEventListener("input", function () {
+            clearTimeout(symptomSectionSearchTimer);
+            var q = this.value.trim();
+            symptomSectionSearchTimer = setTimeout(function () {
+              renderSymptomSectionList(q);
+            }, 200);
+          });
 
         renderBodyPartsNavPanel();
         renderBodyPartCards();
