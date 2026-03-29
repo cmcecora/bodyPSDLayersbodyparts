@@ -154,5 +154,24 @@ None — this plan produces only static assets and data files. No UI rendering s
 
 ---
 
+## Self-Check: PASSED
+
+All created files verified on disk:
+
+- FOUND: public/assets/organs/ (19 WebP files)
+- FOUND: public/assets/body-parts/ (77 WebP files)
+- FOUND: public/assets/systems/ (23 WebP files)
+- FOUND: public/data/diseases.json
+- FOUND: public/data/symptoms.json
+- FOUND: public/data/symptoms-by-part.json
+- FOUND: scripts/extract-base64.mjs
+- FOUND: scripts/convert-to-webp.sh
+
+All commits verified in git log:
+
+- FOUND: 8608799 (Task 1)
+- FOUND: 7fc1caf (Task 2)
+- FOUND: 7266615 (metadata)
+
 _Phase: 01-scaffolding-asset-extraction_
 _Completed: 2026-03-29_
