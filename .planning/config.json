@@ -1,0 +1,13 @@
+{
+  "mode": "interactive",
+  "created": "2026-03-29",
+  "project": "Body Part Directory",
+  "milestone": "1.0.0",
+  "milestone_name": "Body Map App Refactor & Web Component",
+  "gates": {
+    "require_discuss": true,
+    "require_research": false,
+    "require_plan_check": true,
+    "require_verification": true
+  }
+}
