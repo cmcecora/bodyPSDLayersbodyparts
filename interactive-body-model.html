@@ -553,8 +553,18 @@
         fill: rgba(76, 175, 80, 0.3);
         stroke: rgba(76, 175, 80, 0.55);
         stroke-width: 2;
-        pointer-events: none;
+        pointer-events: auto;
+        cursor: pointer;
         filter: url(#bp-glow);
+      }
+      .bp-highlight-ellipse:hover {
+        fill: rgba(76, 175, 80, 0.5);
+        stroke: rgba(76, 175, 80, 0.8);
+      }
+
+      /* Disable section hit areas when a body part is selected */
+      .sections-disabled .section-hit-area {
+        pointer-events: none;
       }
 
       /* Responsive */
@@ -4164,9 +4174,9 @@
           bp_nose: { cx: 345, cy: 200, rx: 6, ry: 8 },
           bp_mouth: { cx: 345, cy: 235, rx: 12, ry: 5 },
           bp_gums: { cx: 345, cy: 235, rx: 15, ry: 8 },
-          bp_teeth: { cx: 345, cy: 155, rx: 10, ry: 4 },
+          bp_teeth: { cx: 345, cy: 235, rx: 10, ry: 4 },
           bp_neck: { cx: 345, cy: 290, rx: 22, ry: 18 },
-          bp_throat: { cx: 345, cy: 195, rx: 16, ry: 18 },
+          bp_throat: { cx: 345, cy: 290, rx: 16, ry: 18 },
           bp_brain: { cx: 345, cy: 100, rx: 38, ry: 35 },
           bp_pituitary: { cx: 345, cy: 112, rx: 8, ry: 8 },
 
@@ -4187,7 +4197,7 @@
             { cx: 295, cy: 455, rx: 24, ry: 20 },
             { cx: 405, cy: 455, rx: 24, ry: 20 },
           ],
-          bp_thyroid: { cx: 350, cy: 215, rx: 22, ry: 20 },
+          bp_thyroid: { cx: 350, cy: 320, rx: 22, ry: 20 },
           bp_esophagus: { cx: 345, cy: 300, rx: 14, ry: 55 },
           bp_thymus: { cx: 355, cy: 310, rx: 16, ry: 20 },
           bp_shoulders: [
@@ -4197,7 +4207,7 @@
 
           // --- Abdomen (organ image positions as reference) ---
           bp_abdomen: { cx: 345, cy: 650, rx: 78, ry: 110 },
-          bp_stomach: { cx: 370, cy: 540, rx: 50, ry: 40 },
+          bp_stomach: { cx: 370, cy: 610, rx: 50, ry: 40 },
           bp_liver: { cx: 310, cy: 610, rx: 58, ry: 38 },
           bp_gallbladder: { cx: 304, cy: 570, rx: 14, ry: 18 },
           bp_spleen: { cx: 430, cy: 555, rx: 24, ry: 22 },
@@ -4411,7 +4421,7 @@
           if (view === "sections" && !isFlipped) {
             bpLayer.style.display = "";
             // Re-create ellipses for any body parts already selected
-            bpLayer.innerHTML = "";
+            while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
             selectedBodyParts.forEach((bpId) => {
               const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
               if (!regionData) return;
@@ -4429,12 +4439,18 @@
                 ellipse.setAttribute("ry", r.ry);
                 ellipse.setAttribute("class", "bp-highlight-ellipse");
                 ellipse.setAttribute("data-bp-id", bpId);
+                makeEllipseClickable(ellipse, bpId);
                 bpLayer.appendChild(ellipse);
               });
             });
+            updateSectionHitAreaState();
           } else {
             bpLayer.style.display = "none";
-            bpLayer.innerHTML = "";
+            while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
+            // Remove disabled state when leaving sections view
+            document
+              .getElementById("sections-layer")
+              .classList.remove("sections-disabled");
           }
 
           // Toggle active tab
@@ -5537,6 +5553,26 @@
         const selectedBodyParts = new Set(); // tracks nav-selected body part IDs
         let isBodyPartsNavSorted = false;
 
+        // Disable/enable section hit areas based on whether body parts are selected
+        function updateSectionHitAreaState() {
+          const frontLayer = document.getElementById("sections-layer");
+          const backLayer = document.getElementById("back-sections-layer");
+          const shouldDisable =
+            selectedBodyParts.size > 0 && currentView === "sections";
+          if (frontLayer)
+            frontLayer.classList.toggle("sections-disabled", shouldDisable);
+          if (backLayer)
+            backLayer.classList.toggle("sections-disabled", shouldDisable);
+        }
+
+        // Add click handler to a bp-highlight-ellipse so clicking it deselects
+        function makeEllipseClickable(ellipse, bpId) {
+          ellipse.addEventListener("click", function (e) {
+            e.stopPropagation();
+            toggleBodyPart(bpId);
+          });
+        }
+
         function getBodyPartIdsForOrgan(organId) {
           return BODY_PARTS_DATA.filter((bp) =>
             bp.organIds.includes(organId),
@@ -5678,6 +5714,7 @@
                   ellipse.setAttribute("ry", r.ry);
                   ellipse.setAttribute("class", "bp-highlight-ellipse");
                   ellipse.setAttribute("data-bp-id", bpId);
+                  makeEllipseClickable(ellipse, bpId);
                   bpLayer.appendChild(ellipse);
                 });
               }
@@ -5688,6 +5725,7 @@
             );
             if (li) li.classList.toggle("active", selectedBodyParts.has(bpId));
 
+            updateSectionHitAreaState();
             renderBodyPartCards();
             renderSelectedList();
             return;
