@@ -13,7 +13,7 @@ Milestone 1 refactors a 7K-line monolithic HTML file into a distributable, frame
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Scaffolding & Asset Extraction** - Set up Vite + Lit + TypeScript build pipeline and extract all base64 assets into external files
+- [x] **Phase 1: Scaffolding & Asset Extraction** - Set up Vite + Lit + TypeScript build pipeline and extract all base64 assets into external files (completed 2026-03-29)
 - [ ] **Phase 2: Core SVG Body Model** - Build the `<body-map-model>` sub-component with organ layers, hit areas, hover/click interaction, and lazy image loading
 - [ ] **Phase 3: Body Systems Sidebar & Detail Panel** - Build `<body-map-sidebar>` and `<body-map-detail-panel>` with bidirectional organ-to-system selection
 - [ ] **Phase 4: Data Layer, Disease/Symptom Panels & Modal** - Implement lazy per-body-part JSON loading, disease/symptom lists with search, and the organ detail modal
@@ -34,12 +34,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 3. All organ PNGs exist as separate WebP files in the `src/assets/` directory — zero base64 strings remain in HTML or JS source
 4. A developer can edit a component file and see the change reflected in the browser without a manual refresh
 5. The monolithic HTML file is no longer the development artifact — the Vite project is the canonical source
-   **Plans:** 1/2 plans executed
+   **Plans:** 2/2 plans complete
 
 Plans:
 
 - [x] 01-01-PLAN.md — Scaffold Vite + Lit + TS build pipeline with component shell and CSS design tokens
-- [ ] 01-02-PLAN.md — Extract base64 images to WebP, convert data files to JSON, validate production build
+- [x] 01-02-PLAN.md — Extract base64 images to WebP, convert data files to JSON, validate production build
 
 ### Phase 2: Core SVG Body Model
 
@@ -124,7 +124,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase                                         | Plans Complete | Status      | Completed |
 | --------------------------------------------- | -------------- | ----------- | --------- |
-| 1. Scaffolding & Asset Extraction             | 1/2 | In Progress|  |
+| 1. Scaffolding & Asset Extraction             | 2/2 | Complete   | 2026-03-29 |
 | 2. Core SVG Body Model                        | 0/TBD          | Not started | -         |
 | 3. Body Systems Sidebar & Detail Panel        | 0/TBD          | Not started | -         |
 | 4. Data Layer, Disease/Symptom Panels & Modal | 0/TBD          | Not started | -         |

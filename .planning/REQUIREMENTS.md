@@ -10,8 +10,8 @@ Requirements for Milestone 1: Body Map App Refactor & Web Component. Each maps t
 ### Build & Scaffolding
 
 - [x] **BUILD-01**: Project scaffolded with Vite + Lit + TypeScript build pipeline
-- [ ] **BUILD-02**: All base64-encoded PNGs extracted from HTML into separate image files
-- [ ] **BUILD-03**: Extracted PNGs converted to WebP format for optimized delivery
+- [x] **BUILD-02**: All base64-encoded PNGs extracted from HTML into separate image files
+- [x] **BUILD-03**: Extracted PNGs converted to WebP format for optimized delivery
 - [x] **BUILD-04**: Development server with hot reload for component development
 - [x] **BUILD-05**: Production build outputs a single distributable Web Component bundle
 
@@ -120,8 +120,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase   | Status  |
 | ----------- | ------- | ------- |
 | BUILD-01    | Phase 1 | Complete |
-| BUILD-02    | Phase 1 | Pending |
-| BUILD-03    | Phase 1 | Pending |
+| BUILD-02    | Phase 1 | Complete |
+| BUILD-03    | Phase 1 | Complete |
 | BUILD-04    | Phase 1 | Complete |
 | BUILD-05    | Phase 1 | Complete |
 | MODEL-01    | Phase 2 | Pending |
