@@ -117,17 +117,58 @@ Explicitly excluded. Documented to prevent scope creep.
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement               | Phase | Status |
-| ------------------------- | ----- | ------ |
-| (populated by roadmapper) |       |        |
+| Requirement | Phase   | Status  |
+| ----------- | ------- | ------- |
+| BUILD-01    | Phase 1 | Pending |
+| BUILD-02    | Phase 1 | Pending |
+| BUILD-03    | Phase 1 | Pending |
+| BUILD-04    | Phase 1 | Pending |
+| BUILD-05    | Phase 1 | Pending |
+| MODEL-01    | Phase 2 | Pending |
+| MODEL-02    | Phase 2 | Pending |
+| MODEL-03    | Phase 2 | Pending |
+| MODEL-04    | Phase 2 | Pending |
+| MODEL-05    | Phase 2 | Pending |
+| MODEL-06    | Phase 2 | Pending |
+| MODEL-07    | Phase 2 | Pending |
+| SYSTEM-01   | Phase 3 | Pending |
+| SYSTEM-02   | Phase 3 | Pending |
+| SYSTEM-03   | Phase 3 | Pending |
+| SYSTEM-04   | Phase 3 | Pending |
+| SYSTEM-05   | Phase 3 | Pending |
+| DATA-01     | Phase 4 | Pending |
+| DATA-02     | Phase 4 | Pending |
+| DATA-03     | Phase 4 | Pending |
+| DATA-04     | Phase 4 | Pending |
+| DATA-05     | Phase 4 | Pending |
+| MODAL-01    | Phase 4 | Pending |
+| MODAL-02    | Phase 4 | Pending |
+| MODAL-03    | Phase 4 | Pending |
+| MODAL-04    | Phase 4 | Pending |
+| API-01      | Phase 5 | Pending |
+| API-02      | Phase 5 | Pending |
+| API-03      | Phase 5 | Pending |
+| API-04      | Phase 5 | Pending |
+| API-05      | Phase 5 | Pending |
+| UX-01       | Phase 6 | Pending |
+| UX-02       | Phase 6 | Pending |
+| UX-03       | Phase 6 | Pending |
+| UX-04       | Phase 6 | Pending |
+| UX-05       | Phase 6 | Pending |
+| BACK-01     | Phase 6 | Pending |
+| BACK-02     | Phase 6 | Pending |
+| BACK-03     | Phase 6 | Pending |
+| PERF-01     | Phase 6 | Pending |
+| PERF-02     | Phase 6 | Pending |
+| PERF-03     | Phase 6 | Pending |
 
 **Coverage:**
 
-- v1 requirements: 30 total
-- Mapped to phases: 0
-- Unmapped: 30
+- v1 requirements: 42 total
+- Mapped to phases: 42
+- Unmapped: 0
 
 ---
 
 _Requirements defined: 2026-03-29_
-_Last updated: 2026-03-29 after initial definition_
+_Last updated: 2026-03-29 after roadmap creation — traceability populated, coverage corrected from 30 to 42_
