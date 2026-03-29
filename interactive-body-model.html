@@ -6459,6 +6459,105 @@
         var SYMPTOMS_BY_BP = window.SYMPTOMS_BY_BODY_PART || {};
         var diseaseSearchTimer = null;
         var symptomSectionSearchTimer = null;
+        var diseaseSearchFirstKeystroke = true;
+        var symptomSectionSearchFirstKeystroke = true;
+        var GLOBAL_SEARCH_MAX_RESULTS = 300;
+        var ALL_DISEASES = buildGlobalDiseasesPool();
+        var ALL_SYMPTOMS = buildGlobalSymptomsPool();
+
+        function buildGlobalDiseasesPool() {
+          var seen = {};
+          var result = [];
+          Object.keys(DISEASES_BY_BP).forEach(function (bpId) {
+            var diseases = DISEASES_BY_BP[bpId];
+            if (!Array.isArray(diseases)) return;
+            for (var i = 0; i < diseases.length; i++) {
+              var d = diseases[i];
+              if (!d || !d.name) continue;
+              var key = (d.name || "") + "::" + (d.code || "");
+              if (seen[key]) continue;
+              seen[key] = true;
+              result.push({ name: d.name, code: d.code || "" });
+            }
+          });
+          result.sort(function (a, b) {
+            return a.name.localeCompare(b.name, undefined, {
+              sensitivity: "base",
+            });
+          });
+          return result;
+        }
+
+        function buildGlobalSymptomsPool() {
+          if (Array.isArray(FULL_SYMPTOMS) && FULL_SYMPTOMS.length > 0) {
+            return FULL_SYMPTOMS.slice();
+          }
+          var seen = {};
+          var result = [];
+          Object.keys(SYMPTOMS_BY_BP).forEach(function (bpId) {
+            var symptoms = SYMPTOMS_BY_BP[bpId];
+            if (!Array.isArray(symptoms)) return;
+            for (var i = 0; i < symptoms.length; i++) {
+              var s = symptoms[i];
+              if (!s || seen[s]) continue;
+              seen[s] = true;
+              result.push(s);
+            }
+          });
+          result.sort(function (a, b) {
+            return a.localeCompare(b, undefined, { sensitivity: "base" });
+          });
+          return result;
+        }
+
+        function filterGlobalDiseases(query) {
+          var lowerQuery = query.toLowerCase();
+          var results = [];
+          for (var i = 0; i < ALL_DISEASES.length; i++) {
+            var disease = ALL_DISEASES[i];
+            if (
+              disease.name.toLowerCase().indexOf(lowerQuery) !== -1 ||
+              disease.code.toLowerCase().indexOf(lowerQuery) !== -1
+            ) {
+              results.push(disease);
+              if (results.length >= GLOBAL_SEARCH_MAX_RESULTS) break;
+            }
+          }
+          return results;
+        }
+
+        function filterGlobalSymptoms(query) {
+          var lowerQuery = query.toLowerCase();
+          var results = [];
+          for (var i = 0; i < ALL_SYMPTOMS.length; i++) {
+            if (ALL_SYMPTOMS[i].toLowerCase().indexOf(lowerQuery) !== -1) {
+              results.push(ALL_SYMPTOMS[i]);
+              if (results.length >= GLOBAL_SEARCH_MAX_RESULTS) break;
+            }
+          }
+          return results;
+        }
+
+        function renderColumnSearchSkeleton(listEl) {
+          listEl.textContent = "";
+          var widths = [
+            "long",
+            "medium",
+            "short",
+            "long",
+            "medium",
+            "short",
+            "medium",
+          ];
+          widths.forEach(function (w) {
+            var li = document.createElement("li");
+            li.className = "symptom-skeleton-item";
+            var bar = document.createElement("div");
+            bar.className = "symptom-skeleton-bar " + w;
+            li.appendChild(bar);
+            listEl.appendChild(li);
+          });
+        }
 
         window.toggleSectionCollapse = function (sectionId) {
           var section = document.getElementById(sectionId);
@@ -6472,6 +6571,10 @@
             return;
           }
           container.classList.add("visible");
+          clearTimeout(diseaseSearchTimer);
+          clearTimeout(symptomSectionSearchTimer);
+          diseaseSearchFirstKeystroke = true;
+          symptomSectionSearchFirstKeystroke = true;
           document.getElementById("diseaseSearchInput").value = "";
           document.getElementById("symptomSectionSearchInput").value = "";
           renderDiseaseList();
@@ -6523,20 +6626,14 @@
         }
 
         function renderDiseaseList(filterQuery) {
-          var diseases = getDiseasesForSelection();
-          if (filterQuery) {
-            var q = filterQuery.toLowerCase();
-            diseases = diseases.filter(function (d) {
-              return (
-                d.name.toLowerCase().indexOf(q) !== -1 ||
-                d.code.toLowerCase().indexOf(q) !== -1
-              );
-            });
-          }
+          var isSearchMode = !!filterQuery;
+          var diseases = isSearchMode
+            ? filterGlobalDiseases(filterQuery)
+            : getDiseasesForSelection();
           document.getElementById("diseaseCount").textContent = diseases.length;
           var listEl = document.getElementById("diseaseList");
           var BATCH_SIZE = 200;
-          var toRender = diseases.slice(0, BATCH_SIZE);
+          var toRender = isSearchMode ? diseases : diseases.slice(0, BATCH_SIZE);
           var fragment = document.createDocumentFragment();
 
           if (diseases.length === 0) {
@@ -6553,7 +6650,7 @@
               li.title = toRender[i].code;
               fragment.appendChild(li);
             }
-            if (diseases.length > BATCH_SIZE) {
+            if (!isSearchMode && diseases.length > BATCH_SIZE) {
               var moreLi = document.createElement("li");
               moreLi.className = "show-more-item";
               var remaining = diseases.length - BATCH_SIZE;
@@ -6578,13 +6675,10 @@
         }
 
         function renderSymptomSectionList(filterQuery) {
-          var symptoms = getSymptomsForSelection();
-          if (filterQuery) {
-            var q = filterQuery.toLowerCase();
-            symptoms = symptoms.filter(function (s) {
-              return s.toLowerCase().indexOf(q) !== -1;
-            });
-          }
+          var isSearchMode = !!filterQuery;
+          var symptoms = isSearchMode
+            ? filterGlobalSymptoms(filterQuery)
+            : getSymptomsForSelection();
           document.getElementById("symptomCount").textContent = symptoms.length;
           var listEl = document.getElementById("symptomSectionList");
           var fragment = document.createDocumentFragment();
@@ -6611,20 +6705,68 @@
         document
           .getElementById("diseaseSearchInput")
           .addEventListener("input", function () {
-            clearTimeout(diseaseSearchTimer);
             var q = this.value.trim();
+            if (q.length === 0) {
+              diseaseSearchFirstKeystroke = true;
+              clearTimeout(diseaseSearchTimer);
+              renderDiseaseList();
+              return;
+            }
+            if (diseaseSearchFirstKeystroke) {
+              diseaseSearchFirstKeystroke = false;
+              renderColumnSearchSkeleton(document.getElementById("diseaseList"));
+              clearTimeout(diseaseSearchTimer);
+              diseaseSearchTimer = setTimeout(function () {
+                var currentQ = document
+                  .getElementById("diseaseSearchInput")
+                  .value.trim();
+                if (currentQ.length === 0) return;
+                renderDiseaseList(currentQ);
+              }, 1000);
+              return;
+            }
+            clearTimeout(diseaseSearchTimer);
             diseaseSearchTimer = setTimeout(function () {
-              renderDiseaseList(q);
-            }, 200);
+              var currentQ = document
+                .getElementById("diseaseSearchInput")
+                .value.trim();
+              if (currentQ.length === 0) return;
+              renderDiseaseList(currentQ);
+            }, 250);
           });
         document
           .getElementById("symptomSectionSearchInput")
           .addEventListener("input", function () {
-            clearTimeout(symptomSectionSearchTimer);
             var q = this.value.trim();
+            if (q.length === 0) {
+              symptomSectionSearchFirstKeystroke = true;
+              clearTimeout(symptomSectionSearchTimer);
+              renderSymptomSectionList();
+              return;
+            }
+            if (symptomSectionSearchFirstKeystroke) {
+              symptomSectionSearchFirstKeystroke = false;
+              renderColumnSearchSkeleton(
+                document.getElementById("symptomSectionList"),
+              );
+              clearTimeout(symptomSectionSearchTimer);
+              symptomSectionSearchTimer = setTimeout(function () {
+                var currentQ = document
+                  .getElementById("symptomSectionSearchInput")
+                  .value.trim();
+                if (currentQ.length === 0) return;
+                renderSymptomSectionList(currentQ);
+              }, 1000);
+              return;
+            }
+            clearTimeout(symptomSectionSearchTimer);
             symptomSectionSearchTimer = setTimeout(function () {
-              renderSymptomSectionList(q);
-            }, 200);
+              var currentQ = document
+                .getElementById("symptomSectionSearchInput")
+                .value.trim();
+              if (currentQ.length === 0) return;
+              renderSymptomSectionList(currentQ);
+            }, 250);
           });
 
         renderBodyPartsNavPanel();
