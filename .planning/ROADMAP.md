@@ -34,7 +34,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 3. All organ PNGs exist as separate WebP files in the `src/assets/` directory — zero base64 strings remain in HTML or JS source
 4. A developer can edit a component file and see the change reflected in the browser without a manual refresh
 5. The monolithic HTML file is no longer the development artifact — the Vite project is the canonical source
-   **Plans**: TBD
+   **Plans:** 2 plans
+
+Plans:
+
+- [ ] 01-01-PLAN.md — Scaffold Vite + Lit + TS build pipeline with component shell and CSS design tokens
+- [ ] 01-02-PLAN.md — Extract base64 images to WebP, convert data files to JSON, validate production build
 
 ### Phase 2: Core SVG Body Model
 
@@ -119,7 +124,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase                                         | Plans Complete | Status      | Completed |
 | --------------------------------------------- | -------------- | ----------- | --------- |
-| 1. Scaffolding & Asset Extraction             | 0/TBD          | Not started | -         |
+| 1. Scaffolding & Asset Extraction             | 0/2            | Planning    | -         |
 | 2. Core SVG Body Model                        | 0/TBD          | Not started | -         |
 | 3. Body Systems Sidebar & Detail Panel        | 0/TBD          | Not started | -         |
 | 4. Data Layer, Disease/Symptom Panels & Modal | 0/TBD          | Not started | -         |
