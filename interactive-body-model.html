@@ -2332,7 +2332,6 @@
             <div class="tooltip-panel-processes" id="tooltipProcesses"></div>
           </div>
         </div>
-
       </div>
 
       <!-- Column 4 sections: body parts + diseases + symptoms -->
@@ -3084,6 +3083,67 @@
         });
         let activeSystem = null;
 
+        // --- System-to-body-parts mapping ---
+        const SYSTEM_TO_BODY_PARTS = {
+          cardiovascular: ["bp_heart", "bp_blood_vessels", "bp_blood"],
+          digestive: [
+            "bp_stomach",
+            "bp_intestines",
+            "bp_colon",
+            "bp_rectum",
+            "bp_anus",
+            "bp_liver",
+            "bp_gallbladder",
+            "bp_pancreas",
+          ],
+          endocrine: [
+            "bp_pancreas",
+            "bp_thyroid",
+            "bp_parathyroid",
+            "bp_adrenal",
+            "bp_pituitary",
+            "bp_salivary_glands",
+            "bp_mammary",
+          ],
+          immune: [
+            "bp_lymphnode",
+            "bp_spleen",
+            "bp_appendix",
+            "bp_white_blood_cells",
+          ],
+          integumentary: ["bp_skin", "bp_hair"],
+          muscular: ["bp_muscles", "bp_tendons", "bp_skin"],
+          nervous: ["bp_brain", "bp_nerves", "bp_spine"],
+          reproductive: null,
+          respiratory: ["bp_lungs"],
+          skeletal: ["bp_bones", "bp_joints"],
+          urinary: [
+            "bp_kidneys",
+            "bp_bladder",
+            "bp_urinary_tract",
+            "bp_urethra",
+          ],
+        };
+
+        const REPRODUCTIVE_BODY_PARTS = {
+          female: [
+            "bp_vagina",
+            "bp_vulva",
+            "bp_uterus",
+            "bp_fallopian_tubes",
+            "bp_ovaries",
+            "bp_breasts",
+          ],
+          male: ["bp_penis", "bp_testicles", "bp_prostate"],
+        };
+
+        function getBodyPartsForSystem(systemId) {
+          if (systemId === "reproductive") {
+            return REPRODUCTIVE_BODY_PARTS[currentGender] || [];
+          }
+          return SYSTEM_TO_BODY_PARTS[systemId] || [];
+        }
+
         // --- Render systems sidebar ---
         function renderSystemsSidebar() {
           const list = document.getElementById("systemsList");
@@ -3270,17 +3330,56 @@
                 if (g) g.classList.remove("selected");
               });
             }
+            // Clear previous system's auto-added body parts
+            systemSelectedBodyParts.forEach(function (bpId) {
+              selectedBodyParts.delete(bpId);
+              // Remove section ellipses
+              var bpLayer = document.getElementById("bp-highlight-layer");
+              if (bpLayer) {
+                bpLayer
+                  .querySelectorAll('[data-bp-id="' + bpId + '"]')
+                  .forEach(function (el) {
+                    el.remove();
+                  });
+              }
+              // Clean up organ highlights for removed body parts
+              var bp = BODY_PARTS_DATA.find(function (b) {
+                return b.id === bpId;
+              });
+              if (bp && bp.organIds) {
+                bp.organIds.forEach(function (organId) {
+                  var keptByOther = [...selectedBodyParts].some(
+                    function (otherId) {
+                      var other = BODY_PARTS_DATA.find(function (b) {
+                        return b.id === otherId;
+                      });
+                      return other && other.organIds.includes(organId);
+                    },
+                  );
+                  if (!keptByOther) {
+                    selectedOrgans.delete(organId);
+                    var group = document.getElementById("group-" + organId);
+                    if (group) group.classList.remove("selected");
+                    document
+                      .querySelectorAll('[data-part="' + organId + '"]')
+                      .forEach(function (el) {
+                        el.classList.remove("selected");
+                      });
+                  }
+                });
+              }
+            });
+            systemSelectedBodyParts.clear();
           }
 
           activeSystem = systemId;
 
-          // Highlight all mapped organs
+          // Highlight all mapped SVG organs
           const sys = BODY_SYSTEMS.find(function (s) {
             return s.id === systemId;
           });
           if (sys) {
             sys.organs.forEach(function (organId) {
-              // Skip hidden gender organs
               if (organId === "male_reproductive" && currentGender !== "male")
                 return;
               if (
@@ -3295,6 +3394,67 @@
             });
           }
 
+          // Auto-select body parts for this system
+          systemSelectedBodyParts.clear();
+          var bpIds = getBodyPartsForSystem(systemId);
+          bpIds.forEach(function (bpId) {
+            if (!selectedBodyParts.has(bpId)) {
+              systemSelectedBodyParts.add(bpId);
+            }
+            selectedBodyParts.add(bpId);
+
+            // Highlight SVG organs for each body part
+            var bp = BODY_PARTS_DATA.find(function (b) {
+              return b.id === bpId;
+            });
+            if (bp && bp.organIds) {
+              bp.organIds.forEach(function (organId) {
+                selectedOrgans.add(organId);
+                var group = document.getElementById("group-" + organId);
+                if (group) group.classList.add("selected");
+                document
+                  .querySelectorAll('[data-part="' + organId + '"]')
+                  .forEach(function (el) {
+                    el.classList.add("selected");
+                  });
+              });
+            }
+          });
+
+          // Handle sections view: add ellipse highlights
+          if (currentView === "sections") {
+            var bpLayer = document.getElementById("bp-highlight-layer");
+            if (bpLayer) {
+              bpIds.forEach(function (bpId) {
+                var regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
+                if (!regionData) return;
+                bpLayer
+                  .querySelectorAll('[data-bp-id="' + bpId + '"]')
+                  .forEach(function (el) {
+                    el.remove();
+                  });
+                var regions = Array.isArray(regionData)
+                  ? regionData
+                  : [regionData];
+                regions.forEach(function (r) {
+                  var ellipse = document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "ellipse",
+                  );
+                  ellipse.setAttribute("cx", r.cx);
+                  ellipse.setAttribute("cy", r.cy);
+                  ellipse.setAttribute("rx", r.rx);
+                  ellipse.setAttribute("ry", r.ry);
+                  ellipse.setAttribute("class", "bp-highlight-ellipse");
+                  ellipse.setAttribute("data-bp-id", bpId);
+                  makeEllipseClickable(ellipse, bpId);
+                  bpLayer.appendChild(ellipse);
+                });
+              });
+              updateSectionHitAreaState();
+            }
+          }
+
           // Update sidebar active class
           document.querySelectorAll(".systems-list li").forEach(function (li) {
             li.classList.remove("active");
@@ -3303,6 +3463,8 @@
           if (activeLi) activeLi.classList.add("active");
 
           showTooltip(systemId);
+          renderBodyPartsNavPanel();
+          renderBodyPartCards();
           renderSelectedList();
         }
 
@@ -3320,6 +3482,48 @@
               });
             }
           }
+
+          // Remove system-added body parts
+          var bpLayer = document.getElementById("bp-highlight-layer");
+          systemSelectedBodyParts.forEach(function (bpId) {
+            selectedBodyParts.delete(bpId);
+            // Remove section ellipses
+            if (bpLayer) {
+              bpLayer
+                .querySelectorAll('[data-bp-id="' + bpId + '"]')
+                .forEach(function (el) {
+                  el.remove();
+                });
+            }
+            // Clean up organ highlights for removed body parts
+            var bp = BODY_PARTS_DATA.find(function (b) {
+              return b.id === bpId;
+            });
+            if (bp && bp.organIds) {
+              bp.organIds.forEach(function (organId) {
+                var keptByOther = [...selectedBodyParts].some(
+                  function (otherId) {
+                    var other = BODY_PARTS_DATA.find(function (b) {
+                      return b.id === otherId;
+                    });
+                    return other && other.organIds.includes(organId);
+                  },
+                );
+                if (!keptByOther) {
+                  selectedOrgans.delete(organId);
+                  var group = document.getElementById("group-" + organId);
+                  if (group) group.classList.remove("selected");
+                  document
+                    .querySelectorAll('[data-part="' + organId + '"]')
+                    .forEach(function (g) {
+                      g.classList.remove("selected");
+                    });
+                }
+              });
+            }
+          });
+          systemSelectedBodyParts.clear();
+
           activeSystem = null;
 
           document.querySelectorAll(".systems-list li").forEach(function (li) {
@@ -3327,12 +3531,16 @@
           });
 
           hideTooltip();
+          if (currentView === "sections") updateSectionHitAreaState();
+          renderBodyPartsNavPanel();
+          renderBodyPartCards();
           renderSelectedList();
         }
 
         function clearActiveSystemUI() {
           if (!activeSystem) return;
           activeSystem = null;
+          systemSelectedBodyParts.clear();
           document.querySelectorAll(".systems-list li").forEach(function (li) {
             li.classList.remove("active");
           });
@@ -4593,6 +4801,75 @@
             const g = document.getElementById("group-" + hideKey);
             if (g) g.classList.remove("selected");
             renderSelectedList();
+          }
+
+          // If reproductive system is active, swap body parts to match new gender
+          if (activeSystem === "reproductive") {
+            var oldGender = gender === "male" ? "female" : "male";
+            var oldBpIds = REPRODUCTIVE_BODY_PARTS[oldGender] || [];
+            var newBpIds = REPRODUCTIVE_BODY_PARTS[gender] || [];
+            var bpLayer = document.getElementById("bp-highlight-layer");
+
+            // Remove old gender's body parts
+            oldBpIds.forEach(function (bpId) {
+              systemSelectedBodyParts.delete(bpId);
+              selectedBodyParts.delete(bpId);
+              if (bpLayer) {
+                bpLayer
+                  .querySelectorAll('[data-bp-id="' + bpId + '"]')
+                  .forEach(function (el) {
+                    el.remove();
+                  });
+              }
+            });
+
+            // Add new gender's body parts
+            newBpIds.forEach(function (bpId) {
+              if (!selectedBodyParts.has(bpId)) {
+                systemSelectedBodyParts.add(bpId);
+              }
+              selectedBodyParts.add(bpId);
+
+              // Highlight SVG organs
+              var bp = BODY_PARTS_DATA.find(function (b) {
+                return b.id === bpId;
+              });
+              if (bp && bp.organIds) {
+                bp.organIds.forEach(function (organId) {
+                  selectedOrgans.add(organId);
+                  var group = document.getElementById("group-" + organId);
+                  if (group) group.classList.add("selected");
+                });
+              }
+
+              // Add section ellipses if in sections view
+              if (currentView === "sections" && bpLayer) {
+                var regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
+                if (regionData) {
+                  var regions = Array.isArray(regionData)
+                    ? regionData
+                    : [regionData];
+                  regions.forEach(function (r) {
+                    var ellipse = document.createElementNS(
+                      "http://www.w3.org/2000/svg",
+                      "ellipse",
+                    );
+                    ellipse.setAttribute("cx", r.cx);
+                    ellipse.setAttribute("cy", r.cy);
+                    ellipse.setAttribute("rx", r.rx);
+                    ellipse.setAttribute("ry", r.ry);
+                    ellipse.setAttribute("class", "bp-highlight-ellipse");
+                    ellipse.setAttribute("data-bp-id", bpId);
+                    makeEllipseClickable(ellipse, bpId);
+                    bpLayer.appendChild(ellipse);
+                  });
+                }
+              }
+            });
+
+            if (currentView === "sections") updateSectionHitAreaState();
+            renderBodyPartsNavPanel();
+            renderBodyPartCards();
           }
         };
 
@@ -5878,6 +6155,7 @@
 
         // --- Body Parts nav state ---
         const selectedBodyParts = new Set(); // tracks nav-selected body part IDs
+        const systemSelectedBodyParts = new Set(); // tracks body parts auto-added by system click
         let isBodyPartsNavSorted = false;
 
         // Disable/enable section hit areas based on whether body parts are selected
@@ -6020,6 +6298,7 @@
 
             if (selectedBodyParts.has(bpId)) {
               selectedBodyParts.delete(bpId);
+              systemSelectedBodyParts.delete(bpId);
               // Remove highlight ellipses for this body part
               bpLayer
                 .querySelectorAll(`[data-bp-id="${bpId}"]`)
@@ -6061,6 +6340,7 @@
           if (selectedBodyParts.has(bpId)) {
             // Deselect
             selectedBodyParts.delete(bpId);
+            systemSelectedBodyParts.delete(bpId);
             // Remove organ highlights (only if not kept by active system or other nav selection)
             bp.organIds.forEach((organId) => {
               const keptBySystem =
