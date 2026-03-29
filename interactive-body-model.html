@@ -248,6 +248,34 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+      }
+      .disease-section-header:hover,
+      .symptom-section-header:hover {
+        background: #505358;
+      }
+      .section-chevron {
+        font-size: 12px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .collapsed .section-chevron {
+        transform: rotate(-90deg);
+      }
+      .section-collapsible {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition:
+          grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.25s ease;
+        opacity: 1;
+      }
+      .collapsed .section-collapsible {
+        grid-template-rows: 0fr;
+        opacity: 0;
+      }
+      .section-collapsible-inner {
+        overflow: hidden;
       }
       .section-count-badge {
         background: #6cb5f4;
@@ -2341,44 +2369,60 @@
           class="body-part-cards-container"
           id="bodyPartCardsContainer"
         ></div>
-        <!-- Diseases section -->
-        <div class="disease-section" id="diseaseSection">
-          <div class="disease-section-header">
-            <span
-              >Diseases
-              <span class="section-count-badge" id="diseaseCount">0</span></span
-            >
-          </div>
-          <div class="section-search">
-            <input
-              type="text"
-              id="diseaseSearchInput"
-              placeholder="Search diseases..."
-              autocomplete="off"
-            />
-          </div>
-          <div class="disease-list-container">
-            <ul class="disease-list" id="diseaseList"></ul>
-          </div>
-        </div>
         <!-- Symptoms section -->
         <div class="symptom-section" id="symptomSection">
-          <div class="symptom-section-header">
+          <div
+            class="symptom-section-header"
+            onclick="toggleSectionCollapse('symptomSection')"
+          >
             <span
               >Symptoms
               <span class="section-count-badge" id="symptomCount">0</span></span
             >
+            <span class="section-chevron">&#9660;</span>
           </div>
-          <div class="section-search">
-            <input
-              type="text"
-              id="symptomSectionSearchInput"
-              placeholder="Search symptoms..."
-              autocomplete="off"
-            />
+          <div class="section-collapsible">
+            <div class="section-collapsible-inner">
+              <div class="section-search">
+                <input
+                  type="text"
+                  id="symptomSectionSearchInput"
+                  placeholder="Search symptoms..."
+                  autocomplete="off"
+                />
+              </div>
+              <div class="symptom-list-container">
+                <ul class="symptom-list" id="symptomSectionList"></ul>
+              </div>
+            </div>
           </div>
-          <div class="symptom-list-container">
-            <ul class="symptom-list" id="symptomSectionList"></ul>
+        </div>
+        <!-- Diseases section -->
+        <div class="disease-section" id="diseaseSection">
+          <div
+            class="disease-section-header"
+            onclick="toggleSectionCollapse('diseaseSection')"
+          >
+            <span
+              >Diseases
+              <span class="section-count-badge" id="diseaseCount">0</span></span
+            >
+            <span class="section-chevron">&#9660;</span>
+          </div>
+          <div class="section-collapsible">
+            <div class="section-collapsible-inner">
+              <div class="section-search">
+                <input
+                  type="text"
+                  id="diseaseSearchInput"
+                  placeholder="Search diseases..."
+                  autocomplete="off"
+                />
+              </div>
+              <div class="disease-list-container">
+                <ul class="disease-list" id="diseaseList"></ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -6415,6 +6459,11 @@
         var SYMPTOMS_BY_BP = window.SYMPTOMS_BY_BODY_PART || {};
         var diseaseSearchTimer = null;
         var symptomSectionSearchTimer = null;
+
+        window.toggleSectionCollapse = function (sectionId) {
+          var section = document.getElementById(sectionId);
+          if (section) section.classList.toggle("collapsed");
+        };
 
         function renderSpanningSections() {
           var container = document.getElementById("spanningSections");
