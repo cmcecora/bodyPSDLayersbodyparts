@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 planned — 2 plans in 2 waves, verified
-last_updated: "2026-03-29T21:10:00.000Z"
-last_activity: 2026-03-29 — Phase 1 plans created and verified (2 plans, 2 waves)
+status: executing
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-29T21:18:22.069Z"
+last_activity: 2026-03-29
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 2
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Make health information discovery intuitive and visual — users start from "where it hurts" and navigate a rich medical knowledge graph.
-**Current focus:** Phase 1 — Scaffolding & Asset Extraction
+**Current focus:** Phase 01 — scaffolding-asset-extraction
 
 ## Current Position
 
-Phase: 1 of 6 (Scaffolding & Asset Extraction)
-Plan: 0 of 2 in current phase
-Status: Planned — ready to execute
-Last activity: 2026-03-29 — Phase 1 plans created and verified
+Phase: 01 (scaffolding-asset-extraction) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-03-29
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: —
 
 _Updated after each plan completion_
+| Phase 01-scaffolding-asset-extraction P01 | 2min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - Roadmap: Lit v3 + Vite library mode + TypeScript chosen as stack (research confirmed)
 - Roadmap: BUILD-05 (production bundle) kept in Phase 1 — build pipeline must prove it can output a distributable bundle from day one, not deferred to Phase 5
 - Roadmap: BACK-02 (male back-view artwork) placed in Phase 6 — artwork does not yet exist, so Phase 6 is where sourcing and integration happen
+- [Phase 01-scaffolding-asset-extraction]: assetsInlineLimit: 0 in Vite config prevents base64 images from leaking into JS bundle
+- [Phase 01-scaffolding-asset-extraction]: useDefineForClassFields: false in tsconfig required for Lit property decorators to work correctly
+- [Phase 01-scaffolding-asset-extraction]: Lit v3 bundled (not externalized) — ES+UMD outputs at 25 KB / 20 KB, both under 500 KB limit
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T20:57:11.351Z
-Stopped at: Phase 1 planned — ready to execute
-Resume file: .planning/phases/01-scaffolding-asset-extraction/01-01-PLAN.md
+Last session: 2026-03-29T21:18:22.065Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None
