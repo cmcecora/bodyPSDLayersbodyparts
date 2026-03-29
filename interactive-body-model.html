@@ -4770,6 +4770,8 @@
 
           const isOrgansView = view === "organs" || view === "organs2";
           const isSectionsView = view === "sections";
+          const showFrontSections = isSectionsView && !isFlipped;
+          const showBackSections = isSectionsView && isFlipped;
 
           // On initial load, skip the fade animation since layers are already
           // set to correct visibility via inline styles
@@ -4777,10 +4779,10 @@
             initialViewLoaded = true;
             // Just set display properties without animation
             organsLayer.style.display = isOrgansView ? "" : "none";
-            sectionsLayer.style.display = isSectionsView && !isFlipped ? "" : "none";
-            backSectionsLayer.style.display = isSectionsView && isFlipped ? "" : "none";
+            sectionsLayer.style.display = showFrontSections ? "" : "none";
+            backSectionsLayer.style.display = showBackSections ? "" : "none";
 
-            if (isSectionsView && !isFlipped) {
+            if (showFrontSections) {
               bpLayer.style.display = "";
               // Re-create ellipses for any body parts already selected
               while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
@@ -4806,13 +4808,18 @@
                 });
               });
               updateSectionHitAreaState();
+            } else {
+              if (bpLayer) {
+                bpLayer.style.display = "none";
+                while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
+              }
             }
 
             // Set initial opacities
             organsLayer.style.opacity = isOrgansView ? "1" : "0";
-            sectionsLayer.style.opacity = isSectionsView && !isFlipped ? "1" : "0";
-            backSectionsLayer.style.opacity = isSectionsView && isFlipped ? "1" : "0";
-            bpLayer.style.opacity = isSectionsView && !isFlipped ? "1" : "0";
+            sectionsLayer.style.opacity = showFrontSections ? "1" : "0";
+            backSectionsLayer.style.opacity = showBackSections ? "1" : "0";
+            bpLayer.style.opacity = showFrontSections ? "1" : "0";
           } else {
             // Smooth crossfade transition for subsequent view switches
             // First, fade out all layers
@@ -4825,11 +4832,11 @@
             setTimeout(function() {
               // Set display properties
               organsLayer.style.display = isOrgansView ? "" : "none";
-              sectionsLayer.style.display = isSectionsView && !isFlipped ? "" : "none";
-              backSectionsLayer.style.display = isSectionsView && isFlipped ? "" : "none";
+              sectionsLayer.style.display = showFrontSections ? "" : "none";
+              backSectionsLayer.style.display = showBackSections ? "" : "none";
 
               // Show/hide body-part highlight overlay on sections view
-              if (isSectionsView && !isFlipped) {
+              if (showFrontSections) {
                 bpLayer.style.display = "";
                 // Re-create ellipses for any body parts already selected
                 while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
@@ -4866,9 +4873,11 @@
                 }
                 // Remove disabled state when leaving sections view
                 sectionsLayer.classList.remove("sections-disabled");
-                // Fade in organs layer
+                // Fade in the appropriate layer
                 if (isOrgansView) {
                   organsLayer.style.opacity = "1";
+                } else if (showBackSections) {
+                  backSectionsLayer.style.opacity = "1";
                 }
               }
             }, 50);
@@ -5006,16 +5015,21 @@
             // Show both layers during the flip so backface-visibility handles it
             sectionsLayer.style.display = "";
             backSectionsLayer.style.display = "";
+            sectionsLayer.style.opacity = "1";
+            backSectionsLayer.style.opacity = "1";
 
             // After the animation completes, hide the inactive layer
             setTimeout(function () {
               sectionsLayer.style.display = isFlipped ? "none" : "";
               backSectionsLayer.style.display = isFlipped ? "" : "none";
+              sectionsLayer.style.opacity = isFlipped ? "0" : "1";
+              backSectionsLayer.style.opacity = isFlipped ? "1" : "0";
             }, flipDuration);
 
             // Hide body-part highlights when flipped to back (no back regions defined yet)
             const bpLayer = document.getElementById("bp-highlight-layer");
             bpLayer.style.display = isFlipped ? "none" : "";
+            bpLayer.style.opacity = isFlipped ? "0" : "1";
           }
 
           inner.classList.toggle("flipped", isFlipped);
