@@ -4122,6 +4122,36 @@
           bp_penis: "sexual_organs_male",
           bp_prostate: "sexual_organs_male",
           bp_testicles: "sexual_organs_male",
+          // --- New granular body parts ---
+          bp_blood_vessels: "chest",
+          bp_cartilage: "knee",
+          bp_digestive_tract: "lower_abdomen",
+          bp_fallopian_tubes: "sexual_organs_female",
+          bp_fingers: "hand",
+          bp_groin: "lower_abdomen",
+          bp_hair: "head",
+          bp_knee: "knee",
+          bp_larynx: "neck_throat",
+          bp_lips: "oral_cavity",
+          bp_nails: "hand",
+          bp_sinuses: "nose",
+          bp_nerves: "head",
+          bp_ovaries: "sexual_organs_female",
+          bp_rectum: "lower_abdomen",
+          bp_respiratory_tract: "chest",
+          bp_salivary_glands: "oral_cavity",
+          bp_scalp: "head",
+          bp_skull: "head",
+          bp_tendons: "upper_arm",
+          bp_thigh: "thigh",
+          bp_thymus: "chest",
+          bp_toes: "foot",
+          bp_tongue: "oral_cavity",
+          bp_tonsils: "neck_throat",
+          bp_urinary_tract: "lower_abdomen",
+          bp_vagina: "sexual_organs_female",
+          bp_vulva: "sexual_organs_female",
+          bp_white_blood_cells: "chest",
         };
 
         // Approximate SVG coordinates for non-organ body parts (center of the body area)
@@ -4161,11 +4191,11 @@
         // Bilateral parts use an array of two regions (left + right, mirrored across x=349).
         const BODY_PART_HIGHLIGHT_REGIONS = {
           // --- Head & Neck (calibrated from zoomed grid overlay) ---
-          bp_head: { cx: 345, cy: 120, rx: 43, ry: 55 },
-          bp_face: { cx: 345, cy: 136, rx: 35, ry: 35 },
+          bp_head: { cx: 345, cy: 160, rx: 63, ry: 75 },
+          bp_face: { cx: 345, cy: 186, rx: 45, ry: 45 },
           bp_ears: [
-            { cx: 280, cy: 180, rx: 7, ry: 12 },
-            { cx: 410, cy: 180, rx: 7, ry: 12 },
+            { cx: 280, cy: 180, rx: 7, ry: 22 },
+            { cx: 410, cy: 180, rx: 7, ry: 22 },
           ],
           bp_eyes: [
             { cx: 310, cy: 175, rx: 10, ry: 6 },
@@ -4175,7 +4205,7 @@
           bp_mouth: { cx: 345, cy: 235, rx: 12, ry: 5 },
           bp_gums: { cx: 345, cy: 235, rx: 15, ry: 8 },
           bp_teeth: { cx: 345, cy: 235, rx: 10, ry: 4 },
-          bp_neck: { cx: 345, cy: 290, rx: 22, ry: 18 },
+          bp_neck: { cx: 345, cy: 290, rx: 42, ry: 18 },
           bp_throat: { cx: 345, cy: 290, rx: 16, ry: 18 },
           bp_brain: { cx: 345, cy: 100, rx: 38, ry: 35 },
           bp_pituitary: { cx: 345, cy: 112, rx: 8, ry: 8 },
@@ -4184,8 +4214,8 @@
           bp_heart: { cx: 370, cy: 420, rx: 32, ry: 42 },
           bp_blood: { cx: 345, cy: 500, rx: 80, ry: 150 },
           bp_lungs: [
-            { cx: 290, cy: 430, rx: 50, ry: 55 },
-            { cx: 390, cy: 430, rx: 50, ry: 55 },
+            { cx: 300, cy: 430, rx: 50, ry: 55 },
+            { cx: 400, cy: 430, rx: 50, ry: 55 },
           ],
           bp_chest: { cx: 345, cy: 390, rx: 98, ry: 70 },
           bp_ribs: { cx: 345, cy: 400, rx: 82, ry: 65 },
@@ -4198,7 +4228,7 @@
             { cx: 405, cy: 455, rx: 24, ry: 20 },
           ],
           bp_thyroid: { cx: 350, cy: 320, rx: 22, ry: 20 },
-          bp_esophagus: { cx: 345, cy: 300, rx: 14, ry: 55 },
+          bp_esophagus: { cx: 345, cy: 360, rx: 14, ry: 95 },
           bp_thymus: { cx: 355, cy: 310, rx: 16, ry: 20 },
           bp_shoulders: [
             { cx: 230, cy: 330, rx: 32, ry: 20 },
@@ -4208,7 +4238,7 @@
           // --- Abdomen (organ image positions as reference) ---
           bp_abdomen: { cx: 345, cy: 650, rx: 78, ry: 110 },
           bp_stomach: { cx: 370, cy: 610, rx: 50, ry: 40 },
-          bp_liver: { cx: 310, cy: 610, rx: 58, ry: 38 },
+          bp_liver: { cx: 327, cy: 610, rx: 58, ry: 38 },
           bp_gallbladder: { cx: 304, cy: 570, rx: 14, ry: 18 },
           bp_spleen: { cx: 430, cy: 555, rx: 24, ry: 22 },
           bp_pancreas: { cx: 355, cy: 565, rx: 42, ry: 24 },
@@ -4217,12 +4247,12 @@
             { cx: 410, cy: 620, rx: 28, ry: 25 },
           ],
           bp_adrenal: [
-            { cx: 318, cy: 595, rx: 15, ry: 10 },
-            { cx: 402, cy: 595, rx: 15, ry: 10 },
+            { cx: 300, cy: 595, rx: 15, ry: 10 },
+            { cx: 391, cy: 595, rx: 15, ry: 10 },
           ],
           bp_intestines: { cx: 355, cy: 690, rx: 80, ry: 60 },
           bp_colon: { cx: 355, cy: 710, rx: 85, ry: 55 },
-          bp_appendix: { cx: 405, cy: 735, rx: 15, ry: 18 },
+          bp_appendix: { cx: 306, cy: 735, rx: 15, ry: 18 },
           bp_lymphnode: { cx: 345, cy: 205, rx: 24, ry: 16 },
           bp_parathyroid: { cx: 345, cy: 320, rx: 18, ry: 14 },
 
@@ -4287,6 +4317,64 @@
           ],
           bp_spine: { cx: 345, cy: 500, rx: 15, ry: 200 },
           bp_back: { cx: 345, cy: 450, rx: 70, ry: 140 },
+
+          // --- New granular body parts ---
+          // Head subparts
+          bp_scalp: { cx: 345, cy: 80, rx: 40, ry: 25 },
+          bp_skull: { cx: 345, cy: 120, rx: 42, ry: 50 },
+          bp_hair: { cx: 345, cy: 75, rx: 42, ry: 22 },
+          bp_sinuses: { cx: 345, cy: 185, rx: 18, ry: 14 },
+          bp_lips: { cx: 345, cy: 240, rx: 14, ry: 5 },
+          bp_tongue: { cx: 345, cy: 245, rx: 10, ry: 8 },
+          bp_salivary_glands: [
+            { cx: 305, cy: 225, rx: 12, ry: 10 },
+            { cx: 385, cy: 225, rx: 12, ry: 10 },
+          ],
+          // Throat subparts
+          bp_larynx: { cx: 345, cy: 280, rx: 14, ry: 12 },
+          bp_tonsils: [
+            { cx: 332, cy: 268, rx: 6, ry: 6 },
+            { cx: 358, cy: 268, rx: 6, ry: 6 },
+          ],
+          // Systemic/diffuse
+          bp_blood_vessels: { cx: 345, cy: 500, rx: 75, ry: 140 },
+          bp_nerves: { cx: 345, cy: 500, rx: 70, ry: 200 },
+          bp_cartilage: { cx: 345, cy: 700, rx: 75, ry: 200 },
+          bp_tendons: { cx: 345, cy: 800, rx: 80, ry: 200 },
+          bp_white_blood_cells: { cx: 345, cy: 500, rx: 65, ry: 130 },
+          bp_respiratory_tract: { cx: 345, cy: 400, rx: 80, ry: 70 },
+          bp_digestive_tract: { cx: 355, cy: 650, rx: 70, ry: 120 },
+          // Abdomen/Pelvis subparts
+          bp_rectum: { cx: 355, cy: 770, rx: 16, ry: 16 },
+          bp_groin: [
+            { cx: 310, cy: 800, rx: 25, ry: 20 },
+            { cx: 400, cy: 800, rx: 25, ry: 20 },
+          ],
+          bp_urinary_tract: { cx: 355, cy: 820, rx: 28, ry: 35 },
+          // Reproductive subparts
+          bp_ovaries: [
+            { cx: 320, cy: 820, rx: 14, ry: 12 },
+            { cx: 390, cy: 820, rx: 14, ry: 12 },
+          ],
+          bp_fallopian_tubes: [
+            { cx: 330, cy: 815, rx: 25, ry: 12 },
+            { cx: 380, cy: 815, rx: 25, ry: 12 },
+          ],
+          bp_vagina: { cx: 355, cy: 850, rx: 18, ry: 22 },
+          bp_vulva: { cx: 355, cy: 865, rx: 22, ry: 15 },
+          // Extremity subparts
+          bp_fingers: [
+            { cx: 135, cy: 825, rx: 18, ry: 20 },
+            { cx: 575, cy: 825, rx: 18, ry: 20 },
+          ],
+          bp_toes: [
+            { cx: 280, cy: 1570, rx: 18, ry: 12 },
+            { cx: 430, cy: 1570, rx: 18, ry: 12 },
+          ],
+          bp_nails: [
+            { cx: 135, cy: 855, rx: 12, ry: 8 },
+            { cx: 575, cy: 855, rx: 12, ry: 8 },
+          ],
         };
 
         // === SHARED STATE ===
@@ -5546,6 +5634,238 @@
             organIds: ["male_reproductive"],
             description:
               "The testicles are male reproductive glands that produce sperm and the hormone testosterone. They are housed in the scrotum, which maintains a temperature slightly lower than body temperature.",
+          },
+          {
+            id: "bp_blood_vessels",
+            name: "Blood Vessels",
+            image: "bpart_images/bloodvessel.png",
+            organIds: [],
+            description:
+              "Blood vessels are the network of arteries, veins, and capillaries that carry blood throughout the body. They deliver oxygen and nutrients to tissues and return waste products for elimination.",
+          },
+          {
+            id: "bp_cartilage",
+            name: "Cartilage",
+            image: "bpart_images/bonesjoints.png",
+            organIds: [],
+            description:
+              "Cartilage is a flexible connective tissue found in joints, the ear, nose, and between vertebrae. It provides cushioning, reduces friction, and supports structural shape without the rigidity of bone.",
+          },
+          {
+            id: "bp_digestive_tract",
+            name: "Digestive Tract",
+            image: "bpart_images/intestines.png",
+            organIds: [],
+            description:
+              "The digestive tract is the continuous tube from mouth to anus that processes food. It includes the esophagus, stomach, small intestine, and large intestine, breaking down nutrients for absorption.",
+          },
+          {
+            id: "bp_fallopian_tubes",
+            name: "Fallopian Tubes",
+            image: "bpart_images/uterus.png",
+            organIds: [],
+            description:
+              "The fallopian tubes are paired structures connecting the ovaries to the uterus. They transport eggs from the ovaries and are typically where fertilization occurs.",
+          },
+          {
+            id: "bp_fingers",
+            name: "Fingers",
+            image: "bpart_images/hand.png",
+            organIds: [],
+            description:
+              "The fingers are the digits of the hand, each containing three phalanges (except the thumb with two). They enable fine motor skills, grip, touch sensation, and intricate manipulation of objects.",
+          },
+          {
+            id: "bp_groin",
+            name: "Groin",
+            image: "bpart_images/pelvis.png",
+            organIds: [],
+            description:
+              "The groin is the area where the abdomen meets the upper thigh. It contains the inguinal canal, lymph nodes, and major blood vessels, and is a common site for hernias and muscle strains.",
+          },
+          {
+            id: "bp_hair",
+            name: "Hair",
+            image: "bpart_images/head.png",
+            organIds: [],
+            description:
+              "Hair is a protein filament growing from follicles in the skin. It provides insulation, UV protection, and sensory input. Hair growth cycles through active growth, regression, and resting phases.",
+          },
+          {
+            id: "bp_knee",
+            name: "Knee",
+            image: "bpart_images/bonesjoints.png",
+            organIds: [],
+            description:
+              "The knee is the largest joint in the body, connecting the femur to the tibia. It contains cartilage, ligaments (ACL, MCL, PCL, LCL), and menisci that enable bending, straightening, and weight-bearing.",
+          },
+          {
+            id: "bp_larynx",
+            name: "Larynx",
+            image: "bpart_images/neck.png",
+            organIds: [],
+            description:
+              "The larynx (voice box) is a cartilaginous structure in the throat that houses the vocal cords. It produces sound for speech, protects the airway during swallowing, and regulates airflow to the lungs.",
+          },
+          {
+            id: "bp_lips",
+            name: "Lips",
+            image: "bpart_images/mouthteethgums.png",
+            organIds: [],
+            description:
+              "The lips are muscular folds surrounding the mouth opening. They assist in speech, eating, facial expression, and sensory perception. Their thin skin and rich blood supply give them their characteristic color.",
+          },
+          {
+            id: "bp_nails",
+            name: "Nails",
+            image: "bpart_images/hand.png",
+            organIds: [],
+            description:
+              "Nails are hard keratin plates covering the tips of fingers and toes. They protect the sensitive nail bed, aid in fine manipulation, and can indicate systemic health through changes in color or texture.",
+          },
+          {
+            id: "bp_sinuses",
+            name: "Sinuses",
+            image: "bpart_images/nose.png",
+            organIds: [],
+            description:
+              "The paranasal sinuses are air-filled cavities in the skull bones surrounding the nose. They lighten the skull, produce mucus, warm and humidify inhaled air, and contribute to voice resonance.",
+          },
+          {
+            id: "bp_nerves",
+            name: "Nerves",
+            image: "bpart_images/brain.png",
+            organIds: [],
+            description:
+              "Nerves are bundles of fibers that transmit electrical signals between the brain, spinal cord, and body. They control movement, sensation, and autonomic functions like heart rate and digestion.",
+          },
+          {
+            id: "bp_ovaries",
+            name: "Ovaries",
+            image: "bpart_images/uterus.png",
+            organIds: [],
+            description:
+              "The ovaries are paired female reproductive glands that produce eggs (ova) and hormones including estrogen and progesterone. They regulate the menstrual cycle and play a key role in fertility.",
+          },
+          {
+            id: "bp_rectum",
+            name: "Rectum",
+            image: "bpart_images/colon.png",
+            organIds: [],
+            description:
+              "The rectum is the final section of the large intestine, connecting the sigmoid colon to the anus. It stores stool before elimination and contains stretch receptors that signal the urge to defecate.",
+          },
+          {
+            id: "bp_respiratory_tract",
+            name: "Respiratory Tract",
+            image: "bpart_images/lungs.png",
+            organIds: [],
+            description:
+              "The respiratory tract is the system of airways from the nose to the lungs. It filters, warms, and humidifies air, and facilitates gas exchange — delivering oxygen and removing carbon dioxide.",
+          },
+          {
+            id: "bp_salivary_glands",
+            name: "Salivary Glands",
+            image: "bpart_images/mouthteethgums.png",
+            organIds: [],
+            description:
+              "The salivary glands produce saliva, which moistens food for swallowing, begins starch digestion, and protects teeth from decay. The three major pairs are the parotid, submandibular, and sublingual glands.",
+          },
+          {
+            id: "bp_scalp",
+            name: "Scalp",
+            image: "bpart_images/head.png",
+            organIds: [],
+            description:
+              "The scalp is the skin covering the top of the head. It is richly vascularized, contains numerous hair follicles, and consists of five tissue layers that protect the skull and brain beneath.",
+          },
+          {
+            id: "bp_skull",
+            name: "Skull",
+            image: "bpart_images/skull.png",
+            organIds: [],
+            description:
+              "The skull is the bony structure forming the head, composed of 22 bones. The cranium protects the brain while the facial bones support the eyes, nose, and mouth and anchor the muscles of facial expression.",
+          },
+          {
+            id: "bp_tendons",
+            name: "Tendons",
+            image: "bpart_images/upperextremitymuscle.png",
+            organIds: [],
+            description:
+              "Tendons are tough, fibrous bands of connective tissue that attach muscles to bones. They transmit the force of muscle contraction to produce movement and can withstand significant tension.",
+          },
+          {
+            id: "bp_thigh",
+            name: "Thigh",
+            image: "bpart_images/femur.png",
+            organIds: [],
+            description:
+              "The thigh is the upper portion of the leg between the hip and knee. It contains the femur (the body's longest bone) and powerful muscle groups including the quadriceps, hamstrings, and adductors.",
+          },
+          {
+            id: "bp_thymus",
+            name: "Thymus",
+            image: "bpart_images/chest.png",
+            organIds: ["thymus"],
+            description:
+              "The thymus is a small gland located behind the sternum. It is essential for developing the immune system, producing T-cells during childhood. It gradually shrinks after puberty.",
+          },
+          {
+            id: "bp_toes",
+            name: "Toes",
+            image: "bpart_images/foot.png",
+            organIds: [],
+            description:
+              "The toes are the digits of the foot, providing balance and propulsion during walking and running. Each toe (except the big toe) has three phalanges connected by joints.",
+          },
+          {
+            id: "bp_tongue",
+            name: "Tongue",
+            image: "bpart_images/mouthteethgums.png",
+            organIds: [],
+            description:
+              "The tongue is a muscular organ in the mouth essential for tasting, chewing, swallowing, and speech. It is covered with taste buds that detect sweet, sour, salty, bitter, and umami flavors.",
+          },
+          {
+            id: "bp_tonsils",
+            name: "Tonsils",
+            image: "bpart_images/neck.png",
+            organIds: [],
+            description:
+              "The tonsils are lymphoid tissue masses at the back of the throat. They serve as a first line of immune defense, trapping pathogens entering through the mouth and nose.",
+          },
+          {
+            id: "bp_urinary_tract",
+            name: "Urinary Tract",
+            image: "bpart_images/urinarytract.png",
+            organIds: [],
+            description:
+              "The urinary tract is the drainage system for urine, consisting of the kidneys, ureters, bladder, and urethra. It filters blood, removes waste, regulates fluid balance, and eliminates urine.",
+          },
+          {
+            id: "bp_vagina",
+            name: "Vagina",
+            image: "bpart_images/uterus.png",
+            organIds: [],
+            description:
+              "The vagina is a muscular canal extending from the vulva to the cervix. It serves as the birth canal, receives the penis during intercourse, and provides an outlet for menstrual flow.",
+          },
+          {
+            id: "bp_vulva",
+            name: "Vulva",
+            image: "bpart_images/uterus.png",
+            organIds: [],
+            description:
+              "The vulva encompasses the external female genitalia, including the labia majora, labia minora, clitoris, and vaginal opening. It protects the internal reproductive organs and provides sensory function.",
+          },
+          {
+            id: "bp_white_blood_cells",
+            name: "White Blood Cells",
+            image: "bpart_images/circulatory.png",
+            organIds: [],
+            description:
+              "White blood cells (leukocytes) are immune system cells that defend against infection and disease. Types include neutrophils, lymphocytes, monocytes, eosinophils, and basophils, each with specialized roles.",
           },
         ];
 
