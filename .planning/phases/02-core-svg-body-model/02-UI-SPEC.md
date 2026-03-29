@@ -1,10 +1,11 @@
 ---
 phase: 2
 slug: core-svg-body-model
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-03-29
+reviewed_at: 2026-03-29
 ---
 
 # Phase 2 — UI Design Contract
@@ -49,16 +50,11 @@ Exceptions: View-toggle margin-bottom is 12px (non-token, sourced from existing 
 
 ## Typography
 
-Sourced from `src/styles/tokens.css.ts`.
+Phase 2 scope — only one weight used. Full token scale defined in `src/styles/tokens.css.ts`.
 
-| Role    | Size                             | Weight | Line Height |
-| ------- | -------------------------------- | ------ | ----------- |
-| Body    | 14px (`--bme-font-size-body`)    | 400    | 1.5         |
-| Label   | 13px (`--bme-font-size-label`)   | 500    | 1.4         |
-| Heading | 16px (`--bme-font-size-heading`) | 600    | 1.2         |
-| Display | 20px (`--bme-font-size-display`) | 700    | 1.2         |
-
-Phase 2 uses only Label (13px / weight 500) for view-toggle button text and gender-toggle button text.
+| Role  | Size                           | Weight | Line Height | Usage                                       |
+| ----- | ------------------------------ | ------ | ----------- | ------------------------------------------- |
+| Label | 13px (`--bme-font-size-label`) | 500    | 1.4         | View-toggle button text, gender-toggle text |
 
 ---
 
@@ -161,6 +157,12 @@ No rotate button in Phase 2 (D-06).
 
 ---
 
+## Visual Hierarchy
+
+**Primary focal point:** The SVG body model — the silhouette and layered organ images draw the eye first. View-switcher tabs and gender toggle are secondary controls that frame the model.
+
+---
+
 ## SVG Viewport
 
 | Property            | Value                             |
@@ -256,11 +258,11 @@ Not applicable. No component registry in use. This project uses zero external UI
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: FLAG (12px exceptions justified by D-01 pixel fidelity)
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved (2026-03-29)
