@@ -14,7 +14,7 @@ Milestone 1 refactors a 7K-line monolithic HTML file into a distributable, frame
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Scaffolding & Asset Extraction** - Set up Vite + Lit + TypeScript build pipeline and extract all base64 assets into external files (completed 2026-03-29)
-- [ ] **Phase 2: Core SVG Body Model** - Build the `<body-map-model>` sub-component with organ layers, hit areas, hover/click interaction, and lazy image loading
+- [ ] **Phase 2: Core SVG Body Model** - Build the `<body-map-model>` sub-component with organ layers, hit areas, hover/click interaction, and external image loading
 - [ ] **Phase 3: Body Systems Sidebar & Detail Panel** - Build `<body-map-sidebar>` and `<body-map-detail-panel>` with bidirectional organ-to-system selection
 - [ ] **Phase 4: Data Layer, Disease/Symptom Panels & Modal** - Implement lazy per-body-part JSON loading, disease/symptom lists with search, and the organ detail modal
 - [ ] **Phase 5: Web Component API** - Build the `<body-map-explorer>` orchestrator with its full public API (attributes, properties, events, dual data mode)
@@ -53,8 +53,14 @@ Plans:
 3. Clicking an organ toggles its selection; multiple organs can be selected simultaneously
 4. The gender toggle switches between male and female reproductive organ layers
 5. The view toggle switches between the organs view and the body sections view
-   **Plans**: TBD
+   **Plans**: 3 plans (2 complete + 1 gap closure)
    **UI hint**: yes
+
+Plans:
+
+- [x] 02-01-PLAN.md — Set up Vitest, extract the silhouette asset, and define typed organ/section datasets
+- [x] 02-02-PLAN.md — Implement `<body-map-model>` with SVG layers, hover/click selection, and view/gender toggles
+- [ ] 02-03-PLAN.md — Fix hit-area path alignment and add green sections background (gap closure from UAT)
 
 ### Phase 3: Body Systems Sidebar & Detail Panel
 
@@ -68,8 +74,13 @@ Plans:
 3. Clicking an organ in the body model activates the corresponding system in the sidebar
 4. The right detail panel shows the selected system's description and thumbnail
 5. Deselecting a system (clicking it again or clicking elsewhere) clears all system-driven highlights and collapses the detail panel
-   **Plans**: TBD
+   **Plans**: 2 plans
    **UI hint**: yes
+
+Plans:
+
+- [ ] 03-01-PLAN.md — Define the typed system dataset plus sidebar and detail-panel component contracts
+- [ ] 03-02-PLAN.md — Wire explorer-owned system state across the sidebar, body model, and detail panel
 
 ### Phase 4: Data Layer, Disease/Symptom Panels & Modal
 
@@ -122,11 +133,11 @@ Plans:
 **Execution Order:**
 Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
-| Phase                                         | Plans Complete | Status      | Completed |
-| --------------------------------------------- | -------------- | ----------- | --------- |
-| 1. Scaffolding & Asset Extraction             | 2/2 | Complete   | 2026-03-29 |
-| 2. Core SVG Body Model                        | 0/TBD          | Not started | -         |
-| 3. Body Systems Sidebar & Detail Panel        | 0/TBD          | Not started | -         |
-| 4. Data Layer, Disease/Symptom Panels & Modal | 0/TBD          | Not started | -         |
-| 5. Web Component API                          | 0/TBD          | Not started | -         |
-| 6. Polish, Back View & Performance            | 0/TBD          | Not started | -         |
+| Phase                                         | Plans Complete | Status          | Completed  |
+| --------------------------------------------- | -------------- | --------------- | ---------- |
+| 1. Scaffolding & Asset Extraction             | 2/2            | Complete        | 2026-03-29 |
+| 2. Core SVG Body Model                        | 2/3            | UAT gap closure | -          |
+| 3. Body Systems Sidebar & Detail Panel        | 0/2            | Not started     | -          |
+| 4. Data Layer, Disease/Symptom Panels & Modal | 0/TBD          | Not started     | -          |
+| 5. Web Component API                          | 0/TBD          | Not started     | -          |
+| 6. Polish, Back View & Performance            | 0/TBD          | Not started     | -          |
