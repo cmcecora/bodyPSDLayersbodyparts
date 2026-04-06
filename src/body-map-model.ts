@@ -152,7 +152,6 @@ export class BodyMapModel extends LitElement {
 
       .section-hit-area {
         fill: transparent;
-        pointer-events: all;
         cursor: pointer;
         transition:
           fill 0.2s ease,
@@ -347,6 +346,7 @@ export class BodyMapModel extends LitElement {
           height="1698"
           href=${this._silhouetteUrl()}
           pointer-events="none"
+          style=${`opacity: ${sectionsVisible ? "0" : "1"}; transition: opacity 0.35s ease-in-out`}
         />
 
         <g
@@ -414,6 +414,7 @@ export class BodyMapModel extends LitElement {
 
   private _renderSectionGroup(section: SectionDefinition) {
     const isSelected = this._selectedSections.has(section.id);
+    const active = this.currentView === "sections";
 
     return svg`
       <g
@@ -422,7 +423,7 @@ export class BodyMapModel extends LitElement {
         data-part=${section.id}
         data-name=${section.name}
       >
-        <path class="section-hit-area" d=${section.hitAreaPath} fill="transparent" />
+        <path class="section-hit-area" d=${section.hitAreaPath} fill="transparent" pointer-events=${active ? "all" : "none"} />
       </g>
     `;
   }
