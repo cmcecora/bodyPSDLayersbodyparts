@@ -27,10 +27,10 @@ Requirements for Milestone 1: Body Map App Refactor & Web Component. Each maps t
 
 ### Body Systems Sidebar
 
-- [ ] **SYSTEM-01**: Left sidebar displays all 11 body systems with color dots and thumbnails
+- [x] **SYSTEM-01**: Left sidebar displays all 11 body systems with color dots and thumbnails
 - [ ] **SYSTEM-02**: Clicking a system highlights all mapped organs in the body model
 - [ ] **SYSTEM-03**: Clicking an organ in the model activates the corresponding system in the sidebar
-- [ ] **SYSTEM-04**: System description panel shows in the right column when a system is selected
+- [x] **SYSTEM-04**: System description panel shows in the right column when a system is selected
 - [ ] **SYSTEM-05**: Deselecting a system clears all system-driven organ highlights
 
 ### Disease & Symptom Panels
@@ -131,10 +131,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MODEL-05    | Phase 2 | Pending |
 | MODEL-06    | Phase 2 | Pending |
 | MODEL-07    | Phase 2 | Pending |
-| SYSTEM-01   | Phase 3 | Pending |
+| SYSTEM-01   | Phase 3 | Complete |
 | SYSTEM-02   | Phase 3 | Pending |
 | SYSTEM-03   | Phase 3 | Pending |
-| SYSTEM-04   | Phase 3 | Pending |
+| SYSTEM-04   | Phase 3 | Complete |
 | SYSTEM-05   | Phase 3 | Pending |
 | DATA-01     | Phase 4 | Pending |
 | DATA-02     | Phase 4 | Pending |

@@ -79,7 +79,7 @@ Plans:
 
 Plans:
 
-- [ ] 03-01-PLAN.md — Define the typed system dataset plus sidebar and detail-panel component contracts
+- [x] 03-01-PLAN.md — Define the typed system dataset plus sidebar and detail-panel component contracts
 - [ ] 03-02-PLAN.md — Wire explorer-owned system state across the sidebar, body model, and detail panel
 
 ### Phase 4: Data Layer, Disease/Symptom Panels & Modal
@@ -133,11 +133,11 @@ Plans:
 **Execution Order:**
 Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
-| Phase                                         | Plans Complete | Status          | Completed  |
-| --------------------------------------------- | -------------- | --------------- | ---------- |
-| 1. Scaffolding & Asset Extraction             | 2/2            | Complete        | 2026-03-29 |
-| 2. Core SVG Body Model                        | 3/3 | Complete   | 2026-04-06 |
-| 3. Body Systems Sidebar & Detail Panel        | 0/2            | Not started     | -          |
-| 4. Data Layer, Disease/Symptom Panels & Modal | 0/TBD          | Not started     | -          |
-| 5. Web Component API                          | 0/TBD          | Not started     | -          |
-| 6. Polish, Back View & Performance            | 0/TBD          | Not started     | -          |
+| Phase                                         | Plans Complete | Status      | Completed  |
+| --------------------------------------------- | -------------- | ----------- | ---------- |
+| 1. Scaffolding & Asset Extraction             | 2/2            | Complete    | 2026-03-29 |
+| 2. Core SVG Body Model                        | 3/3            | Complete    | 2026-04-06 |
+| 3. Body Systems Sidebar & Detail Panel        | 1/2            | In progress | -          |
+| 4. Data Layer, Disease/Symptom Panels & Modal | 0/TBD          | Not started | -          |
+| 5. Web Component API                          | 0/TBD          | Not started | -          |
+| 6. Polish, Back View & Performance            | 0/TBD          | Not started | -          |
