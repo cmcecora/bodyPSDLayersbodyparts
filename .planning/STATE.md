@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Completed 02-03-PLAN.md — awaiting human visual verification (checkpoint:human-verify)"
-last_updated: "2026-04-06T19:41:48.188Z"
-last_activity: 2026-04-06 -- Phase 03 execution started
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-04-06T20:01:37.551Z"
+last_activity: 2026-04-06
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 7
   percent: 33
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 03 (body-systems-sidebar-detail-panel) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 03
-Last activity: 2026-04-06 -- Phase 03 execution started
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-06
 
 Progress: [███░░░░░░░] 33%
 
@@ -58,6 +58,7 @@ _Updated after each plan completion_
 | Phase 02 P01 | 15min | 3 tasks | 8 touched files + 1 generated asset |
 | Phase 02 P02 | 10min | 2 tasks | 3 files |
 | Phase 02 P03 | 2min | 1 tasks | 4 files |
+| Phase 03 P02 | 15min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,9 @@ Recent decisions affecting current work:
 - [Phase 02-core-svg-body-model]: Organs2 emits `organ2-click` without persistent selection, preserving the future modal integration path
 - [Phase 02]: Hit-area paths use SVG transform=translate(imageX,imageY) to position organ-local path coordinates into SVG viewport space
 - [Phase 02]: sections-base-body image is first child of sections-layer group, rendered before section hit-areas, matching legacy HTML structure
+- [Phase 03-02]: Explorer owns activeSystemId and selectedOrganIds as @state; model receives them as @property inputs
+- [Phase 03-02]: systemHighlightOrganIds is a computed getter on explorer, never merged into selectedOrganIds (preserves SYSTEM-05 bucket separation)
+- [Phase 03-02]: mappedSystemIds[0] first-match rule keeps thymus->endocrine and knee_joint->muscular priority consistent with legacy behavior
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-04-06T19:06:31.321Z
-Stopped at: Completed 02-03-PLAN.md — awaiting human visual verification (checkpoint:human-verify)
+Last session: 2026-04-06T20:01:37.544Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

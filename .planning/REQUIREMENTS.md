@@ -17,10 +17,10 @@ Requirements for Milestone 1: Body Map App Refactor & Web Component. Each maps t
 
 ### SVG Body Model
 
-- [ ] **MODEL-01**: SVG body model renders as a Lit sub-component with all 20+ organ layers
-- [ ] **MODEL-02**: Organ regions are clickable with transparent hit-area overlays
-- [ ] **MODEL-03**: Hover feedback displays blue highlight overlay and drop-shadow filter
-- [ ] **MODEL-04**: Click toggles organ selection (multiple simultaneous selections supported)
+- [x] **MODEL-01**: SVG body model renders as a Lit sub-component with all 20+ organ layers
+- [x] **MODEL-02**: Organ regions are clickable with transparent hit-area overlays
+- [x] **MODEL-03**: Hover feedback displays blue highlight overlay and drop-shadow filter
+- [x] **MODEL-04**: Click toggles organ selection (multiple simultaneous selections supported)
 - [ ] **MODEL-05**: Gender toggle switches between male and female reproductive organs
 - [ ] **MODEL-06**: View switching between organs view and body sections view
 - [ ] **MODEL-07**: Organ images load from external files (not base64 inline)
@@ -28,10 +28,10 @@ Requirements for Milestone 1: Body Map App Refactor & Web Component. Each maps t
 ### Body Systems Sidebar
 
 - [x] **SYSTEM-01**: Left sidebar displays all 11 body systems with color dots and thumbnails
-- [ ] **SYSTEM-02**: Clicking a system highlights all mapped organs in the body model
-- [ ] **SYSTEM-03**: Clicking an organ in the model activates the corresponding system in the sidebar
+- [x] **SYSTEM-02**: Clicking a system highlights all mapped organs in the body model
+- [x] **SYSTEM-03**: Clicking an organ in the model activates the corresponding system in the sidebar
 - [x] **SYSTEM-04**: System description panel shows in the right column when a system is selected
-- [ ] **SYSTEM-05**: Deselecting a system clears all system-driven organ highlights
+- [x] **SYSTEM-05**: Deselecting a system clears all system-driven organ highlights
 
 ### Disease & Symptom Panels
 
@@ -124,18 +124,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BUILD-03    | Phase 1 | Complete |
 | BUILD-04    | Phase 1 | Complete |
 | BUILD-05    | Phase 1 | Complete |
-| MODEL-01    | Phase 2 | Pending |
-| MODEL-02    | Phase 2 | Pending |
-| MODEL-03    | Phase 2 | Pending |
-| MODEL-04    | Phase 2 | Pending |
+| MODEL-01    | Phase 2 | Complete |
+| MODEL-02    | Phase 2 | Complete |
+| MODEL-03    | Phase 2 | Complete |
+| MODEL-04    | Phase 2 | Complete |
 | MODEL-05    | Phase 2 | Pending |
 | MODEL-06    | Phase 2 | Pending |
 | MODEL-07    | Phase 2 | Pending |
 | SYSTEM-01   | Phase 3 | Complete |
-| SYSTEM-02   | Phase 3 | Pending |
-| SYSTEM-03   | Phase 3 | Pending |
+| SYSTEM-02   | Phase 3 | Complete |
+| SYSTEM-03   | Phase 3 | Complete |
 | SYSTEM-04   | Phase 3 | Complete |
-| SYSTEM-05   | Phase 3 | Pending |
+| SYSTEM-05   | Phase 3 | Complete |
 | DATA-01     | Phase 4 | Pending |
 | DATA-02     | Phase 4 | Pending |
 | DATA-03     | Phase 4 | Pending |
