@@ -1,0 +1,526 @@
+import { LitElement, PropertyValues, css, html, svg } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { ORGANS, OrganDefinition } from "./data/organs.js";
+import { SECTIONS, SectionDefinition } from "./data/sections.js";
+import { designTokens } from "./styles/tokens.css.js";
+
+type ViewMode = "organs" | "organs2" | "sections";
+type Gender = "male" | "female";
+
+@customElement("body-map-model")
+export class BodyMapModel extends LitElement {
+  static styles = [
+    designTokens,
+    css`
+      :host {
+        display: block;
+        width: 100%;
+        color: #2d3748;
+      }
+
+      .model-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+      }
+
+      .svg-wrapper {
+        perspective: 1200px;
+        max-width: 380px;
+        width: 100%;
+      }
+
+      .svg-inner {
+        position: relative;
+        transform-style: preserve-3d;
+      }
+
+      svg {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .view-tabs {
+        display: flex;
+        width: 100%;
+        margin-bottom: 12px;
+        overflow: hidden;
+        border: 2px solid #d0d0d0;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .view-tab {
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: #666;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 6px 18px;
+        text-align: center;
+        transition: all 0.2s ease;
+      }
+
+      .view-tab:hover {
+        background: #eef4fb;
+      }
+
+      .view-tab.active-organs {
+        background: #4a90d9;
+        color: #ffffff;
+      }
+
+      .view-tab.active-organs2 {
+        background: #9b59b6;
+        color: #ffffff;
+      }
+
+      .view-tab.active-sections {
+        background: #2a7c44;
+        color: #ffffff;
+      }
+
+      .gender-toggle {
+        display: flex;
+        width: 100%;
+        margin-top: 12px;
+        overflow: hidden;
+        border: 2px solid #d0d0d0;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .gender-btn {
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: #666;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 6px 18px;
+        text-align: center;
+        transition: all 0.2s ease;
+      }
+
+      .gender-btn:hover {
+        background: #eef4fb;
+      }
+
+      .gender-btn.active {
+        background: #4a90d9;
+        color: #ffffff;
+      }
+
+      .hit-area {
+        fill: transparent;
+        pointer-events: all;
+        cursor: pointer;
+        transition:
+          fill 0.2s ease,
+          opacity 0.2s ease;
+      }
+
+      .hit-area:hover {
+        fill: rgba(100, 180, 255, 0.35);
+      }
+
+      .body-part-group.selected .hit-area {
+        fill: rgba(66, 145, 230, 0.45);
+      }
+
+      .body-part-group.selected:hover .hit-area {
+        fill: rgba(66, 145, 230, 0.55);
+      }
+
+      .part-image {
+        pointer-events: none;
+      }
+
+      .body-part-group:hover .part-image,
+      .body-part-group.selected .part-image {
+        filter: drop-shadow(0 0 6px rgba(66, 165, 245, 0.7));
+      }
+
+      .section-hit-area {
+        fill: transparent;
+        pointer-events: all;
+        cursor: pointer;
+        transition:
+          fill 0.2s ease,
+          opacity 0.2s ease;
+      }
+
+      .section-hit-area:hover {
+        fill: rgba(76, 175, 80, 0.35);
+      }
+
+      .body-section-group.selected .section-hit-area {
+        fill: rgba(144, 238, 144, 0.45);
+      }
+
+      .body-section-group.selected:hover .section-hit-area {
+        fill: rgba(144, 238, 144, 0.55);
+      }
+
+      .svg-layer {
+        transition: opacity 0.35s ease-in-out;
+      }
+
+      .male-repro {
+        display: block;
+      }
+
+      .female-repro {
+        display: none;
+      }
+
+      :host([current-gender="female"]) .male-repro {
+        display: none;
+      }
+
+      :host([current-gender="female"]) .female-repro {
+        display: block;
+      }
+
+      @keyframes fade-slide {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-entrance {
+        animation: fade-slide 0.4s ease-out;
+      }
+    `,
+  ];
+
+  @property({ type: String, reflect: true, attribute: "current-view" })
+  currentView: ViewMode = "organs";
+
+  @property({ type: String, reflect: true, attribute: "current-gender" })
+  currentGender: Gender = "male";
+
+  @property({ type: String, attribute: "asset-base" })
+  assetBase = "";
+
+  private _selectedOrgans = new Set<string>();
+
+  private _selectedSections = new Set<string>();
+
+  protected firstUpdated(): void {
+    this.shadowRoot
+      ?.querySelector(".model-container")
+      ?.classList.add("animate-entrance");
+  }
+
+  protected willUpdate(changedProperties: PropertyValues<this>): void {
+    if (
+      changedProperties.has("currentView") &&
+      this.currentView !== "sections"
+    ) {
+      this._selectedSections.clear();
+    }
+
+    if (changedProperties.has("currentGender")) {
+      if (this.currentGender === "female") {
+        this._selectedOrgans.delete("male_reproductive");
+      } else {
+        this._selectedOrgans.delete("female_reproductive");
+      }
+    }
+  }
+
+  render() {
+    return html`
+      <div class="model-container">
+        ${this._renderViewTabs()}
+        <div class="svg-wrapper">
+          <div class="svg-inner">${this._renderSvg()}</div>
+        </div>
+        ${this._renderGenderToggle()}
+      </div>
+    `;
+  }
+
+  private _renderViewTabs() {
+    return html`
+      <div class="view-tabs" aria-label="Body view mode">
+        <button
+          class="view-tab ${this.currentView === "organs"
+            ? "active-organs"
+            : ""}"
+          type="button"
+          @click=${() => this._setView("organs")}
+        >
+          Organs
+        </button>
+        <button
+          class="view-tab ${this.currentView === "organs2"
+            ? "active-organs2"
+            : ""}"
+          type="button"
+          @click=${() => this._setView("organs2")}
+        >
+          Organs 2
+        </button>
+        <button
+          class="view-tab ${this.currentView === "sections"
+            ? "active-sections"
+            : ""}"
+          type="button"
+          @click=${() => this._setView("sections")}
+        >
+          Body Sections
+        </button>
+      </div>
+    `;
+  }
+
+  private _renderGenderToggle() {
+    return html`
+      <div class="gender-toggle" aria-label="Gender">
+        <button
+          class="gender-btn ${this.currentGender === "male" ? "active" : ""}"
+          type="button"
+          @click=${() => this._setGender("male")}
+        >
+          Male
+        </button>
+        <button
+          class="gender-btn ${this.currentGender === "female" ? "active" : ""}"
+          type="button"
+          @click=${() => this._setGender("female")}
+        >
+          Female
+        </button>
+      </div>
+    `;
+  }
+
+  private _renderSvg() {
+    const organsVisible = this.currentView !== "sections";
+    const sectionsVisible = this.currentView === "sections";
+
+    return svg`
+      <svg viewBox="0 0 698 1698" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive body map">
+        <defs>
+          <filter id="blue-glow">
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="4"
+              flood-color="#42a5f5"
+              flood-opacity="0.6"
+            />
+          </filter>
+          <filter id="green-glow">
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="4"
+              flood-color="#4caf50"
+              flood-opacity="0.6"
+            />
+          </filter>
+        </defs>
+
+        <image
+          id="base-body"
+          x="0"
+          y="0"
+          width="698"
+          height="1698"
+          href=${this._silhouetteUrl()}
+          pointer-events="none"
+        />
+
+        <g
+          id="organs-layer"
+          class="svg-layer"
+          style=${`opacity: ${organsVisible ? "1" : "0"}; pointer-events: ${organsVisible ? "auto" : "none"}`}
+          @click=${this._handleOrganClick}
+          @mouseover=${this._handleOrganHover}
+          @mouseout=${this._handleOrganOut}
+        >
+          ${ORGANS.map((organ) => this._renderOrganGroup(organ))}
+        </g>
+
+        <g
+          id="sections-layer"
+          class="svg-layer"
+          style=${`opacity: ${sectionsVisible ? "1" : "0"}; pointer-events: ${sectionsVisible ? "auto" : "none"}`}
+          @click=${this._handleSectionClick}
+        >
+          <image
+            id="sections-base-body"
+            x="0"
+            y="0"
+            width="698"
+            height="1698"
+            href=${this._sectionsBodyUrl()}
+            pointer-events="none"
+          />
+          ${SECTIONS.filter((section) => section.side === "front").map(
+            (section) => this._renderSectionGroup(section),
+          )}
+        </g>
+      </svg>
+    `;
+  }
+
+  private _renderOrganGroup(organ: OrganDefinition) {
+    const isSelected = this._selectedOrgans.has(organ.id);
+    const reproClass = organ.isMaleRepro
+      ? "male-repro"
+      : organ.isFemaleRepro
+        ? "female-repro"
+        : "";
+
+    return svg`
+      <g
+        id=${`group-${organ.id}`}
+        class=${`body-part-group ${isSelected ? "selected" : ""} ${reproClass}`.trim()}
+        data-part=${organ.id}
+        data-name=${organ.name}
+      >
+        <image
+          class="part-image"
+          href=${this._organImageUrl(organ.id)}
+          x=${String(organ.imageX)}
+          y=${String(organ.imageY)}
+          width=${String(organ.imageWidth)}
+          height=${String(organ.imageHeight)}
+          pointer-events="none"
+        />
+        <path class="hit-area" d=${organ.hitAreaPath} transform=${`translate(${organ.imageX},${organ.imageY})`} />
+      </g>
+    `;
+  }
+
+  private _renderSectionGroup(section: SectionDefinition) {
+    const isSelected = this._selectedSections.has(section.id);
+
+    return svg`
+      <g
+        id=${`section-${section.entryId}`}
+        class=${`body-section-group ${isSelected ? "selected" : ""}`.trim()}
+        data-part=${section.id}
+        data-name=${section.name}
+      >
+        <path class="section-hit-area" d=${section.hitAreaPath} fill="transparent" />
+      </g>
+    `;
+  }
+
+  private _setView(view: ViewMode) {
+    this.currentView = view;
+  }
+
+  private _setGender(gender: Gender) {
+    this.currentGender = gender;
+  }
+
+  private _handleOrganClick(event: MouseEvent) {
+    const group = (event.target as Element | null)?.closest(".body-part-group");
+    const partId = group?.getAttribute("data-part");
+
+    if (!partId) {
+      return;
+    }
+
+    if (this.currentView === "organs2") {
+      this.dispatchEvent(
+        new CustomEvent("organ2-click", {
+          detail: { partId },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      return;
+    }
+
+    if (this._selectedOrgans.has(partId)) {
+      this._selectedOrgans.delete(partId);
+    } else {
+      this._selectedOrgans.add(partId);
+    }
+
+    this.requestUpdate();
+    this._emitSelectionChange();
+  }
+
+  private _handleOrganHover(_event: MouseEvent) {
+    // CSS handles hover visuals. JS hook is preserved for future tooltip work.
+  }
+
+  private _handleOrganOut(_event: MouseEvent) {
+    // CSS handles hover removal. JS hook is preserved for future tooltip work.
+  }
+
+  private _handleSectionClick(event: MouseEvent) {
+    const group = (event.target as Element | null)?.closest(
+      ".body-section-group",
+    );
+    const partId = group?.getAttribute("data-part");
+
+    if (!partId) {
+      return;
+    }
+
+    if (this._selectedSections.has(partId)) {
+      this._selectedSections.delete(partId);
+    } else {
+      this._selectedSections.add(partId);
+    }
+
+    this.requestUpdate();
+  }
+
+  private _emitSelectionChange() {
+    this.dispatchEvent(
+      new CustomEvent("organ-selection-change", {
+        detail: { selected: [...this._selectedOrgans] },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private _organImageUrl(id: string): string {
+    return `${this._assetPrefix()}/organs/${id}.webp`;
+  }
+
+  private _silhouetteUrl(): string {
+    return `${this._assetPrefix()}/silhouette.webp`;
+  }
+
+  private _sectionsBodyUrl(): string {
+    return `${this._assetPrefix()}/sections-body.webp`;
+  }
+
+  private _assetPrefix(): string {
+    const base = this.assetBase.replace(/\/$/, "");
+    return base ? `${base}/assets` : "/assets";
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "body-map-model": BodyMapModel;
+  }
+}
