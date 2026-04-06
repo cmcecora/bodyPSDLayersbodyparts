@@ -14,7 +14,7 @@ Milestone 1 refactors a 7K-line monolithic HTML file into a distributable, frame
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Scaffolding & Asset Extraction** - Set up Vite + Lit + TypeScript build pipeline and extract all base64 assets into external files (completed 2026-03-29)
-- [ ] **Phase 2: Core SVG Body Model** - Build the `<body-map-model>` sub-component with organ layers, hit areas, hover/click interaction, and external image loading
+- [x] **Phase 2: Core SVG Body Model** - Build the `<body-map-model>` sub-component with organ layers, hit areas, hover/click interaction, and external image loading (completed 2026-04-06)
 - [ ] **Phase 3: Body Systems Sidebar & Detail Panel** - Build `<body-map-sidebar>` and `<body-map-detail-panel>` with bidirectional organ-to-system selection
 - [ ] **Phase 4: Data Layer, Disease/Symptom Panels & Modal** - Implement lazy per-body-part JSON loading, disease/symptom lists with search, and the organ detail modal
 - [ ] **Phase 5: Web Component API** - Build the `<body-map-explorer>` orchestrator with its full public API (attributes, properties, events, dual data mode)
@@ -60,7 +60,7 @@ Plans:
 
 - [x] 02-01-PLAN.md — Set up Vitest, extract the silhouette asset, and define typed organ/section datasets
 - [x] 02-02-PLAN.md — Implement `<body-map-model>` with SVG layers, hover/click selection, and view/gender toggles
-- [ ] 02-03-PLAN.md — Fix hit-area path alignment and add green sections background (gap closure from UAT)
+- [x] 02-03-PLAN.md — Fix hit-area path alignment and add green sections background (gap closure from UAT)
 
 ### Phase 3: Body Systems Sidebar & Detail Panel
 
@@ -136,7 +136,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase                                         | Plans Complete | Status          | Completed  |
 | --------------------------------------------- | -------------- | --------------- | ---------- |
 | 1. Scaffolding & Asset Extraction             | 2/2            | Complete        | 2026-03-29 |
-| 2. Core SVG Body Model                        | 2/3            | UAT gap closure | -          |
+| 2. Core SVG Body Model                        | 3/3 | Complete   | 2026-04-06 |
 | 3. Body Systems Sidebar & Detail Panel        | 0/2            | Not started     | -          |
 | 4. Data Layer, Disease/Symptom Panels & Modal | 0/TBD          | Not started     | -          |
 | 5. Web Component API                          | 0/TBD          | Not started     | -          |
