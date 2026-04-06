@@ -1,6 +1,15 @@
 import { LitElement, html, css } from "lit";
-import { customElement } from "lit/decorators.js";
+import { customElement, state } from "lit/decorators.js";
+import "./body-map-model.js";
+import "./body-map-sidebar.js";
+import "./body-map-detail-panel.js";
 import { designTokens } from "./styles/tokens.css.js";
+import {
+  BODY_SYSTEMS,
+  ORGAN_TO_SYSTEM,
+  type BodySystemId,
+  type BodySystemDefinition,
+} from "./data/systems.js";
 
 @customElement("body-map-explorer")
 export class BodyMapExplorer extends LitElement {
@@ -26,51 +35,101 @@ export class BodyMapExplorer extends LitElement {
         background: var(--bme-panel);
         border: 1px solid var(--bme-border);
         border-radius: 8px;
-        padding: var(--bme-space-md);
-      }
-
-      .panel-header {
-        background: var(--bme-header-bg);
-        color: var(--bme-header-text);
-        padding: var(--bme-space-sm) var(--bme-space-md);
-        border-radius: 8px 8px 0 0;
-        margin: calc(-1 * var(--bme-space-md));
-        margin-bottom: var(--bme-space-md);
-        font-size: var(--bme-font-size-heading);
-        font-weight: 600;
+        overflow: hidden;
       }
 
       .body-model-area {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         background: var(--bme-panel);
         border: 1px solid var(--bme-border);
         border-radius: 8px;
+        padding: var(--bme-space-md);
         min-height: 600px;
-        color: #999;
-        font-size: var(--bme-font-size-body);
+      }
+
+      body-map-model {
+        width: min(100%, 380px);
       }
     `,
   ];
+
+  @state() private activeSystemId: BodySystemId | null = null;
+
+  @state() private selectedOrganIds: string[] = [];
+
+  private get activeSystem(): BodySystemDefinition | null {
+    if (this.activeSystemId === null) return null;
+    return BODY_SYSTEMS.find((s) => s.id === this.activeSystemId) ?? null;
+  }
+
+  private get systemHighlightOrganIds(): string[] {
+    return this.activeSystem?.organIds ?? [];
+  }
+
+  private _handleSystemToggleRequest(
+    event: CustomEvent<{ systemId: BodySystemId }>,
+  ) {
+    const { systemId } = event.detail;
+    if (systemId === this.activeSystemId) {
+      this.activeSystemId = null;
+    } else {
+      this.activeSystemId = systemId;
+    }
+  }
+
+  private _handleOrganSelectionChange(
+    event: CustomEvent<{
+      selectedOrganIds: string[];
+      lastToggled: string;
+      isSelected: boolean;
+    }>,
+  ) {
+    this.selectedOrganIds = event.detail.selectedOrganIds;
+
+    const mappedSystemIds = ORGAN_TO_SYSTEM[event.detail.lastToggled] ?? [];
+
+    if (event.detail.isSelected) {
+      this.activeSystemId = mappedSystemIds[0] ?? this.activeSystemId;
+    } else {
+      if (
+        this.activeSystemId !== null &&
+        mappedSystemIds.includes(this.activeSystemId)
+      ) {
+        const activeSystemOrgans = this.activeSystem?.organIds ?? [];
+        const anyActiveSystemOrganStillSelected = this.selectedOrganIds.some(
+          (id) => activeSystemOrgans.includes(id),
+        );
+        if (!anyActiveSystemOrganStillSelected) {
+          this.activeSystemId = null;
+        }
+      }
+    }
+  }
 
   render() {
     return html`
       <div class="layout">
         <div class="panel">
-          <div class="panel-header">Body Systems</div>
-          <p style="color: #999; font-size: 13px;">
-            Phase 2 will render the systems sidebar here.
-          </p>
+          <body-map-sidebar
+            .systems=${BODY_SYSTEMS}
+            .activeSystemId=${this.activeSystemId}
+            @system-toggle-request=${this._handleSystemToggleRequest}
+          ></body-map-sidebar>
         </div>
         <div class="body-model-area">
-          Phase 2 will render the SVG body model here.
+          <body-map-model
+            .selectedOrganIds=${this.selectedOrganIds}
+            .systemHighlightOrganIds=${this.systemHighlightOrganIds}
+            @organ-selection-change=${this._handleOrganSelectionChange}
+          ></body-map-model>
         </div>
         <div class="panel">
-          <div class="panel-header">Detail Panel</div>
-          <p style="color: #999; font-size: 13px;">
-            Phase 3 will render system details here.
-          </p>
+          <body-map-detail-panel
+            .system=${this.activeSystem}
+          ></body-map-detail-panel>
         </div>
       </div>
     `;
