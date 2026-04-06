@@ -444,17 +444,6 @@ export class BodyMapModel extends LitElement {
       return;
     }
 
-    if (this.currentView === "organs2") {
-      this.dispatchEvent(
-        new CustomEvent("organ2-click", {
-          detail: { partId },
-          bubbles: true,
-          composed: true,
-        }),
-      );
-      return;
-    }
-
     if (this._selectedOrgans.has(partId)) {
       this._selectedOrgans.delete(partId);
     } else {
