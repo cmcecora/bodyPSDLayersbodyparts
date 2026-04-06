@@ -282,4 +282,134 @@ describe("body-map-model", () => {
       ).toHaveLength(7);
     });
   });
+
+  describe("MODEL-08: controlled organ selection via selectedOrganIds", () => {
+    it("setting selectedOrganIds externally renders the heart group with selected class without any click", async () => {
+      el.selectedOrganIds = ["heart"];
+      await el.updateComplete;
+
+      const heartGroup = el.shadowRoot?.querySelector('[data-part="heart"]');
+      expect(heartGroup?.classList.contains("selected")).toBe(true);
+    });
+
+    it("setting selectedOrganIds to empty array clears all selected classes", async () => {
+      el.selectedOrganIds = ["heart"];
+      await el.updateComplete;
+      el.selectedOrganIds = [];
+      await el.updateComplete;
+
+      const selected =
+        el.shadowRoot?.querySelectorAll(".body-part-group.selected") ?? [];
+      expect(selected).toHaveLength(0);
+    });
+  });
+
+  describe("MODEL-09: system-highlight via systemHighlightOrganIds", () => {
+    it("setting systemHighlightOrganIds renders those groups with system-highlighted class", async () => {
+      el.systemHighlightOrganIds = ["heart", "lungs_left"];
+      await el.updateComplete;
+
+      const heartGroup = el.shadowRoot?.querySelector('[data-part="heart"]');
+      const lungsGroup = el.shadowRoot?.querySelector(
+        '[data-part="lungs_left"]',
+      );
+
+      expect(heartGroup?.classList.contains("system-highlighted")).toBe(true);
+      expect(lungsGroup?.classList.contains("system-highlighted")).toBe(true);
+    });
+
+    it("systemHighlightOrganIds does not affect selectedOrganIds", async () => {
+      el.systemHighlightOrganIds = ["heart", "lungs_left"];
+      await el.updateComplete;
+
+      expect(el.selectedOrganIds).toEqual([]);
+      const selected =
+        el.shadowRoot?.querySelectorAll(".body-part-group.selected") ?? [];
+      expect(selected).toHaveLength(0);
+    });
+
+    it("system-highlighted groups do not gain selected class", async () => {
+      el.systemHighlightOrganIds = ["heart"];
+      await el.updateComplete;
+
+      const heartGroup = el.shadowRoot?.querySelector('[data-part="heart"]');
+      expect(heartGroup?.classList.contains("system-highlighted")).toBe(true);
+      expect(heartGroup?.classList.contains("selected")).toBe(false);
+    });
+  });
+
+  describe("MODEL-10: organ-selection-change event detail", () => {
+    it("clicking an organ emits organ-selection-change with lastToggled and selectedOrganIds", async () => {
+      let detail: {
+        selected: string[];
+        selectedOrganIds: string[];
+        lastToggled: string;
+        isSelected: boolean;
+      } | null = null;
+      const brainHitArea = el.shadowRoot?.querySelector(
+        '[data-part="brain"] .hit-area',
+      );
+
+      el.addEventListener("organ-selection-change", (event) => {
+        detail = (event as CustomEvent).detail;
+      });
+
+      brainHitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      expect(detail).not.toBeNull();
+      expect(detail?.lastToggled).toBe("brain");
+      expect(detail?.selectedOrganIds).toContain("brain");
+      expect(detail?.isSelected).toBe(true);
+    });
+
+    it("deselecting an organ emits isSelected false and excludes it from selectedOrganIds", async () => {
+      el.selectedOrganIds = ["brain"];
+      await el.updateComplete;
+
+      let detail: {
+        selected: string[];
+        selectedOrganIds: string[];
+        lastToggled: string;
+        isSelected: boolean;
+      } | null = null;
+      const brainHitArea = el.shadowRoot?.querySelector(
+        '[data-part="brain"] .hit-area',
+      );
+
+      el.addEventListener("organ-selection-change", (event) => {
+        detail = (event as CustomEvent).detail;
+      });
+
+      brainHitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      expect(detail?.lastToggled).toBe("brain");
+      expect(detail?.isSelected).toBe(false);
+      expect(detail?.selectedOrganIds).not.toContain("brain");
+    });
+
+    it("organs2 view still emits organ2-click on click", async () => {
+      el.currentView = "organs2";
+      await el.updateComplete;
+
+      let organ2Detail: { organId: string } | null = null;
+      el.addEventListener("organ2-click", (event) => {
+        organ2Detail = (event as CustomEvent).detail;
+      });
+
+      const hitArea = el.shadowRoot?.querySelector(".hit-area");
+      hitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      expect(organ2Detail).not.toBeNull();
+      expect(organ2Detail?.organId).toBeTruthy();
+    });
+  });
 });
