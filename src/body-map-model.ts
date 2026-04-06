@@ -141,6 +141,14 @@ export class BodyMapModel extends LitElement {
         fill: rgba(66, 145, 230, 0.55);
       }
 
+      .body-part-group.system-highlighted .hit-area {
+        fill: rgba(255, 165, 0, 0.3);
+      }
+
+      .body-part-group.system-highlighted:hover .hit-area {
+        fill: rgba(255, 165, 0, 0.45);
+      }
+
       .part-image {
         pointer-events: none;
       }
@@ -148,6 +156,10 @@ export class BodyMapModel extends LitElement {
       .body-part-group:hover .part-image,
       .body-part-group.selected .part-image {
         filter: drop-shadow(0 0 6px rgba(66, 165, 245, 0.7));
+      }
+
+      .body-part-group.system-highlighted .part-image {
+        filter: drop-shadow(0 0 5px rgba(255, 165, 0, 0.6));
       }
 
       .section-hit-area {
@@ -217,7 +229,9 @@ export class BodyMapModel extends LitElement {
   @property({ type: String, attribute: "asset-base" })
   assetBase = "";
 
-  private _selectedOrgans = new Set<string>();
+  @property({ attribute: false }) selectedOrganIds: string[] = [];
+
+  @property({ attribute: false }) systemHighlightOrganIds: string[] = [];
 
   private _selectedSections = new Set<string>();
 
@@ -236,10 +250,28 @@ export class BodyMapModel extends LitElement {
     }
 
     if (changedProperties.has("currentGender")) {
-      if (this.currentGender === "female") {
-        this._selectedOrgans.delete("male_reproductive");
-      } else {
-        this._selectedOrgans.delete("female_reproductive");
+      const removedId =
+        this.currentGender === "female"
+          ? "male_reproductive"
+          : "female_reproductive";
+
+      if (this.selectedOrganIds.includes(removedId)) {
+        const nextSelectedOrganIds = this.selectedOrganIds.filter(
+          (id) => id !== removedId,
+        );
+        this.selectedOrganIds = nextSelectedOrganIds;
+        this.dispatchEvent(
+          new CustomEvent("organ-selection-change", {
+            detail: {
+              selected: nextSelectedOrganIds,
+              selectedOrganIds: nextSelectedOrganIds,
+              lastToggled: removedId,
+              isSelected: false,
+            },
+            bubbles: true,
+            composed: true,
+          }),
+        );
       }
     }
   }
@@ -384,17 +416,27 @@ export class BodyMapModel extends LitElement {
   }
 
   private _renderOrganGroup(organ: OrganDefinition) {
-    const isSelected = this._selectedOrgans.has(organ.id);
+    const isSelected = this.selectedOrganIds.includes(organ.id);
+    const isSystemHighlighted = this.systemHighlightOrganIds.includes(organ.id);
     const reproClass = organ.isMaleRepro
       ? "male-repro"
       : organ.isFemaleRepro
         ? "female-repro"
         : "";
 
+    const classes = [
+      "body-part-group",
+      isSelected ? "selected" : "",
+      isSystemHighlighted && !isSelected ? "system-highlighted" : "",
+      reproClass,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     return svg`
       <g
         id=${`group-${organ.id}`}
-        class=${`body-part-group ${isSelected ? "selected" : ""} ${reproClass}`.trim()}
+        class=${`body-part-group ${isSelected ? "selected" : ""} ${isSystemHighlighted && !isSelected ? "system-highlighted" : ""} ${reproClass}`.trim()}
         data-part=${organ.id}
         data-name=${organ.name}
       >
@@ -444,14 +486,36 @@ export class BodyMapModel extends LitElement {
       return;
     }
 
-    if (this._selectedOrgans.has(partId)) {
-      this._selectedOrgans.delete(partId);
-    } else {
-      this._selectedOrgans.add(partId);
+    if (this.currentView === "organs2") {
+      this.dispatchEvent(
+        new CustomEvent("organ2-click", {
+          detail: { organId: partId },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      return;
     }
 
-    this.requestUpdate();
-    this._emitSelectionChange();
+    const wasSelected = this.selectedOrganIds.includes(partId);
+    const nextSelectedOrganIds = wasSelected
+      ? this.selectedOrganIds.filter((id) => id !== partId)
+      : [...this.selectedOrganIds, partId];
+
+    this.selectedOrganIds = nextSelectedOrganIds;
+
+    this.dispatchEvent(
+      new CustomEvent("organ-selection-change", {
+        detail: {
+          selected: nextSelectedOrganIds,
+          selectedOrganIds: nextSelectedOrganIds,
+          lastToggled: partId,
+          isSelected: !wasSelected,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _handleOrganHover(_event: MouseEvent) {
@@ -479,16 +543,6 @@ export class BodyMapModel extends LitElement {
     }
 
     this.requestUpdate();
-  }
-
-  private _emitSelectionChange() {
-    this.dispatchEvent(
-      new CustomEvent("organ-selection-change", {
-        detail: { selected: [...this._selectedOrgans] },
-        bubbles: true,
-        composed: true,
-      }),
-    );
   }
 
   private _organImageUrl(id: string): string {
