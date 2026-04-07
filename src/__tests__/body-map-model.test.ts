@@ -29,7 +29,7 @@ describe("body-map-model", () => {
 
       expect(el.shadowRoot).toBeTruthy();
       expect(el.tagName.toLowerCase()).toBe("body-map-model");
-      expect(svg?.getAttribute("viewBox")).toBe("0 0 698 1698");
+      expect(svg?.getAttribute("viewBox")).toBe("0 0 960 2600");
     });
 
     it("renders 19 organ groups with hit-area paths and images", () => {
@@ -200,7 +200,9 @@ describe("body-map-model", () => {
       expect(organsLayer?.getAttribute("style")).toContain("opacity: 0");
       expect(sectionsLayer?.getAttribute("style")).toContain("opacity: 1");
       expect(sectionGroups).toHaveLength(
-        SECTIONS.filter((section) => section.side === "front").length,
+        SECTIONS.filter(
+          (s) => s.side === "front" && (!s.gender || s.gender === "male"),
+        ).length,
       );
     });
 
@@ -222,11 +224,108 @@ describe("body-map-model", () => {
       );
 
       expect(sectionsBaseBody).toBeTruthy();
-      expect(sectionsBaseBody?.getAttribute("href")).toContain("sections-body");
+      expect(sectionsBaseBody?.getAttribute("href")).toContain(
+        "sections-body-male",
+      );
       expect(sectionsBaseBody?.getAttribute("href")).not.toContain(
         "silhouette",
       );
       expect(sectionsBaseBody?.getAttribute("pointer-events")).toBe("none");
+    });
+
+    it("sections view renders female body image when gender is female", async () => {
+      el.currentView = "sections";
+      el.currentGender = "female";
+      await el.updateComplete;
+
+      const sectionsBaseBody = el.shadowRoot?.querySelector(
+        "#sections-base-body",
+      );
+
+      expect(sectionsBaseBody?.getAttribute("href")).toContain("sections-body");
+      expect(sectionsBaseBody?.getAttribute("href")).not.toContain(
+        "sections-body-male",
+      );
+    });
+
+    it("sections view renders male back image when gender is male and facing back", async () => {
+      el.currentView = "sections";
+      el.currentGender = "male";
+      await el.updateComplete;
+
+      const rotateBtn = el.shadowRoot?.querySelector(".rotate-btn");
+      rotateBtn?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      const sectionsBaseBody = el.shadowRoot?.querySelector(
+        "#sections-base-body",
+      );
+
+      expect(sectionsBaseBody?.getAttribute("href")).toContain(
+        "sections-body-male-back",
+      );
+    });
+
+    it("sections view shows only 7 male front sections when gender is male", async () => {
+      el.currentView = "sections";
+      el.currentGender = "male";
+      await el.updateComplete;
+      const sectionGroups =
+        el.shadowRoot?.querySelectorAll(".body-section-group") ?? [];
+      expect(sectionGroups).toHaveLength(7);
+    });
+
+    it("sections view shows only 7 female front sections when gender is female", async () => {
+      el.currentView = "sections";
+      el.currentGender = "female";
+      await el.updateComplete;
+      const sectionGroups =
+        el.shadowRoot?.querySelectorAll(".body-section-group") ?? [];
+      expect(sectionGroups).toHaveLength(7);
+    });
+
+    it("uses 960x2600 viewBox for male front sections", async () => {
+      el.currentView = "sections";
+      el.currentGender = "male";
+      await el.updateComplete;
+      const svg = el.shadowRoot?.querySelector("svg");
+      expect(svg?.getAttribute("viewBox")).toBe("0 0 960 2600");
+    });
+
+    it("uses 698x1698 viewBox for female front sections", async () => {
+      el.currentView = "sections";
+      el.currentGender = "female";
+      await el.updateComplete;
+      const svg = el.shadowRoot?.querySelector("svg");
+      expect(svg?.getAttribute("viewBox")).toBe("0 0 698 1698");
+    });
+
+    it("sections view switches from male-back to female-back on gender toggle", async () => {
+      el.currentView = "sections";
+      el.currentGender = "male";
+      await el.updateComplete;
+
+      const rotateBtn = el.shadowRoot?.querySelector(".rotate-btn");
+      rotateBtn?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      el.currentGender = "female";
+      await el.updateComplete;
+
+      const sectionsBaseBody = el.shadowRoot?.querySelector(
+        "#sections-base-body",
+      );
+
+      expect(sectionsBaseBody?.getAttribute("href")).toContain(
+        "sections-body-back",
+      );
+      expect(sectionsBaseBody?.getAttribute("href")).not.toContain(
+        "sections-body-male",
+      );
     });
   });
 
@@ -269,17 +368,23 @@ describe("body-map-model", () => {
       expect(female?.isMaleRepro).not.toBe(true);
     });
 
-    it("sections.ts exports 14 section definitions", () => {
-      expect(SECTIONS).toHaveLength(14);
+    it("sections.ts exports 21 section definitions", () => {
+      expect(SECTIONS).toHaveLength(21);
     });
 
-    it("sections include 7 front and 7 back entries", () => {
+    it("sections include 14 front and 7 back entries", () => {
       expect(
         SECTIONS.filter((section) => section.side === "front"),
-      ).toHaveLength(7);
+      ).toHaveLength(14);
       expect(
         SECTIONS.filter((section) => section.side === "back"),
       ).toHaveLength(7);
+    });
+
+    it("front sections split evenly between male and female", () => {
+      const front = SECTIONS.filter((s) => s.side === "front");
+      expect(front.filter((s) => s.gender === "female")).toHaveLength(7);
+      expect(front.filter((s) => s.gender === "male")).toHaveLength(7);
     });
   });
 

@@ -329,7 +329,7 @@ export class BodyMapModal extends LitElement {
   }
 
   /**
-   * Compute modal and carat positions based on anchor point (click coordinates).
+   * Compute modal and carat positions based on anchor point.
    * Clamps to viewport bounds to prevent overflow (MODAL-02, D-10).
    */
   private _computePosition() {
@@ -339,13 +339,18 @@ export class BodyMapModal extends LitElement {
     const caratSize = 14;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
+    const headerTopOffset = 12;
+    const headerBottomOffset = 48;
 
-    let left = this.anchorX + gap;
+    const placeRight = this.anchorX < vw / 2;
+    let left = placeRight ? this.anchorX + gap : this.anchorX - modalW - gap;
     let top = this.anchorY - modalH / 2;
 
-    // Flip left if no room on right side
-    if (left + modalW > vw - 16) {
+    // Flip to the opposite side if the preferred side would overflow.
+    if (placeRight && left + modalW > vw - 16) {
       left = this.anchorX - modalW - gap;
+    } else if (!placeRight && left < 16) {
+      left = this.anchorX + gap;
     }
 
     // Clamp vertical position to viewport
@@ -353,12 +358,15 @@ export class BodyMapModal extends LitElement {
 
     this._modalStyle = `left:${left}px;top:${top}px`;
 
-    // Position carat to point at the anchor (click) location
-    const caratLeft =
-      left > this.anchorX
-        ? left - caratSize / 2 // modal is to the right, carat on left edge
-        : left + modalW - caratSize / 2; // modal is to the left, carat on right edge
-    const caratTop = this.anchorY - caratSize / 2;
+    const caratLeft = placeRight
+      ? left - caratSize / 2
+      : left + modalW - caratSize / 2;
+    const headerTop = top + headerTopOffset;
+    const headerBottom = top + headerBottomOffset;
+    const caratTop = Math.max(
+      headerTop,
+      Math.min(this.anchorY - caratSize / 2, headerBottom),
+    );
     this._caratStyle = `left:${caratLeft}px;top:${caratTop}px`;
   }
 

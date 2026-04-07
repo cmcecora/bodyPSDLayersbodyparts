@@ -2,6 +2,7 @@ import { LitElement, PropertyValues, css, html, nothing, svg } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { ORGANS, OrganDefinition } from "./data/organs.js";
 import { SECTIONS, SectionDefinition } from "./data/sections.js";
+import { getRegions } from "./data/body-part-highlight-regions.js";
 import { designTokens } from "./styles/tokens.css.js";
 
 type ViewMode = "organs" | "organs2" | "sections";
@@ -184,6 +185,24 @@ export class BodyMapModel extends LitElement {
         fill: rgba(144, 238, 144, 0.55);
       }
 
+      .sections-disabled .section-hit-area {
+        pointer-events: none;
+      }
+
+      .bp-highlight-ellipse {
+        fill: rgba(76, 175, 80, 0.3);
+        stroke: rgba(76, 175, 80, 0.55);
+        stroke-width: 2;
+        pointer-events: all;
+        cursor: pointer;
+        filter: url(#bp-glow);
+        transition: fill 0.2s ease;
+      }
+
+      .bp-highlight-ellipse:hover {
+        fill: rgba(76, 175, 80, 0.5);
+      }
+
       .svg-layer {
         transition: opacity 0.35s ease-in-out;
       }
@@ -259,6 +278,8 @@ export class BodyMapModel extends LitElement {
   @property({ attribute: false }) selectedOrganIds: string[] = [];
 
   @property({ attribute: false }) systemHighlightOrganIds: string[] = [];
+
+  @property({ attribute: false }) highlightedBodyPartIds: string[] = [];
 
   private _selectedSections = new Set<string>();
 
@@ -392,9 +413,11 @@ export class BodyMapModel extends LitElement {
     const organsVisible = this.currentView !== "sections";
     const sectionsVisible = this.currentView === "sections";
     const showingBack = sectionsVisible && this._sectionsFacing === "back";
-    const viewBox = showingBack ? "0 0 960 2600" : "0 0 698 1698";
-    const bodyW = showingBack ? 960 : 698;
-    const bodyH = showingBack ? 2600 : 1698;
+    const useLargeViewBox =
+      showingBack || (sectionsVisible && this.currentGender === "male");
+    const viewBox = useLargeViewBox ? "0 0 960 2600" : "0 0 698 1698";
+    const bodyW = useLargeViewBox ? 960 : 698;
+    const bodyH = useLargeViewBox ? 2600 : 1698;
 
     return svg`
       <svg viewBox=${viewBox} xmlns="http://www.w3.org/2000/svg" aria-label="Interactive body map">
@@ -415,6 +438,15 @@ export class BodyMapModel extends LitElement {
               stdDeviation="4"
               flood-color="#4caf50"
               flood-opacity="0.6"
+            />
+          </filter>
+          <filter id="bp-glow">
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation="5"
+              flood-color="#4caf50"
+              flood-opacity="0.55"
             />
           </filter>
         </defs>
@@ -443,7 +475,7 @@ export class BodyMapModel extends LitElement {
 
         <g
           id="sections-layer"
-          class="svg-layer"
+          class=${`svg-layer ${sectionsVisible && this.highlightedBodyPartIds.length > 0 ? "sections-disabled" : ""}`.trim()}
           style=${`opacity: ${sectionsVisible ? "1" : "0"}; pointer-events: ${sectionsVisible ? "auto" : "none"}`}
           @click=${this._handleSectionClick}
         >
@@ -457,9 +489,13 @@ export class BodyMapModel extends LitElement {
             pointer-events="none"
           />
           ${SECTIONS.filter(
-            (section) => section.side === this._sectionsFacing,
+            (section) =>
+              section.side === this._sectionsFacing &&
+              (!section.gender || section.gender === this.currentGender),
           ).map((section) => this._renderSectionGroup(section))}
         </g>
+
+        ${sectionsVisible ? this._renderBpHighlightLayer(useLargeViewBox) : nothing}
       </svg>
     `;
   }
@@ -625,6 +661,57 @@ export class BodyMapModel extends LitElement {
     );
   }
 
+  private _renderBpHighlightLayer(useLargeViewBox: boolean) {
+    if (this.highlightedBodyPartIds.length === 0) return nothing;
+
+    const scaleX = useLargeViewBox ? 960 / 698 : 1;
+    const scaleY = useLargeViewBox ? 2600 / 1698 : 1;
+    const needsScale = useLargeViewBox;
+
+    const ellipses = this.highlightedBodyPartIds.flatMap((bpId) =>
+      getRegions(bpId).map(
+        (r) => svg`
+          <ellipse
+            class="bp-highlight-ellipse"
+            cx=${String(r.cx)}
+            cy=${String(r.cy)}
+            rx=${String(r.rx)}
+            ry=${String(r.ry)}
+            data-bp-id=${bpId}
+          />
+        `,
+      ),
+    );
+
+    return svg`
+      <g
+        id="bp-highlight-layer"
+        @click=${this._handleBpHighlightClick}
+        transform=${needsScale ? `scale(${scaleX}, ${scaleY})` : ""}
+      >
+        ${ellipses}
+      </g>
+    `;
+  }
+
+  private _handleBpHighlightClick(event: MouseEvent) {
+    const target = event.target as Element | null;
+    if (!target?.classList.contains("bp-highlight-ellipse")) return;
+
+    event.stopPropagation();
+
+    const bpId = target.getAttribute("data-bp-id");
+    if (!bpId) return;
+
+    this.dispatchEvent(
+      new CustomEvent("bp-highlight-click", {
+        detail: { bodyPartId: bpId },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
   private _organImageUrl(id: string): string {
     return `${this._assetPrefix()}/organs/${id}.webp`;
   }
@@ -634,8 +721,9 @@ export class BodyMapModel extends LitElement {
   }
 
   private _sectionsBodyUrl(): string {
-    const suffix = this._sectionsFacing === "back" ? "-back" : "";
-    return `${this._assetPrefix()}/sections-body${suffix}.webp`;
+    const genderPart = this.currentGender === "male" ? "-male" : "";
+    const facingPart = this._sectionsFacing === "back" ? "-back" : "";
+    return `${this._assetPrefix()}/sections-body${genderPart}${facingPart}.webp`;
   }
 
   private _toggleFacing() {

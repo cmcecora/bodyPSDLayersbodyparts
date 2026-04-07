@@ -31,10 +31,34 @@ async function createFixture(
 
 describe("body-map-modal", () => {
   let el: BodyMapModal;
+  const originalInnerWidth = window.innerWidth;
+  const originalInnerHeight = window.innerHeight;
 
   afterEach(() => {
     el?.remove();
     document.body.innerHTML = "";
+  });
+
+  beforeEach(() => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: 1024,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 768,
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: originalInnerWidth,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: originalInnerHeight,
+    });
   });
 
   describe("MODAL-01: null sectionId renders nothing", () => {
@@ -75,6 +99,23 @@ describe("body-map-modal", () => {
       const tabTexts = Array.from(tabs ?? []).map((t) => t.textContent?.trim());
       expect(tabTexts).toContain("Symptoms");
       expect(tabTexts).toContain("Diseases");
+    });
+
+    it("places the carat in the header band and on the modal edge facing the anchor", async () => {
+      el = await createFixture({
+        sectionId: "heart",
+        sectionName: "Heart",
+        anchorX: 700,
+        anchorY: 300,
+      });
+
+      const modal = el.shadowRoot?.querySelector(".modal") as HTMLElement | null;
+      const carat = el.shadowRoot?.querySelector(
+        ".modal-carat",
+      ) as HTMLElement | null;
+
+      expect(modal?.getAttribute("style")).toContain("left:168px;top:80px");
+      expect(carat?.getAttribute("style")).toContain("left:681px;top:128px");
     });
   });
 
