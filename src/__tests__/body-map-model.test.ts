@@ -220,7 +220,7 @@ describe("body-map-model", () => {
       const sectionsLayer = el.shadowRoot?.querySelector("#sections-layer");
       const sectionGroups =
         el.shadowRoot?.querySelectorAll(
-          '.sections-face.is-active .body-section-group',
+          ".sections-face.is-active .body-section-group",
         ) ?? [];
 
       expect(organsLayer).toBeNull();
@@ -280,7 +280,7 @@ describe("body-map-model", () => {
       await el.updateComplete;
       const sectionGroups =
         el.shadowRoot?.querySelectorAll(
-          '.sections-face.is-active .body-section-group',
+          ".sections-face.is-active .body-section-group",
         ) ?? [];
       expect(sectionGroups).toHaveLength(7);
     });
@@ -291,7 +291,7 @@ describe("body-map-model", () => {
       await el.updateComplete;
       const sectionGroups =
         el.shadowRoot?.querySelectorAll(
-          '.sections-face.is-active .body-section-group',
+          ".sections-face.is-active .body-section-group",
         ) ?? [];
       expect(sectionGroups).toHaveLength(7);
     });
@@ -315,14 +315,16 @@ describe("body-map-model", () => {
 
   describe("MODEL-06B: sections front/back flip scene", () => {
     function getActiveFace(element: BodyMapModel): Element | null {
-      return element.shadowRoot?.querySelector(".sections-face.is-active") ?? null;
+      return (
+        element.shadowRoot?.querySelector(".sections-face.is-active") ?? null
+      );
     }
 
     function getActiveFaceAssetHref(element: BodyMapModel): string | null {
       return (
-        getActiveFace(element)?.querySelector(".sections-base-body")?.getAttribute(
-          "href",
-        ) ?? null
+        getActiveFace(element)
+          ?.querySelector(".sections-base-body")
+          ?.getAttribute("href") ?? null
       );
     }
 
@@ -339,7 +341,10 @@ describe("body-map-model", () => {
       const rotateBtn = element.shadowRoot?.querySelector(
         ".rotate-btn",
       ) as HTMLButtonElement | null;
-      if ((rotateBtn?.getAttribute("aria-pressed") === "true") !== shouldFaceBack) {
+      if (
+        (rotateBtn?.getAttribute("aria-pressed") === "true") !==
+        shouldFaceBack
+      ) {
         rotateBtn?.dispatchEvent(
           new MouseEvent("click", { bubbles: true, composed: true }),
         );
@@ -484,23 +489,29 @@ describe("body-map-model", () => {
       expect(female?.isMaleRepro).not.toBe(true);
     });
 
-    it("sections.ts exports 21 section definitions", () => {
-      expect(SECTIONS).toHaveLength(21);
+    it("sections.ts exports 28 section definitions", () => {
+      expect(SECTIONS).toHaveLength(28);
     });
 
-    it("sections include 14 front and 7 back entries", () => {
+    it("sections include 14 front and 14 back entries", () => {
       expect(
         SECTIONS.filter((section) => section.side === "front"),
       ).toHaveLength(14);
       expect(
         SECTIONS.filter((section) => section.side === "back"),
-      ).toHaveLength(7);
+      ).toHaveLength(14);
     });
 
     it("front sections split evenly between male and female", () => {
       const front = SECTIONS.filter((s) => s.side === "front");
       expect(front.filter((s) => s.gender === "female")).toHaveLength(7);
       expect(front.filter((s) => s.gender === "male")).toHaveLength(7);
+    });
+
+    it("back sections split evenly between male and female", () => {
+      const back = SECTIONS.filter((s) => s.side === "back");
+      expect(back.filter((s) => s.gender === "female")).toHaveLength(7);
+      expect(back.filter((s) => s.gender === "male")).toHaveLength(7);
     });
   });
 
@@ -867,7 +878,9 @@ describe("body-map-model", () => {
       expect(headSection?.getAttribute("tabindex")).toBe("0");
       expect(upperBodySection?.getAttribute("tabindex")).toBe("-1");
       expect(headSection?.getAttribute("role")).toBe("button");
-      expect(headSection?.getAttribute("aria-label")).toBe("Select Head & Neck");
+      expect(headSection?.getAttribute("aria-label")).toBe(
+        "Select Head & Neck",
+      );
       expect(headSection?.getAttribute("aria-pressed")).toBe("false");
 
       headSection?.dispatchEvent(
