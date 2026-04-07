@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 5 verification complete
-last_updated: "2026-04-07T17:18:14.759Z"
-last_activity: 2026-04-07 -- Phase 06 plan 02 complete
+last_updated: "2026-04-07T18:05:55.567Z"
+last_activity: 2026-04-07 -- Phase 06 plan 03 complete
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 17
-  completed_plans: 15
-  percent: 88
+  completed_plans: 16
+  percent: 94
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 06 (polish-back-view-performance) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Executing Phase 06
-Last activity: 2026-04-07 -- Phase 06 plan 02 complete
+Last activity: 2026-04-07 -- Phase 06 plan 03 complete
 
-Progress: [█████████░] 88%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
@@ -52,8 +52,8 @@ Progress: [█████████░] 88%
 
 **Recent Trend:**
 
-- Last 4 plans: Phase 05 API work plus Phase 06 accessibility and responsive shell work completed.
-- Trend: Phase 6 is in flight; the next work shifts from shell polish into front/back flip behavior and performance.
+- Last 4 plans: Phase 05 API work plus Phase 06 accessibility, responsive shell, and flip-scene work completed.
+- Trend: Phase 6 is in its final plan; remaining work is performance, deferred assets, and budget enforcement.
 
 _Updated after each plan completion_
 | Phase 01-scaffolding-asset-extraction P01 | 2min | 2 tasks | 7 files |
@@ -70,6 +70,7 @@ _Updated after each plan completion_
 | Phase 05 P02 | ~ | 3 tasks | 4 files |
 | Phase 06 P01 | 10min | 3 tasks | 5 files |
 | Phase 06 P02 | 13min | 3 tasks | 6 files |
+| Phase 06 P03 | 6min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -86,11 +87,13 @@ Recent decisions affecting current work:
 - [Phase 06]: Explorer owns the polite live region so announcements can include body-part names plus mapped system context. — The explorer already has the cross-component state needed to generate consistent screen-reader messages.
 - [Phase 06]: Explorer responsiveness is driven by container queries on the component shell rather than viewport media queries. — This keeps embedding behavior tied to host width and avoids layout assumptions outside the component.
 - [Phase 06]: Narrow layouts disable data-panel sticky locking and reuse shared polish tokens across panels. — The stacked layout stays scroll-safe while the visual hierarchy remains consistent.
+- [Phase 06]: Sections mode now uses explicit front and back faces inside a 3D flip scene instead of swapping one body asset in place. — This makes the flip animation intentional and keeps front/back assets independently testable.
+- [Phase 06]: Hidden section faces are kept in the DOM for animation but removed from interaction with aria-hidden, pointer-events: none, and inactive tabindex values. — The visual flip remains smooth without letting the hidden face intercept clicks or focus.
 
 ### Pending Todos
 
 - Visual browser verification is still recommended for the Phase 6 polish and accessibility work.
-- Phase 06-03 front/back sections flip is the next plan in flight.
+- Phase 06-04 performance and budget enforcement is the next plan in flight.
 
 ### Blockers/Concerns
 
