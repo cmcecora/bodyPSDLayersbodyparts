@@ -1,5 +1,5 @@
 import { LitElement, html, css, nothing } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import "./body-map-model.js";
 import "./body-map-sidebar.js";
 import "./body-map-detail-panel.js";
@@ -15,9 +15,17 @@ import {
 import {
   fetchDiseases,
   fetchSymptomsForPart,
+  ORGAN_TO_DATA_KEY,
   type DiseaseEntry,
 } from "./data/data-service.js";
 import { SECTION_TO_BP_KEYS } from "./data/section-mapping.js";
+import {
+  BODY_PARTS,
+  getBodyPartPhotoEntriesByIds,
+  getBodyPartPhotoEntriesForOrganIds,
+  type BodyPartDefinition,
+  type BodyPartPhotoEntry,
+} from "./data/body-parts.js";
 
 @customElement("body-map-explorer")
 export class BodyMapExplorer extends LitElement {
@@ -71,9 +79,23 @@ export class BodyMapExplorer extends LitElement {
     `,
   ];
 
-  @state() private activeSystemId: BodySystemId | null = null;
+  @property({ type: String, attribute: "active-system-id", reflect: true })
+  activeSystemId: BodySystemId | null = null;
 
-  @state() private selectedOrganIds: string[] = [];
+  @property({
+    type: Array,
+    attribute: "selected-organ-ids",
+    reflect: true,
+    converter: {
+      fromAttribute: (value: string) => (value ? value.split(",") : []),
+      toAttribute: (value: string[]) => (value.length > 0 ? value.join(",") : null),
+    },
+  })
+  selectedOrganIds: string[] = [];
+
+  /** bp_*-prefixed IDs of body parts selected from the sidebar panel. */
+  @state() private _selectedBodyPartIds: string[] = [];
+  @state() private _detailBodyPartId: string | null = null;
 
   @state() private _diseasesMap: Map<string, DiseaseEntry[]> = new Map();
   @state() private _symptomsMap: Map<string, string[]> = new Map();
@@ -91,6 +113,9 @@ export class BodyMapExplorer extends LitElement {
   @state() private _modalLoading = false;
   @state() private _modalError: string | null = null;
 
+  @property({ type: String, attribute: "asset-base", reflect: true })
+  assetBase = "";
+
   private get activeSystem(): BodySystemDefinition | null {
     if (this.activeSystemId === null) return null;
     return BODY_SYSTEMS.find((s) => s.id === this.activeSystemId) ?? null;
@@ -100,9 +125,74 @@ export class BodyMapExplorer extends LitElement {
     return this.activeSystem?.organIds ?? [];
   }
 
+  private get _activeDetailBodyPart(): BodyPartDefinition | null {
+    if (this._detailBodyPartId === null) return null;
+    return (
+      BODY_PARTS.find((part) => part.id === this._detailBodyPartId) ?? null
+    );
+  }
+
+  private get _detailPhotoEntries(): BodyPartPhotoEntry[] {
+    if (this.activeSystem !== null) {
+      const entries =
+        this.activeSystem.organIds.length > 0
+          ? getBodyPartPhotoEntriesForOrganIds(this.activeSystem.organIds)
+          : getBodyPartPhotoEntriesByIds(
+              this.activeSystem.detailBodyPartIds ?? [],
+            );
+      const focusedBodyPartId = this._activeDetailBodyPart?.id;
+
+      if (focusedBodyPartId === undefined) {
+        return entries;
+      }
+
+      const focusedIndex = entries.findIndex(
+        (entry) => entry.id === focusedBodyPartId,
+      );
+
+      if (focusedIndex <= 0) {
+        return entries;
+      }
+
+      return [
+        entries[focusedIndex],
+        ...entries.slice(0, focusedIndex),
+        ...entries.slice(focusedIndex + 1),
+      ];
+    }
+
+    const activeBodyPart = this._activeDetailBodyPart;
+    if (activeBodyPart === null) {
+      return [];
+    }
+
+    return [
+      {
+        id: activeBodyPart.id,
+        label: activeBodyPart.name,
+        imageFile: activeBodyPart.imageFile,
+        organIds: [...activeBodyPart.organIds],
+      },
+    ];
+  }
+
   private get _panelOrganIds(): string[] {
+    // Deduplicate systemHighlightOrganIds by data key so e.g. lungs_left and
+    // lungs_right don't produce two identical cards — keep first occurrence.
+    const seenDataKeys = new Set<string>();
+    const dedupedSystem = this.systemHighlightOrganIds.filter((id) => {
+      const key = ORGAN_TO_DATA_KEY[id] ?? id;
+      if (seenDataKeys.has(key)) return false;
+      seenDataKeys.add(key);
+      return true;
+    });
+
     return Array.from(
-      new Set([...this.selectedOrganIds, ...this.systemHighlightOrganIds]),
+      new Set([
+        ...this.selectedOrganIds,
+        ...this._selectedBodyPartIds,
+        ...dedupedSystem,
+      ]),
     );
   }
 
@@ -110,6 +200,7 @@ export class BodyMapExplorer extends LitElement {
     event: CustomEvent<{ systemId: BodySystemId }>,
   ) {
     const { systemId } = event.detail;
+    this._detailBodyPartId = null;
     if (systemId === this.activeSystemId) {
       this.activeSystemId = null;
     } else {
@@ -118,16 +209,33 @@ export class BodyMapExplorer extends LitElement {
       const system = BODY_SYSTEMS.find((s) => s.id === systemId);
       system?.organIds.forEach((id) => this._loadOrganData(id));
     }
+
+    this.dispatchEvent(
+      new CustomEvent("system-selected", {
+        detail: { systemId, active: this.activeSystemId === systemId },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _handleOrganSelectRequest(event: CustomEvent<{ organId: string }>) {
     const { organId } = event.detail;
+    this._detailBodyPartId = null;
     const wasSelected = this.selectedOrganIds.includes(organId);
     const nextIds = wasSelected
       ? this.selectedOrganIds.filter((id) => id !== organId)
       : [...this.selectedOrganIds, organId];
 
     this.selectedOrganIds = nextIds;
+
+    this.dispatchEvent(
+      new CustomEvent(wasSelected ? "organ-deselected" : "organ-selected", {
+        detail: { organId },
+        bubbles: true,
+        composed: true,
+      }),
+    );
 
     if (!wasSelected) {
       this._loadOrganData(organId);
@@ -145,6 +253,50 @@ export class BodyMapExplorer extends LitElement {
     }
   }
 
+  private _handleBodyPartSelectRequest(
+    event: CustomEvent<{ bodyPartId: string; organIds: string[] }>,
+  ) {
+    const { bodyPartId, organIds } = event.detail;
+
+    // Toggle data-panel tracking by bodyPartId (bp_* key maps directly to data files)
+    const isBodyPartSelected = this._selectedBodyPartIds.includes(bodyPartId);
+    let nextSelectedBodyPartIds: string[];
+    if (isBodyPartSelected) {
+      nextSelectedBodyPartIds = this._selectedBodyPartIds.filter(
+        (id) => id !== bodyPartId,
+      );
+    } else {
+      nextSelectedBodyPartIds = [...this._selectedBodyPartIds, bodyPartId];
+      this._loadOrganData(bodyPartId);
+    }
+    this._selectedBodyPartIds = nextSelectedBodyPartIds;
+    this._detailBodyPartId = isBodyPartSelected
+      ? (nextSelectedBodyPartIds[nextSelectedBodyPartIds.length - 1] ?? null)
+      : bodyPartId;
+    if (organIds.length === 0) {
+      this.activeSystemId = null;
+    }
+
+    // Toggle SVG highlighting via organIds (may be empty for non-SVG body parts)
+    if (organIds.length > 0) {
+      const anyOrganSelected = organIds.some((id) =>
+        this.selectedOrganIds.includes(id),
+      );
+      if (anyOrganSelected) {
+        this.selectedOrganIds = this.selectedOrganIds.filter(
+          (id) => !organIds.includes(id),
+        );
+      } else {
+        this.selectedOrganIds = [
+          ...this.selectedOrganIds,
+          ...organIds.filter((id) => !this.selectedOrganIds.includes(id)),
+        ];
+        const firstSystem = ORGAN_TO_SYSTEM[organIds[0]] ?? [];
+        if (firstSystem.length > 0) this.activeSystemId = firstSystem[0];
+      }
+    }
+  }
+
   private _handleOrganSelectionChange(
     event: CustomEvent<{
       selectedOrganIds: string[];
@@ -152,13 +304,23 @@ export class BodyMapExplorer extends LitElement {
       isSelected: boolean;
     }>,
   ) {
-    this.selectedOrganIds = event.detail.selectedOrganIds;
+    const { selectedOrganIds, lastToggled, isSelected } = event.detail;
+    this.selectedOrganIds = selectedOrganIds;
+    this._detailBodyPartId = null;
 
-    const mappedSystemIds = ORGAN_TO_SYSTEM[event.detail.lastToggled] ?? [];
+    this.dispatchEvent(
+      new CustomEvent(isSelected ? "organ-selected" : "organ-deselected", {
+        detail: { organId: lastToggled },
+        bubbles: true,
+        composed: true,
+      }),
+    );
 
-    if (event.detail.isSelected) {
+    const mappedSystemIds = ORGAN_TO_SYSTEM[lastToggled] ?? [];
+
+    if (isSelected) {
       this.activeSystemId = mappedSystemIds[0] ?? this.activeSystemId;
-      this._loadOrganData(event.detail.lastToggled);
+      this._loadOrganData(lastToggled);
     } else {
       if (
         this.activeSystemId !== null &&
@@ -182,8 +344,8 @@ export class BodyMapExplorer extends LitElement {
 
     try {
       const [diseases, symptoms] = await Promise.all([
-        fetchDiseases(organId),
-        fetchSymptomsForPart(organId),
+        fetchDiseases(organId, this.assetBase),
+        fetchSymptomsForPart(organId, this.assetBase),
       ]);
 
       const nextDiseases = new Map(this._diseasesMap);
@@ -247,9 +409,15 @@ export class BodyMapExplorer extends LitElement {
     try {
       // Fetch diseases and symptoms for all body parts in this section
       const [diseasesArrays, symptomsArrays] = await Promise.all([
-        Promise.all(bpKeys.map((key) => fetchDiseases(key).catch(() => []))),
         Promise.all(
-          bpKeys.map((key) => fetchSymptomsForPart(key).catch(() => [])),
+          bpKeys.map((key) =>
+            fetchDiseases(key, this.assetBase).catch(() => []),
+          ),
+        ),
+        Promise.all(
+          bpKeys.map((key) =>
+            fetchSymptomsForPart(key, this.assetBase).catch(() => []),
+          ),
         ),
       ]);
 
@@ -320,14 +488,17 @@ export class BodyMapExplorer extends LitElement {
             .systems=${BODY_SYSTEMS}
             .activeSystemId=${this.activeSystemId}
             .selectedOrganIds=${this.selectedOrganIds}
+            .assetBase=${this.assetBase}
             @system-toggle-request=${this._handleSystemToggleRequest}
             @organ-select-request=${this._handleOrganSelectRequest}
+            @body-part-select-request=${this._handleBodyPartSelectRequest}
           ></body-map-sidebar>
         </div>
         <div class="body-model-area">
           <body-map-model
             .selectedOrganIds=${this.selectedOrganIds}
             .systemHighlightOrganIds=${this.systemHighlightOrganIds}
+            .assetBase=${this.assetBase}
             @organ-selection-change=${this._handleOrganSelectionChange}
             @section-click=${this._handleSectionClick}
           ></body-map-model>
@@ -335,6 +506,11 @@ export class BodyMapExplorer extends LitElement {
         <div class="panel">
           <body-map-detail-panel
             .system=${this.activeSystem}
+            .bodyPart=${this.activeSystem === null
+              ? this._activeDetailBodyPart
+              : null}
+            .photoEntries=${this._detailPhotoEntries}
+            .assetBase=${this.assetBase}
           ></body-map-detail-panel>
         </div>
         <!-- col 4: data panel -->
