@@ -43,7 +43,15 @@
       "mcp__chrome-devtools__hover",
       "Bash(npx tsc:*)",
       "Bash(npm run:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(du:*)",
+      "Bash(identify /Users/chriscecora/Downloads/bodyPSDLayersbodyparts/public/assets/sections-body.webp /Users/chriscecora/Downloads/bodyPSDLayersbodyparts/public/assets/sections-body-back.webp)",
+      "Bash(sips -g all /Users/chriscecora/Downloads/bodyPSDLayersbodyparts/public/assets/sections-body.webp)",
+      "Bash(sips:*)",
+      "Bash(cwebp -q 90 /tmp/male-front-698.png -o /Users/chriscecora/Downloads/bodyPSDLayersbodyparts/public/assets/sections-body-male.webp)",
+      "Bash(cwebp -q 90 /tmp/male-back-960.png -o /Users/chriscecora/Downloads/bodyPSDLayersbodyparts/public/assets/sections-body-male-back.webp)",
+      "Read(//tmp/**)",
+      "Bash(cwebp -q 90 /tmp/male-front-960.png -o /Users/chriscecora/Downloads/bodyPSDLayersbodyparts/public/assets/sections-body-male.webp)"
     ],
     "deny": [
       "Bash(curl *)",

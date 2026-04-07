@@ -28,6 +28,10 @@ import {
   type BodyPartDefinition,
   type BodyPartPhotoEntry,
 } from "./data/body-parts.js";
+import {
+  getBodyPartModalAnchor,
+  getOrganGroupModalAnchor,
+} from "./data/body-part-modal-anchor.js";
 
 @customElement("body-map-explorer")
 export class BodyMapExplorer extends LitElement {
@@ -398,10 +402,11 @@ export class BodyMapExplorer extends LitElement {
     if (this._currentView === "organs2") {
       const bodyPart = BODY_PARTS.find((bp) => bp.id === bodyPartId);
       const displayName = bodyPart?.name ?? bodyPartId;
+      const anchor = this._resolveOrgans2ModalAnchor(bodyPartId, organIds);
       this._modalSectionId = bodyPartId;
       this._modalSectionName = displayName;
-      this._modalAnchorX = 0;
-      this._modalAnchorY = 0;
+      this._modalAnchorX = anchor.x;
+      this._modalAnchorY = anchor.y;
       this._modalDiseases = [];
       this._modalSymptoms = [];
       this._modalError = null;
@@ -460,6 +465,48 @@ export class BodyMapExplorer extends LitElement {
         // NOTE: intentionally NOT activating activeSystemId here
       }
     }
+  }
+
+  private _handleBpHighlightClick(event: CustomEvent<{ bodyPartId: string }>) {
+    const { bodyPartId } = event.detail;
+    const bp = BODY_PARTS.find((b) => b.id === bodyPartId);
+    if (!bp) return;
+
+    // Deselect the body part
+    this._selectedBodyPartIds = this._selectedBodyPartIds.filter(
+      (id) => id !== bodyPartId,
+    );
+    this._detailBodyPartId =
+      this._selectedBodyPartIds[this._selectedBodyPartIds.length - 1] ?? null;
+
+    // Remove associated organ highlights if no other selected body part maps to them
+    if (bp.organIds.length > 0) {
+      const stillNeeded = new Set<string>();
+      for (const bpId of this._selectedBodyPartIds) {
+        const other = BODY_PARTS.find((b) => b.id === bpId);
+        other?.organIds.forEach((id) => stillNeeded.add(id));
+      }
+      this.selectedOrganIds = this.selectedOrganIds.filter(
+        (id) => !bp.organIds.includes(id) || stillNeeded.has(id),
+      );
+    }
+  }
+
+  private _resolveOrgans2ModalAnchor(
+    bodyPartId: string,
+    organIds: string[],
+  ): { x: number; y: number } {
+    const model = this.renderRoot.querySelector("body-map-model");
+    const modelRoot = model?.shadowRoot ?? null;
+
+    for (const organId of organIds) {
+      const anchor = getOrganGroupModalAnchor(modelRoot, organId);
+      if (anchor !== null) {
+        return anchor;
+      }
+    }
+
+    return getBodyPartModalAnchor(bodyPartId);
   }
 
   private _handleOrganSelectionChange(
@@ -764,12 +811,14 @@ export class BodyMapExplorer extends LitElement {
           <body-map-model
             .selectedOrganIds=${this.selectedOrganIds}
             .systemHighlightOrganIds=${this.systemHighlightOrganIds}
+            .highlightedBodyPartIds=${this._selectedBodyPartIds}
             .assetBase=${this.assetBase}
             @organ-selection-change=${this._handleOrganSelectionChange}
             @section-click=${this._handleSectionClick}
             @organ2-click=${this._handleOrgan2Click}
             @gender-change=${this._handleGenderChange}
             @view-change=${this._handleViewChange}
+            @bp-highlight-click=${this._handleBpHighlightClick}
           ></body-map-model>
         </div>
         <div class="panel">

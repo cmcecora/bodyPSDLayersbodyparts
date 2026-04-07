@@ -561,6 +561,59 @@ describe("body-map-explorer", () => {
       expect(modal).not.toBeNull();
       expect(modal?.sectionId).toBe("upper_body");
     });
+
+    it("Organs 2 body-part clicks anchor the modal to the selected body location", async () => {
+      const { sidebar, model } = await getShadowChildren(el);
+
+      model!.dispatchEvent(
+        new CustomEvent("view-change", {
+          detail: { view: "organs2" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      const heartGroup =
+        model!.shadowRoot?.querySelector("#group-heart") ?? null;
+      expect(heartGroup).not.toBeNull();
+      const rectSpy = vi
+        .spyOn(heartGroup as Element, "getBoundingClientRect")
+        .mockReturnValue({
+          x: 200,
+          y: 100,
+          left: 200,
+          top: 100,
+          right: 240,
+          bottom: 130,
+          width: 40,
+          height: 30,
+          toJSON() {
+            return this;
+          },
+        } as DOMRect);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_heart", organIds: ["heart"] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await model?.updateComplete;
+
+      const modal = el.shadowRoot?.querySelector(
+        "body-map-modal",
+      ) as BodyMapModal | null;
+      expect(modal).not.toBeNull();
+      expect(modal?.sectionId).toBe("bp_heart");
+      expect(modal?.anchorX).toBe(220);
+      expect(modal?.anchorY).toBe(115);
+
+      rectSpy.mockRestore();
+    });
   });
 
   describe("EXPLORER-05: 4th column data panel integration", () => {
