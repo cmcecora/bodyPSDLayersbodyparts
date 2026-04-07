@@ -5,6 +5,7 @@ import { BodyMapSidebar } from "../body-map-sidebar.js";
 import { BodyMapModel } from "../body-map-model.js";
 import { BodyMapDetailPanel } from "../body-map-detail-panel.js";
 import { BodyMapDataPanel } from "../body-map-data-panel.js";
+import { BodyMapModal } from "../body-map-modal.js";
 
 // Mock fetchDiseases and fetchSymptomsForPart to avoid real network calls in explorer tests
 vi.mock("../data/data-service.js", () => ({
@@ -358,6 +359,66 @@ describe("body-map-explorer", () => {
       await detail?.updateComplete;
 
       expect(detail!.system).toBeNull();
+    });
+  });
+
+  describe("EXPLORER-06: modal integration", () => {
+    it("explorer does NOT render body-map-modal when _modalSectionId is null (initial state)", async () => {
+      const modal = el.shadowRoot?.querySelector(
+        "body-map-modal",
+      ) as BodyMapModal | null;
+      expect(modal).toBeNull();
+    });
+
+    it("explorer renders body-map-modal element when section-click event is dispatched", async () => {
+      const { model } = await getShadowChildren(el);
+
+      model!.dispatchEvent(
+        new CustomEvent("section-click", {
+          detail: {
+            sectionId: "head_neck",
+            sectionName: "Head & Neck",
+            clientX: 200,
+            clientY: 300,
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+
+      const modal = el.shadowRoot?.querySelector(
+        "body-map-modal",
+      ) as BodyMapModal | null;
+      expect(modal).not.toBeNull();
+    });
+
+    it("explorer has @section-click handler — body-map-model dispatches section-click and explorer responds", async () => {
+      const { model } = await getShadowChildren(el);
+
+      // Dispatch the event
+      model!.dispatchEvent(
+        new CustomEvent("section-click", {
+          detail: {
+            sectionId: "upper_body",
+            sectionName: "Upper Body",
+            clientX: 100,
+            clientY: 200,
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+
+      // Modal should now exist and have the correct sectionId
+      const modal = el.shadowRoot?.querySelector(
+        "body-map-modal",
+      ) as BodyMapModal | null;
+      expect(modal).not.toBeNull();
+      expect(modal?.sectionId).toBe("upper_body");
     });
   });
 
