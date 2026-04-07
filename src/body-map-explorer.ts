@@ -171,12 +171,23 @@ export class BodyMapExplorer extends LitElement {
 
   private get _detailPhotoEntries(): BodyPartPhotoEntry[] {
     if (this.activeSystem !== null) {
-      const entries =
-        this.activeSystem.organIds.length > 0
-          ? getBodyPartPhotoEntriesForOrganIds(this.activeSystem.organIds)
-          : getBodyPartPhotoEntriesByIds(
-              this.activeSystem.detailBodyPartIds ?? [],
-            );
+      let entries: BodyPartPhotoEntry[];
+      if (this.activeSystem.organIds.length > 0) {
+        entries = getBodyPartPhotoEntriesForOrganIds(
+          this.activeSystem.organIds,
+        );
+        // Merge in any explicitly listed detailBodyPartIds not already present
+        const extraIds = (this.activeSystem.detailBodyPartIds ?? []).filter(
+          (id) => !entries.some((e) => e.id === id),
+        );
+        if (extraIds.length > 0) {
+          entries = [...entries, ...getBodyPartPhotoEntriesByIds(extraIds)];
+        }
+      } else {
+        entries = getBodyPartPhotoEntriesByIds(
+          this.activeSystem.detailBodyPartIds ?? [],
+        );
+      }
       const focusedBodyPartId = this._activeDetailBodyPart?.id;
 
       if (focusedBodyPartId === undefined) {
@@ -236,11 +247,15 @@ export class BodyMapExplorer extends LitElement {
       return true;
     });
 
+    // Include bp_ items explicitly listed in the active system's detailBodyPartIds
+    const systemDetailIds = this.activeSystem?.detailBodyPartIds ?? [];
+
     return Array.from(
       new Set([
         ...filteredSelectedOrgans,
         ...this._selectedBodyPartIds,
         ...dedupedSystem,
+        ...systemDetailIds,
       ]),
     );
   }
@@ -280,9 +295,10 @@ export class BodyMapExplorer extends LitElement {
       this.activeSystemId = null;
     } else {
       this.activeSystemId = systemId;
-      // Load data for all organs in the newly selected system
+      // Load data for all organs and explicit body parts in the newly selected system
       const system = BODY_SYSTEMS.find((s) => s.id === systemId);
       system?.organIds.forEach((id) => this._loadOrganData(id));
+      system?.detailBodyPartIds?.forEach((id) => this._loadOrganData(id));
     }
 
     this.dispatchEvent(
