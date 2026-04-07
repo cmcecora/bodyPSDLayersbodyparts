@@ -181,11 +181,11 @@ describe("body-map-model", () => {
   });
 
   describe("MODEL-06: view switching", () => {
-    it("defaults to organs view and shows the organs layer", () => {
-      const organsLayer = el.shadowRoot?.querySelector("#organs-layer");
+    it("defaults to sections view and shows the sections layer", () => {
+      const sectionsLayer = el.shadowRoot?.querySelector("#sections-layer");
 
-      expect(el.currentView).toBe("organs");
-      expect(organsLayer?.getAttribute("style")).toContain("opacity: 1");
+      expect(el.currentView).toBe("sections");
+      expect(sectionsLayer?.getAttribute("style")).toContain("opacity: 1");
     });
 
     it("switching to sections hides organs and shows front section groups", async () => {

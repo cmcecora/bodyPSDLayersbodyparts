@@ -1,4 +1,8 @@
 {
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp"
+  },
   "permissions": {
     "allow": [
       "Bash(git:*)",
@@ -25,7 +29,31 @@
       "Bash(claude config list)",
       "Bash(timeout 10s claude --print \"show available commands or features for remote control\")",
       "Bash(bun --version)",
-      "Skill(telegram:access)"
+      "Skill(telegram:access)",
+      "Bash(mgrep:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run test *)",
+      "Read(~/.zshrc)",
+      "mcp__chrome-devtools__fill",
+      "Bash(node:*)",
+      "Skill(gsd:progress)",
+      "Bash(npx vitest:*)",
+      "Skill(gsd:execute-phase)",
+      "mcp__chrome-devtools__hover",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)"
+    ],
+    "deny": [
+      "Bash(curl *)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)"
     ]
-  }
+  },
+  "companyAnnouncements": [
+    "Welcome to Acme Corp! Review our code guidelines at docs.acme.com",
+    "Reminder: Code reviews required for all PRs",
+    "New security policy in effect"
+  ]
 }

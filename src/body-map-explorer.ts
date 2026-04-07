@@ -100,6 +100,12 @@ export class BodyMapExplorer extends LitElement {
     return this.activeSystem?.organIds ?? [];
   }
 
+  private get _panelOrganIds(): string[] {
+    return Array.from(
+      new Set([...this.selectedOrganIds, ...this.systemHighlightOrganIds]),
+    );
+  }
+
   private _handleSystemToggleRequest(
     event: CustomEvent<{ systemId: BodySystemId }>,
   ) {
@@ -108,6 +114,34 @@ export class BodyMapExplorer extends LitElement {
       this.activeSystemId = null;
     } else {
       this.activeSystemId = systemId;
+      // Load data for all organs in the newly selected system
+      const system = BODY_SYSTEMS.find((s) => s.id === systemId);
+      system?.organIds.forEach((id) => this._loadOrganData(id));
+    }
+  }
+
+  private _handleOrganSelectRequest(event: CustomEvent<{ organId: string }>) {
+    const { organId } = event.detail;
+    const wasSelected = this.selectedOrganIds.includes(organId);
+    const nextIds = wasSelected
+      ? this.selectedOrganIds.filter((id) => id !== organId)
+      : [...this.selectedOrganIds, organId];
+
+    this.selectedOrganIds = nextIds;
+
+    if (!wasSelected) {
+      this._loadOrganData(organId);
+      const mappedSystemIds = ORGAN_TO_SYSTEM[organId] ?? [];
+      this.activeSystemId = mappedSystemIds[0] ?? this.activeSystemId;
+    } else if (this.activeSystemId !== null) {
+      const mappedSystemIds = ORGAN_TO_SYSTEM[organId] ?? [];
+      if (mappedSystemIds.includes(this.activeSystemId)) {
+        const activeOrgans = this.activeSystem?.organIds ?? [];
+        const anyStillSelected = nextIds.some((id) =>
+          activeOrgans.includes(id),
+        );
+        if (!anyStillSelected) this.activeSystemId = null;
+      }
     }
   }
 
@@ -285,7 +319,9 @@ export class BodyMapExplorer extends LitElement {
           <body-map-sidebar
             .systems=${BODY_SYSTEMS}
             .activeSystemId=${this.activeSystemId}
+            .selectedOrganIds=${this.selectedOrganIds}
             @system-toggle-request=${this._handleSystemToggleRequest}
+            @organ-select-request=${this._handleOrganSelectRequest}
           ></body-map-sidebar>
         </div>
         <div class="body-model-area">
@@ -304,7 +340,7 @@ export class BodyMapExplorer extends LitElement {
         <!-- col 4: data panel -->
         <div class="panel data-panel-col">
           <body-map-data-panel
-            .selectedOrganIds=${this.selectedOrganIds}
+            .selectedOrganIds=${this._panelOrganIds}
             .diseasesMap=${this._diseasesMap}
             .symptomsMap=${this._symptomsMap}
             .loadingIds=${this._loadingIds}

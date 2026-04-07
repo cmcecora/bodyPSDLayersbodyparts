@@ -35,7 +35,7 @@ describe("body-map-sidebar", () => {
 
   it("renders 11 system buttons with dot, thumb, and title for each row", async () => {
     const buttons = sidebar.shadowRoot?.querySelectorAll(
-      "button[type='button']",
+      "button.system-button",
     );
 
     expect(buttons).toHaveLength(11);
@@ -50,7 +50,7 @@ describe("body-map-sidebar", () => {
 
   it("each button carries the system id as data-system-id", () => {
     const buttons = sidebar.shadowRoot?.querySelectorAll(
-      "button[type='button']",
+      "button.system-button",
     );
 
     BODY_SYSTEMS.forEach((system, index) => {
@@ -66,7 +66,7 @@ describe("body-map-sidebar", () => {
     });
 
     const firstButton = sidebar.shadowRoot?.querySelector(
-      "button[type='button']",
+      "button.system-button",
     );
     firstButton?.dispatchEvent(
       new MouseEvent("click", { bubbles: true, composed: true }),

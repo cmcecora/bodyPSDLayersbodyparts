@@ -131,6 +131,37 @@ export class BodyMapDataPanel extends LitElement {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s ease;
+      }
+
+      .subsection-heading:hover {
+        background: #f9fafb;
+      }
+
+      .subsection-chevron {
+        font-size: 10px;
+        transition: transform 0.2s ease;
+      }
+
+      .subsection-chevron.collapsed {
+        transform: rotate(-90deg);
+      }
+
+      /* Collapsible sub-sections */
+      .subsection-content {
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.2s ease;
+      }
+
+      .subsection-content.collapsed {
+        grid-template-rows: 0fr;
+      }
+
+      .subsection-content-inner {
+        overflow: hidden;
       }
 
       .data-list {
@@ -248,6 +279,8 @@ export class BodyMapDataPanel extends LitElement {
   @property({ attribute: false }) filterQuery = "";
 
   @state() private _collapsedIds: Set<string> = new Set();
+  @state() private _collapsedDiseases: Set<string> = new Set();
+  @state() private _collapsedSymptoms: Set<string> = new Set();
 
   // Debounced filter-change dispatcher — created as class field (not inside render)
   private _debouncedFilterChange = debounce((query: string) => {
@@ -282,6 +315,24 @@ export class BodyMapDataPanel extends LitElement {
       next.add(organId);
     }
     this._collapsedIds = next;
+  }
+
+  private _toggleSubsection(organId: string, section: "diseases" | "symptoms") {
+    const set =
+      section === "diseases"
+        ? this._collapsedDiseases
+        : this._collapsedSymptoms;
+    const next = new Set(set);
+    if (next.has(organId)) {
+      next.delete(organId);
+    } else {
+      next.add(organId);
+    }
+    if (section === "diseases") {
+      this._collapsedDiseases = next;
+    } else {
+      this._collapsedSymptoms = next;
+    }
   }
 
   private _handleRetryClick(organId: string) {
@@ -339,6 +390,8 @@ export class BodyMapDataPanel extends LitElement {
 
     const totalCount = filteredDiseases.length + filteredSymptoms.length;
     const isCollapsed = this._collapsedIds.has(organId);
+    const diseasesCollapsed = this._collapsedDiseases.has(organId);
+    const symptomsCollapsed = this._collapsedSymptoms.has(organId);
 
     return html`
       <div class="organ-card">
@@ -348,30 +401,60 @@ export class BodyMapDataPanel extends LitElement {
         </div>
         <div class="card-content ${isCollapsed ? "collapsed" : ""}">
           <div class="card-content-inner">
-            <div class="subsection-heading">
-              <span>Diseases</span>
-              <span>(${filteredDiseases.length})</span>
+            <div
+              class="subsection-heading"
+              @click=${() => this._toggleSubsection(organId, "diseases")}
+            >
+              <span>Diseases (${filteredDiseases.length})</span>
+              <span
+                class="subsection-chevron ${diseasesCollapsed
+                  ? "collapsed"
+                  : ""}"
+                >&#9660;</span
+              >
             </div>
-            ${filteredDiseases.length === 0
-              ? html`<p class="empty-state">No diseases found for ${name}</p>`
-              : html`
-                  <ul class="data-list">
-                    ${filteredDiseases.map(
-                      (d) => html`<li>${d.name}</li>`,
-                    )}
-                  </ul>
-                `}
-            <div class="subsection-heading">
-              <span>Symptoms</span>
-              <span>(${filteredSymptoms.length})</span>
+            <div
+              class="subsection-content ${diseasesCollapsed ? "collapsed" : ""}"
+            >
+              <div class="subsection-content-inner">
+                ${filteredDiseases.length === 0
+                  ? html`<p class="empty-state">
+                      No diseases found for ${name}
+                    </p>`
+                  : html`
+                      <ul class="data-list">
+                        ${filteredDiseases.map((d) => html`<li>${d.name}</li>`)}
+                      </ul>
+                    `}
+              </div>
             </div>
-            ${filteredSymptoms.length === 0
-              ? html`<p class="empty-state">No symptoms found for ${name}</p>`
-              : html`
-                  <ul class="data-list">
-                    ${filteredSymptoms.map((s) => html`<li>${s}</li>`)}
-                  </ul>
-                `}
+            <div
+              class="subsection-heading"
+              @click=${() => this._toggleSubsection(organId, "symptoms")}
+            >
+              <span>Symptoms (${filteredSymptoms.length})</span>
+              <span
+                class="subsection-chevron ${symptomsCollapsed
+                  ? "collapsed"
+                  : ""}"
+                >&#9660;</span
+              >
+            </div>
+            <div
+              class="subsection-content ${symptomsCollapsed ? "collapsed" : ""}"
+            >
+              <div class="subsection-content-inner">
+                ${filteredSymptoms.length === 0
+                  ? html`<p class="empty-state">
+                      No symptoms found for ${name}
+                    </p>`
+                  : html`
+                      <ul class="data-list">
+                        ${filteredSymptoms.map((s) => html`<li>${s}</li>`)}
+                      </ul>
+                    `}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -387,9 +470,7 @@ export class BodyMapDataPanel extends LitElement {
           type="text"
           placeholder="Search diseases & symptoms..."
           @input=${(e: Event) =>
-            this._debouncedFilterChange(
-              (e.target as HTMLInputElement).value,
-            )}
+            this._debouncedFilterChange((e.target as HTMLInputElement).value)}
         />
         ${this.selectedOrganIds.map((organId) => {
           if (this.loadingIds.has(organId)) {
@@ -400,9 +481,7 @@ export class BodyMapDataPanel extends LitElement {
           }
           return this._renderOrganCard(organId);
         })}
-        ${this.selectedOrganIds.length === 0
-          ? nothing
-          : nothing}
+        ${this.selectedOrganIds.length === 0 ? nothing : nothing}
       </div>
     `;
   }

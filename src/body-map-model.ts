@@ -1,5 +1,5 @@
-import { LitElement, PropertyValues, css, html, svg } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { LitElement, PropertyValues, css, html, nothing, svg } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import { ORGANS, OrganDefinition } from "./data/organs.js";
 import { SECTIONS, SectionDefinition } from "./data/sections.js";
 import { designTokens } from "./styles/tokens.css.js";
@@ -202,6 +202,31 @@ export class BodyMapModel extends LitElement {
         display: block;
       }
 
+      .section-controls {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 8px;
+      }
+
+      .rotate-btn {
+        border: 2px solid #2a7c44;
+        background: transparent;
+        color: #2a7c44;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        padding: 5px 20px;
+        border-radius: 20px;
+        transition: all 0.2s ease;
+      }
+
+      .rotate-btn:hover {
+        background: #2a7c44;
+        color: #fff;
+      }
+
       @keyframes fade-slide {
         from {
           opacity: 0;
@@ -221,7 +246,7 @@ export class BodyMapModel extends LitElement {
   ];
 
   @property({ type: String, reflect: true, attribute: "current-view" })
-  currentView: ViewMode = "organs";
+  currentView: ViewMode = "sections";
 
   @property({ type: String, reflect: true, attribute: "current-gender" })
   currentGender: Gender = "male";
@@ -234,6 +259,8 @@ export class BodyMapModel extends LitElement {
   @property({ attribute: false }) systemHighlightOrganIds: string[] = [];
 
   private _selectedSections = new Set<string>();
+
+  @state() private _sectionsFacing: "front" | "back" = "front";
 
   protected firstUpdated(): void {
     this.shadowRoot
@@ -280,6 +307,22 @@ export class BodyMapModel extends LitElement {
     return html`
       <div class="model-container">
         ${this._renderViewTabs()}
+        ${this.currentView === "sections"
+          ? html`
+              <div class="section-controls">
+                <button
+                  class="rotate-btn"
+                  type="button"
+                  @click=${this._toggleFacing}
+                >
+                  &#x21BB;
+                  ${this._sectionsFacing === "front"
+                    ? "View Back"
+                    : "View Front"}
+                </button>
+              </div>
+            `
+          : nothing}
         <div class="svg-wrapper">
           <div class="svg-inner">${this._renderSvg()}</div>
         </div>
@@ -346,9 +389,13 @@ export class BodyMapModel extends LitElement {
   private _renderSvg() {
     const organsVisible = this.currentView !== "sections";
     const sectionsVisible = this.currentView === "sections";
+    const showingBack = sectionsVisible && this._sectionsFacing === "back";
+    const viewBox = showingBack ? "0 0 960 2600" : "0 0 698 1698";
+    const bodyW = showingBack ? 960 : 698;
+    const bodyH = showingBack ? 2600 : 1698;
 
     return svg`
-      <svg viewBox="0 0 698 1698" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive body map">
+      <svg viewBox=${viewBox} xmlns="http://www.w3.org/2000/svg" aria-label="Interactive body map">
         <defs>
           <filter id="blue-glow">
             <feDropShadow
@@ -402,14 +449,14 @@ export class BodyMapModel extends LitElement {
             id="sections-base-body"
             x="0"
             y="0"
-            width="698"
-            height="1698"
+            width=${String(bodyW)}
+            height=${String(bodyH)}
             href=${this._sectionsBodyUrl()}
             pointer-events="none"
           />
-          ${SECTIONS.filter((section) => section.side === "front").map(
-            (section) => this._renderSectionGroup(section),
-          )}
+          ${SECTIONS.filter(
+            (section) => section.side === this._sectionsFacing,
+          ).map((section) => this._renderSectionGroup(section))}
         </g>
       </svg>
     `;
@@ -568,7 +615,12 @@ export class BodyMapModel extends LitElement {
   }
 
   private _sectionsBodyUrl(): string {
-    return `${this._assetPrefix()}/sections-body.webp`;
+    const suffix = this._sectionsFacing === "back" ? "-back" : "";
+    return `${this._assetPrefix()}/sections-body${suffix}.webp`;
+  }
+
+  private _toggleFacing() {
+    this._sectionsFacing = this._sectionsFacing === "front" ? "back" : "front";
   }
 
   private _assetPrefix(): string {

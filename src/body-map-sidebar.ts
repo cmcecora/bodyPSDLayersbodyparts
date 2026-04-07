@@ -1,11 +1,12 @@
-import { LitElement, html, css } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { LitElement, html, css, nothing } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 import { designTokens } from "./styles/tokens.css.js";
 import {
   BODY_SYSTEMS,
   type BodySystemDefinition,
   type BodySystemId,
 } from "./data/systems.js";
+import { ORGANS } from "./data/organs.js";
 
 @customElement("body-map-sidebar")
 export class BodyMapSidebar extends LitElement {
@@ -82,6 +83,149 @@ export class BodyMapSidebar extends LitElement {
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+
+      /* Body Parts panel */
+      .body-parts-section {
+        border-top: 2px solid var(--bme-divider);
+        margin-top: 4px;
+      }
+
+      .body-parts-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--bme-space-sm) var(--bme-space-md);
+        background: var(--bme-header-bg);
+        color: var(--bme-header-text);
+        cursor: pointer;
+        user-select: none;
+        font-size: var(--bme-font-size-heading);
+        font-weight: 600;
+      }
+
+      .body-parts-header:hover {
+        background: #3a4a5c;
+      }
+
+      .body-parts-header-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .sort-toggle {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background 0.15s ease;
+      }
+
+      .sort-toggle:hover,
+      .sort-toggle.active {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .body-parts-chevron {
+        font-size: 10px;
+        transition: transform 0.2s ease;
+      }
+
+      .body-parts-chevron.collapsed {
+        transform: rotate(-90deg);
+      }
+
+      .body-parts-body {
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.2s ease;
+      }
+
+      .body-parts-body.collapsed {
+        grid-template-rows: 0fr;
+      }
+
+      .body-parts-body-inner {
+        overflow: hidden;
+      }
+
+      .body-parts-search {
+        padding: 8px var(--bme-space-md) 4px;
+      }
+
+      .body-parts-search-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 7px 10px;
+        border: 1px solid var(--bme-border);
+        border-radius: 6px;
+        font-size: var(--bme-font-size-label);
+        font-family: var(--bme-font-family);
+        outline: none;
+      }
+
+      .body-parts-search-input:focus {
+        border-color: var(--bme-accent);
+      }
+
+      .body-parts-list {
+        list-style: none;
+        margin: 0;
+        padding: 4px 0;
+        max-height: 280px;
+        overflow-y: auto;
+      }
+
+      .body-part-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 7px var(--bme-space-md);
+        background: none;
+        border: none;
+        border-bottom: 1px solid var(--bme-divider);
+        cursor: pointer;
+        text-align: left;
+        font-family: var(--bme-font-family);
+        font-size: var(--bme-font-size-body);
+        color: inherit;
+        transition: background 0.15s ease;
+      }
+
+      .body-part-btn:last-child {
+        border-bottom: none;
+      }
+
+      .body-part-btn:hover {
+        background: var(--bme-divider);
+      }
+
+      .body-part-btn.selected {
+        background: var(--bme-hover-overlay);
+        font-weight: 600;
+        color: var(--bme-accent);
+      }
+
+      .body-part-check {
+        width: 14px;
+        flex-shrink: 0;
+        color: var(--bme-accent);
+        font-size: 12px;
+      }
+
+      .empty-parts {
+        padding: var(--bme-space-md);
+        color: #9ca3af;
+        font-size: var(--bme-font-size-label);
+        text-align: center;
+      }
     `,
   ];
 
@@ -89,6 +233,12 @@ export class BodyMapSidebar extends LitElement {
     BODY_SYSTEMS;
 
   @property({ type: String }) activeSystemId: BodySystemId | null = null;
+
+  @property({ attribute: false }) selectedOrganIds: string[] = [];
+
+  @state() private _bodyPartsExpanded = true;
+  @state() private _bodyPartsSearch = "";
+  @state() private _bodyPartsSortAZ = false;
 
   private _emitToggle(systemId: BodySystemId) {
     this.dispatchEvent(
@@ -100,7 +250,30 @@ export class BodyMapSidebar extends LitElement {
     );
   }
 
+  private _emitOrganSelect(organId: string) {
+    this.dispatchEvent(
+      new CustomEvent("organ-select-request", {
+        detail: { organId },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  private _filteredOrgans() {
+    const q = this._bodyPartsSearch.toLowerCase();
+    let organs = q
+      ? ORGANS.filter((o) => o.name.toLowerCase().includes(q))
+      : ORGANS;
+    if (this._bodyPartsSortAZ) {
+      organs = [...organs].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return organs;
+  }
+
   render() {
+    const filteredOrgans = this._filteredOrgans();
+
     return html`
       <div class="panel-header">Body Systems</div>
       <ul class="systems-list">
@@ -127,6 +300,80 @@ export class BodyMapSidebar extends LitElement {
           `,
         )}
       </ul>
+
+      <div class="body-parts-section">
+        <div
+          class="body-parts-header"
+          @click=${() => {
+            this._bodyPartsExpanded = !this._bodyPartsExpanded;
+          }}
+        >
+          <span>Body Parts</span>
+          <div class="body-parts-header-right">
+            <button
+              class="sort-toggle ${this._bodyPartsSortAZ ? "active" : ""}"
+              type="button"
+              title="Sort A-Z"
+              @click=${(e: Event) => {
+                e.stopPropagation();
+                this._bodyPartsSortAZ = !this._bodyPartsSortAZ;
+              }}
+            >
+              A-Z
+            </button>
+            <span
+              class="body-parts-chevron ${this._bodyPartsExpanded
+                ? ""
+                : "collapsed"}"
+              >&#9660;</span
+            >
+          </div>
+        </div>
+        <div
+          class="body-parts-body ${this._bodyPartsExpanded ? "" : "collapsed"}"
+        >
+          <div class="body-parts-body-inner">
+            <div class="body-parts-search">
+              <input
+                class="body-parts-search-input"
+                type="text"
+                placeholder="Search body parts..."
+                .value=${this._bodyPartsSearch}
+                @input=${(e: Event) => {
+                  this._bodyPartsSearch = (e.target as HTMLInputElement).value;
+                }}
+              />
+            </div>
+            ${filteredOrgans.length === 0
+              ? html`<p class="empty-parts">No results</p>`
+              : html`
+                  <ul class="body-parts-list">
+                    ${filteredOrgans.map((organ) => {
+                      const isSelected = this.selectedOrganIds.includes(
+                        organ.id,
+                      );
+                      return html`
+                        <li>
+                          <button
+                            type="button"
+                            class="body-part-btn ${isSelected
+                              ? "selected"
+                              : ""}"
+                            @click=${() => this._emitOrganSelect(organ.id)}
+                          >
+                            <span class="body-part-check"
+                              >${isSelected ? "✓" : nothing}</span
+                            >
+                            ${organ.name}
+                          </button>
+                        </li>
+                      `;
+                    })}
+                  </ul>
+                `}
+          </div>
+        </div>
+      </div>
     `;
   }
 }
