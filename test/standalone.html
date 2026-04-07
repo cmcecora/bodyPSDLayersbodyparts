@@ -115,6 +115,8 @@
 
         explorer.addEventListener('organ-selected', (e) => logEvent('organ-selected', e.detail));
         explorer.addEventListener('organ-deselected', (e) => logEvent('organ-deselected', e.detail));
+        explorer.addEventListener('body-part-selected', (e) => logEvent('body-part-selected', e.detail));
+        explorer.addEventListener('body-part-deselected', (e) => logEvent('body-part-deselected', e.detail));
         explorer.addEventListener('system-selected', (e) => logEvent('system-selected', e.detail));
 
         window.setOrgans = function() {

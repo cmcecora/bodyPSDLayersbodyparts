@@ -114,6 +114,41 @@ describe("BodyMapExplorer API", () => {
 
         expect(eventDetail).toEqual({ organId: "heart" });
     });
+
+    test("dispatches body-part-selected event when an organ is selected", async () => {
+        let eventDetail: any = null;
+        el.addEventListener("body-part-selected", (e: any) => {
+            eventDetail = e.detail;
+        });
+
+        const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
+        sidebar.dispatchEvent(new CustomEvent("organ-select-request", {
+            detail: { organId: "heart" },
+            bubbles: true,
+            composed: true
+        }));
+
+        expect(eventDetail).toEqual({ organId: "heart", bodyPartId: "heart" });
+    });
+
+    test("dispatches body-part-deselected event when an organ is deselected", async () => {
+        el.selectedOrganIds = ["heart"];
+        await el.updateComplete;
+
+        let eventDetail: any = null;
+        el.addEventListener("body-part-deselected", (e: any) => {
+            eventDetail = e.detail;
+        });
+
+        const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
+        sidebar.dispatchEvent(new CustomEvent("organ-select-request", {
+            detail: { organId: "heart" },
+            bubbles: true,
+            composed: true
+        }));
+
+        expect(eventDetail).toEqual({ organId: "heart", bodyPartId: "heart" });
+    });
   });
 
   describe("Dual Data Mode", () => {
