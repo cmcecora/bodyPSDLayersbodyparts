@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 5 verification complete
-last_updated: "2026-04-07T17:01:31.443Z"
-last_activity: 2026-04-07 -- Phase 06 plan 01 complete
+last_updated: "2026-04-07T17:18:14.759Z"
+last_activity: 2026-04-07 -- Phase 06 plan 02 complete
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 17
-  completed_plans: 14
-  percent: 82
+  completed_plans: 15
+  percent: 88
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 06 (polish-back-view-performance) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Executing Phase 06
-Last activity: 2026-04-07 -- Phase 06 plan 01 complete
+Last activity: 2026-04-07 -- Phase 06 plan 02 complete
 
-Progress: [████████░░] 82%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -52,8 +52,8 @@ Progress: [████████░░] 82%
 
 **Recent Trend:**
 
-- Last 4 plans (Phase 05): API surface and dual data mode completed.
-- Trend: The web-component layer is complete; next work shifts to Phase 6 polish, accessibility, and performance.
+- Last 4 plans: Phase 05 API work plus Phase 06 accessibility and responsive shell work completed.
+- Trend: Phase 6 is in flight; the next work shifts from shell polish into front/back flip behavior and performance.
 
 _Updated after each plan completion_
 | Phase 01-scaffolding-asset-extraction P01 | 2min | 2 tasks | 7 files |
@@ -69,6 +69,7 @@ _Updated after each plan completion_
 | Phase 05 P01 | ~ | 3 tasks | 3 files |
 | Phase 05 P02 | ~ | 3 tasks | 4 files |
 | Phase 06 P01 | 10min | 3 tasks | 5 files |
+| Phase 06 P02 | 13min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -83,11 +84,13 @@ Recent decisions affecting current work:
 - [Phase 04]: Multi-part data aggregation uses Promise.all for speed.
 - [Phase 06]: Keyboard interaction stays on the existing SVG groups via roving tabindex so mouse and keyboard share one selection path. — Avoids a duplicate overlay tree and keeps accessibility on the same event flow already used by the model.
 - [Phase 06]: Explorer owns the polite live region so announcements can include body-part names plus mapped system context. — The explorer already has the cross-component state needed to generate consistent screen-reader messages.
+- [Phase 06]: Explorer responsiveness is driven by container queries on the component shell rather than viewport media queries. — This keeps embedding behavior tied to host width and avoids layout assumptions outside the component.
+- [Phase 06]: Narrow layouts disable data-panel sticky locking and reuse shared polish tokens across panels. — The stacked layout stays scroll-safe while the visual hierarchy remains consistent.
 
 ### Pending Todos
 
 - Visual browser verification is still recommended for the Phase 6 polish and accessibility work.
-- Phase 06-02 responsive layout and polish is the next plan in flight.
+- Phase 06-03 front/back sections flip is the next plan in flight.
 
 ### Blockers/Concerns
 
