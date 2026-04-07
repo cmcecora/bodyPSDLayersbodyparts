@@ -1,285 +1,188 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-03-29
+**Analysis Date:** 2026-04-07
 
 ## Directory Layout
 
-```
-bodyPSDLayersbodyparts/
-├── interactive-body-model.html      # THE application (CSS + HTML/SVG + JS, ~7011 lines, ~3.9MB)
-├── symptoms-data.js                 # External data: 18K symptom strings (~440KB)
-├── diseases-data.js                 # External data: diseases by body part (~7.6MB)
-├── symptoms-by-bodypart-data.js     # External data: symptoms by body part (~100KB)
-├── symptoms-data.json               # Raw JSON of symptoms data (~440KB)
-├── generate-data-files.py           # Python script to generate the three .js data files
-├── CLAUDE.md                        # AI assistant instructions
-├── PROJECT_PLAN.md                  # Phased implementation plan
-├── .env                             # Environment config (exists, not read)
-├── .gitignore                       # Git ignore rules
-├── blankaasd.psd                    # Source PSD: organ layers (698x1698px, 20 layers)
-├── 2bodymodelgreen.psd              # Green body model PSD
-├── bodybackviewwoman.psd            # Back-view female PSD
-├── femaleBodygreen.psd              # Female body green PSD
-├── femaleBodywhite.psd              # Female body white PSD
-├── tranparentbackview.psd           # Transparent back-view PSD
-├── interactive-body-model copy.html # Backup/older copy of the main file
-├── bodyimage/                       # Body system thumbnail PNGs (12 files)
-├── bpart_images/                    # Body part thumbnail PNGs (~86 files + placeholder SVGs)
-│   └── testsMOBILEanimation/        # Mobile animation test images (7 files)
-├── docs/                            # Documentation and data pipeline
-│   ├── plans/                       # Design and implementation plan docs
-│   ├── body_parts_batches/          # ICD code batch JSON files (075 batches)
-│   ├── body_parts_results/          # Mapped body part results JSON (056 results)
-│   │   └── map_body_parts.py        # Mapping script for body parts
-│   ├── merge_body_parts.py          # Script to merge body part data
-│   └── icd10cm_codes_2026.xlsx      # ICD-10-CM medical codes source spreadsheet
-├── video-screenshots/               # Screenshots from demo video (7 frames)
-├── .planning/                       # GSD planning directory
-│   └── codebase/                    # Codebase analysis documents
-├── .claude/                         # Claude Code configuration
-│   ├── settings.local.json          # Local settings
-│   └── worktrees/                   # Claude worktree copies
-├── .playwright-mcp/                 # Playwright MCP logs
-├── *.png                            # ~30 test/calibration screenshots in root
-└── .git/                            # Git repository
+```text
+[project-root]/
+├── .planning/               # GSD project state, roadmap, phase history, and codebase docs
+├── docs/                    # Planning references, extraction artifacts, and supporting research files
+├── public/                  # Runtime assets and JSON copied into the Vite build output
+├── scripts/                 # Manual asset/data generation and validation scripts
+├── src/                     # Lit source, domain catalogs, shared tokens, and tests
+├── dist/                    # Generated library bundle plus copied runtime assets/data
+├── bodyimage/               # Source/reference PNGs for systems artwork
+├── bpart_images/            # Source/reference body-part imagery and placeholders
+├── video-screenshots/       # Captured UI frames used as visual references
+├── index.html               # Vite dev harness that mounts `<body-map-explorer>`
+├── interactive-body-model.html # Legacy standalone prototype
+├── interactive-body-model-app.js # Legacy standalone script/data bundle
+├── package.json             # npm scripts and package metadata
+├── vite.config.ts           # Library build entry and output configuration
+└── tsconfig.json            # TypeScript compiler settings
 ```
 
 ## Directory Purposes
 
-**Root (`/`):**
+**`src/`:**
+- Purpose: Hold all current application source code.
+- Contains: Root and child Lit components, static domain data, design tokens, and tests.
+- Key files: `src/body-map-explorer.ts`, `src/body-map-model.ts`, `src/body-map-sidebar.ts`, `src/body-map-detail-panel.ts`, `src/body-map-data-panel.ts`, `src/body-map-modal.ts`
 
-- Purpose: Contains the application itself and all supporting files
-- Contains: Main HTML file, external data JS files, PSD sources, test screenshots, Python data generation scripts
-- Key files: `interactive-body-model.html`, `symptoms-data.js`, `diseases-data.js`, `symptoms-by-bodypart-data.js`, `generate-data-files.py`
+**`src/data/`:**
+- Purpose: Own canonical IDs, metadata, mappings, geometry, and data access helpers.
+- Contains: Domain definition arrays, reverse lookup maps, `DataProvider`, section-to-body-part mappings, modal anchor helpers, and highlight region geometry.
+- Key files: `src/data/body-parts.ts`, `src/data/organs.ts`, `src/data/systems.ts`, `src/data/sections.ts`, `src/data/data-service.ts`, `src/data/section-mapping.ts`
 
-**`bodyimage/`:**
+**`src/styles/`:**
+- Purpose: Centralize styling primitives shared across components.
+- Contains: CSS custom property tokens packaged as Lit `css`.
+- Key files: `src/styles/tokens.css.ts`
 
-- Purpose: Thumbnail images for the 11 body systems (+ male/female reproductive)
-- Contains: 12 PNG files, one per body system
-- Key files: `cardiovascular_system.png`, `digestive_system.png`, `nervous_system.png`, etc.
-- Referenced by: `SYSTEM_IMAGE_MAP` constant inside `showTooltip()` function (line ~3354 in HTML)
+**`src/__tests__/`:**
+- Purpose: Hold the primary automated test suite.
+- Contains: Vitest specs for the model, explorer, modal, data panel, data service, and data integrity.
+- Key files: `src/__tests__/body-map-explorer.test.ts`, `src/__tests__/body-map-model.test.ts`, `src/__tests__/data-service.test.ts`
 
-**`bpart_images/`:**
+**`public/assets/`:**
+- Purpose: Ship runtime images by stable file path.
+- Contains: Organ overlays, body-part photos, body system thumbnails, silhouettes, and front/back section art.
+- Key files: `public/assets/silhouette.webp`, `public/assets/sections-body.webp`, `public/assets/body-parts/*.webp`, `public/assets/organs/*.webp`, `public/assets/systems/*.webp`
 
-- Purpose: Thumbnail images for the 57 body parts shown in the nav panel and body part cards
-- Contains: ~86 PNG files + 8 placeholder SVGs for imaging modalities
-- Key files: `brain.png`, `heart.png`, `lungs.png`, `kidneys.png`, `liver.png`, etc.
-- Referenced by: `BODY_PARTS_DATA[].image` property (e.g., `"bpart_images/head.png"`)
+**`public/data/`:**
+- Purpose: Ship runtime JSON used by the default data provider.
+- Contains: Bulk symptoms files plus per-body-part disease JSON keyed by `bp_*` filenames.
+- Key files: `public/data/symptoms-by-part.json`, `public/data/diseases/*.json`
+
+**`scripts/`:**
+- Purpose: Maintain generated assets and runtime datasets outside the component code.
+- Contains: Disease splitting, coverage validation, image extraction, silhouette extraction, and WebP conversion scripts.
+- Key files: `scripts/split-diseases.js`, `scripts/validate-bp-coverage.js`, `scripts/extract-sections-body.mjs`, `scripts/convert-to-webp.sh`
 
 **`docs/`:**
+- Purpose: Preserve planning documents and data-extraction artifacts that explain how the assets and mappings were produced.
+- Contains: Design plans, body-part batching/results JSON, spreadsheets, and helper scripts.
+- Key files: `docs/plans/2026-03-21-three-column-merge-plan.md`, `docs/plans/2026-03-08-back-view-interactive-sections-design.md`, `docs/body_parts_results/map_body_parts.py`
 
-- Purpose: Documentation, design plans, and the data pipeline for ICD-10-CM medical data
-- Contains: Design markdown files, batch JSON input files, mapped result JSON files, Python processing scripts
+**`dist/`:**
+- Purpose: Hold generated distributable output.
+- Contains: ES and UMD bundles plus copied assets and JSON data for the packaged library.
+- Key files: `dist/body-map-explorer.es.js`, `dist/body-map-explorer.umd.js`, `dist/assets/`, `dist/data/`
 
-**`docs/plans/`:**
-
-- Purpose: Design and implementation planning documents
-- Contains: 3 markdown files
-- Key files:
-  - `2026-03-08-back-view-interactive-sections-design.md`: Back-view design spec
-  - `2026-03-21-three-column-merge-design.md`: Three-column layout design
-  - `2026-03-21-three-column-merge-plan.md`: Three-column merge implementation plan
-
-**`docs/body_parts_batches/`:**
-
-- Purpose: Input data for the disease/symptom data pipeline -- ICD-10-CM codes split into 75 JSON batches
-- Contains: `batch_001.json` through `batch_075.json`
-- Used by: `generate-data-files.py` to produce `diseases-data.js`
-
-**`docs/body_parts_results/`:**
-
-- Purpose: Output of the body-part mapping pipeline -- maps ICD codes to body part IDs
-- Contains: `results_001.json` through `results_056.json`, plus `map_body_parts.py`
-- Used by: `generate-data-files.py` to produce `diseases-data.js`
-
-**`video-screenshots/`:**
-
-- Purpose: Frame captures from a demo video
-- Contains: 7 PNGs named `frame-03s.png` through `frame-23s.png`
-- Generated: Yes (from video capture)
-- Committed: Yes
-
-**`.planning/codebase/`:**
-
-- Purpose: GSD codebase analysis documents consumed by planning and execution commands
-- Contains: ARCHITECTURE.md, STRUCTURE.md, STACK.md, INTEGRATIONS.md, CONCERNS.md
+**`.planning/`:**
+- Purpose: Hold GSD workflow state and repository-local planning artifacts.
+- Contains: `PROJECT.md`, `STATE.md`, requirements, roadmap, phase directories, and codebase map documents.
+- Key files: `.planning/STATE.md`, `.planning/ROADMAP.md`, `.planning/codebase/`
 
 ## Key File Locations
 
 **Entry Points:**
-
-- `interactive-body-model.html`: The entire application. Open in browser to run.
+- `src/body-map-explorer.ts`: Library entry, root custom element registration, and application shell.
+- `index.html`: Development harness that imports `src/body-map-explorer.ts` directly.
+- `interactive-body-model.html`: Legacy self-contained HTML prototype outside the current build.
+- `interactive-body-model-app.js`: Legacy standalone script referenced by the older prototype.
 
 **Configuration:**
+- `package.json`: Defines `dev`, `build`, `preview`, `test`, `check:budget`, and `split-diseases` scripts.
+- `vite.config.ts`: Uses `src/body-map-explorer.ts` as the library entry and writes bundles into `dist/`.
+- `vitest.config.ts`: Configures `happy-dom` and includes `src/**/*.test.ts`.
+- `tsconfig.json`: Enables `strict` TypeScript compilation and emits declarations into `dist/`.
 
-- `.env`: Environment configuration (existence noted only)
-- `.gitignore`: Git ignore rules
-- `CLAUDE.md`: AI assistant instructions and project context
+**Core Logic:**
+- `src/body-map-explorer.ts`: Shared state ownership, data loading, derived selections, and component composition.
+- `src/body-map-model.ts`: SVG rendering, keyboard navigation, view switching, gender switching, and section/body-part interactions.
+- `src/data/data-service.ts`: Default fetch-backed `DataProvider` plus caching and organ-to-data-key translation.
+- `src/data/systems.ts`: Body system catalog and reverse organ-to-system map.
+- `src/data/body-parts.ts`: Sidebar/detail body-part catalog and photo helper functions.
 
-**Core Logic (all within `interactive-body-model.html`):**
-
-- Lines 7-1277: All CSS (styles, layout, animations, responsive)
-- Lines 1279-2573: HTML body (page layout, SVG body model, panels, modal)
-- Lines 1330-2216: Front-view SVG (organs-layer, sections-layer, bp-highlight-layer)
-- Lines 2218-2400: Back-view SVG (back-sections-layer)
-- Lines 2536-2572: Symptom selection modal markup
-- Lines 2577-7009: Inline JavaScript (IIFE)
-- Lines 2579-3225: `BODY_SYSTEMS` array (11 systems with base64 thumbnails, descriptions, processes)
-- Lines 3226-3294: `ORGAN_TO_SYSTEM`, `SYSTEM_TO_BODY_PARTS`, `REPRODUCTIVE_BODY_PARTS`
-- Lines 3297-3744: Sidebar/tooltip rendering and system selection functions
-- Lines 3767-4523: `SECTION_SORT_ORDER`, `SECTION_SYMPTOMS`, `ORGAN2_SYMPTOMS`, lookup tables
-- Lines 4523-4744: `BODY_PART_SVG_COORDS`, `BODY_PART_HIGHLIGHT_REGIONS`
-- Lines 4745-4756: State variables (`selectedOrgans`, `selectedSections`, `selectedSymptoms`, `currentView`, etc.)
-- Lines 4856-5140: `setView()`, `setGender()`, `rotateModel()`
-- Lines 5148-5642: Click/touch event handlers for organs and sections
-- Lines 5694-6383: `BODY_PARTS_DATA` array (57 body parts with images, organIds, descriptions)
-- Lines 6385-6459: Body parts nav state and rendering
-- Lines 6475-6622: `toggleBodyPart()` function
-- Lines 6625-7001: Body part cards, disease/symptom spanning sections, search handlers
-- Lines 7001-7008: Initialization (`setView("sections")`, entrance animations)
-
-**External Data:**
-
-- `symptoms-data.js`: Global `window.SYMPTOMS_DATA` -- flat array of ~18K symptom name strings
-- `diseases-data.js`: Global `window.DISEASES_BY_BODY_PART` -- object mapping body part IDs to arrays of `{ name, code }` disease objects
-- `symptoms-by-bodypart-data.js`: Global `window.SYMPTOMS_BY_BODY_PART` -- object mapping body part IDs to arrays of symptom strings
-
-**Data Generation:**
-
-- `generate-data-files.py`: Reads `docs/body_parts_batches/*.json`, `docs/body_parts_results/*.json`, and `docs/icd10cm_codes_2026.xlsx` to produce the three external `.js` data files
-- `docs/body_parts_results/map_body_parts.py`: Maps anatomical names to UI body part IDs
-- `docs/merge_body_parts.py`: Merges body part data from multiple sources
-
-**Source Assets:**
-
-- `blankaasd.psd`: Primary source Photoshop file (698x1698px, 20 organ layers)
-- `bodybackviewwoman.psd`: Back-view PSD for female body
-- `tranparentbackview.psd`: Transparent back-view PSD
-
-**Testing/Screenshots:**
-
-- `test_*.png`, `test-*.png`: ~30 visual regression test screenshots in root directory
-- `*.grid.png`, `calibration-*.png`, `final-*.png`: Calibration and positioning screenshots
+**Testing:**
+- `src/__tests__/body-map-explorer.test.ts`: Root-shell integration behavior.
+- `src/__tests__/body-map-model.test.ts`: SVG model behavior and interaction paths.
+- `src/__tests__/body-map-modal.test.ts`: Modal behavior and retry/close interactions.
+- `src/__tests__/data-service.test.ts`: Default data provider caching and fetch behavior.
+- `src/body-map-explorer.test.ts`: Additional co-located explorer spec kept outside `src/__tests__/`.
 
 ## Naming Conventions
 
 **Files:**
+- Top-level runtime components use flat kebab-case names with a shared prefix: `src/body-map-explorer.ts`, `src/body-map-model.ts`, `src/body-map-sidebar.ts`.
+- Data modules use noun-based filenames that mirror the dataset or mapping they export: `src/data/systems.ts`, `src/data/section-mapping.ts`, `src/data/body-part-modal-anchor.ts`.
+- Tests use `*.test.ts`; most live in `src/__tests__/`, with `src/body-map-explorer.test.ts` as the main exception.
+- Runtime JSON filenames in `public/data/diseases/` must stay aligned with `bp_*` body-part IDs used in `src/data/body-parts.ts` and `src/data/section-mapping.ts`.
 
-- Main app: `interactive-body-model.html` (kebab-case)
-- Data files: `{data-type}-data.js` (kebab-case with `-data` suffix)
-- Body part images: `{bodypart}.png` (lowercase, no separators) in `bpart_images/`
-- Body system images: `{system_name}.png` (snake_case) in `bodyimage/`
-- Test screenshots: `test_*.png` or `test-*.png` (mixed snake/kebab)
-- Plan documents: `YYYY-MM-DD-{slug}.md` (date-prefixed kebab-case)
+**Directories:**
+- Source directories are lowercase and responsibility-based: `src/data`, `src/styles`, `src/__tests__`.
+- Runtime asset directories are type-based: `public/assets/body-parts`, `public/assets/organs`, `public/assets/systems`.
+- Planning and research directories are grouped by workflow rather than runtime behavior: `.planning/`, `docs/`, `video-screenshots/`.
 
-**HTML IDs:**
+## Ownership Conventions
 
-- SVG groups: `group-{organ_id}` (e.g., `group-brain`, `group-lungs_left`)
-- Panels: camelCase (e.g., `systemsPanel`, `bodyPartsNavPanel`, `tooltipPanel`, `spanningSections`)
-- Buttons: `btn-{name}` (e.g., `btn-organs`, `btn-male`)
+**Shared State Ownership:**
+- Put any new cross-panel or cross-view state in `src/body-map-explorer.ts`.
+- Keep child components in `src/body-map-*.ts` presentation-focused; they should emit events upward instead of fetching data or mutating sibling state directly.
 
-**CSS Classes:**
+**Domain Catalog Ownership:**
+- Put new IDs, labels, mappings, geometry, or filename crosswalks in `src/data/` next to the existing domain module that owns that concept.
+- If a feature depends on a new asset filename, update both the owning source catalog in `src/data/*.ts` and the matching file in `public/assets/`.
 
-- Components: kebab-case (e.g., `body-part-group`, `systems-panel`, `section-hit-area`)
-- State modifiers: single word (e.g., `.selected`, `.active`, `.collapsed`, `.visible`)
-- Layout: kebab-case (e.g., `page-layout`, `left-column`, `right-column`)
+**Runtime Data Ownership:**
+- Keep fetch logic and default caching in `src/data/data-service.ts`.
+- Keep shipped content files in `public/data/`; do not hardcode disease or symptom lists into component files.
 
-**JavaScript:**
-
-- Constants: UPPER_SNAKE_CASE (e.g., `BODY_SYSTEMS`, `ORGAN_TO_SYSTEM`, `BODY_PARTS_DATA`)
-- State variables: camelCase (e.g., `selectedOrgans`, `currentView`, `activeSystem`)
-- Functions: camelCase (e.g., `selectSystem`, `renderBodyPartsNavPanel`, `toggleBodyPart`)
-- Data part IDs: snake_case (e.g., `head_neck`, `upper_body`, `male_reproductive`)
-- Body part IDs: `bp_` prefix + snake_case (e.g., `bp_head`, `bp_brain`, `bp_heart`)
+**Styling Ownership:**
+- Put reusable tokens in `src/styles/tokens.css.ts`.
+- Keep component-specific layout and interaction styles inside each component’s `static styles` block rather than creating a global stylesheet.
 
 ## Where to Add New Code
 
-**New Interactive Feature:**
+**New Feature:**
+- Primary code: `src/body-map-explorer.ts` if the feature changes shared state or affects multiple panels; otherwise add a new `src/body-map-<feature>.ts` component beside the existing peers.
+- Tests: `src/__tests__/` for new Vitest specs that cover the feature end to end; match the component or module name in the filename.
 
-- Add CSS styles inside the `<style>` block at `interactive-body-model.html` (before line 1277)
-- Add HTML markup inside the `<body>` at appropriate column location (lines 1279-2573)
-- Add JavaScript inside the IIFE `(function() { ... })()` at `interactive-body-model.html` (before line 7008)
-- If the function must be callable from inline `onclick`, assign it to `window.functionName`
+**New Component/Module:**
+- Implementation: `src/body-map-<role>.ts` for UI components, or `src/data/<concept>.ts` for domain data and mappings.
 
-**New Body System:**
+**Utilities:**
+- Shared helpers: place them beside the owning concern instead of creating a generic `utils/` directory. Examples: data helpers belong in `src/data/`, and visual helper logic belongs in the relevant `src/body-map-*.ts` component.
 
-- Add entry to `BODY_SYSTEMS` array (line 2579+) with `id`, `title`, `color`, `thumbnail` (base64), `description`, `organs`, `keyParts`, `processes`
-- Add corresponding organ IDs to the system's `organs` array
-- Add entry to `SYSTEM_TO_BODY_PARTS` mapping (line 3236)
-- Add system thumbnail PNG to `bodyimage/` directory
-
-**New Body Part:**
-
-- Add entry to `BODY_PARTS_DATA` array (line 5694+) with `id`, `name`, `image`, `organIds`, `description`
-- Add thumbnail PNG to `bpart_images/`
-- Add highlight region to `BODY_PART_HIGHLIGHT_REGIONS` (line 4556+) for sections-view ellipse overlay
-- If the body part maps to an organ in the SVG, include the organ ID in `organIds`
-
-**New SVG Organ (for organs view):**
-
-- Add a `<g class="body-part-group" id="group-{id}" data-part="{id}" data-name="{Display Name}">` inside `#organs-layer` (after line 1374)
-- Include `<image class="part-image">` with base64 PNG and `<path class="hit-area">` with polygon coordinates
-- The click handler is automatically registered by the `querySelectorAll(".body-part-group .hit-area")` loop at line 5149
-
-**New SVG Body Section (for sections view):**
-
-- Add a `<g class="body-section-group" data-part="{id}" data-name="{Display Name}">` inside `#sections-layer` (after line 2033)
-- Include `<path class="section-hit-area">` with polygon coordinates
-- The click handler is automatically registered by the `querySelectorAll(".body-section-group .section-hit-area")` loop at line 5203
-
-**New External Data:**
-
-- Create a `.js` file assigning to `window.VARIABLE_NAME`
-- Add `<script src="new-data.js"></script>` before the inline `<script>` tag (around line 2576)
-- Reference via `window.VARIABLE_NAME || fallback` inside the IIFE
-
-**New Disease/Symptom Data:**
-
-- Update source data in `docs/body_parts_batches/` and `docs/body_parts_results/`
-- Run `python3 generate-data-files.py` to regenerate `diseases-data.js` and `symptoms-by-bodypart-data.js`
+**New Assets or Data Files:**
+- Runtime images: `public/assets/<category>/`
+- Runtime JSON: `public/data/` or `public/data/diseases/`
+- Source or generation inputs: `bpart_images/`, `bodyimage/`, or `docs/` when the files are reference material rather than shipped runtime assets
 
 ## Special Directories
 
-**`docs/body_parts_batches/`:**
+**`dist/`:**
+- Purpose: Generated package output for consumers.
+- Generated: Yes
+- Committed: No
 
-- Purpose: ICD-10-CM code batch input files for the data pipeline
-- Generated: Partially (split from source spreadsheet)
+**`public/data/diseases/`:**
+- Purpose: Per-body-part disease JSON keyed by `bp_*` identifiers.
+- Generated: Yes
+- Committed: Yes
+
+**`public/assets/`:**
+- Purpose: Runtime images referenced by the current Lit app.
+- Generated: Yes
+- Committed: Yes
+
+**`docs/body_parts_batches/`:**
+- Purpose: Body-part extraction batch artifacts used during asset and data preparation.
+- Generated: Yes
 - Committed: Yes
 
 **`docs/body_parts_results/`:**
-
-- Purpose: Mapped disease-to-body-part results from the pipeline
-- Generated: Yes (by `map_body_parts.py`)
+- Purpose: Body-part extraction result artifacts and the mapping helper script.
+- Generated: Yes
 - Committed: Yes
 
-**`.planning/codebase/`:**
-
-- Purpose: GSD codebase analysis documents for AI-assisted planning/execution
-- Generated: Yes (by GSD map-codebase command)
+**`.planning/`:**
+- Purpose: Workflow metadata and project planning context.
+- Generated: No
 - Committed: Yes
-
-**`.claude/worktrees/`:**
-
-- Purpose: Claude Code worktree copies for parallel editing
-- Generated: Yes (by Claude Code)
-- Committed: No (should be in .gitignore)
-
-**Root-level `*.png` files (~30 files):**
-
-- Purpose: Test screenshots and calibration images used during development
-- Generated: Yes (by Playwright MCP and manual testing)
-- Committed: Yes (but could be moved to a `test-screenshots/` directory)
-
-## File Size Summary
-
-| File                           | Size  | Lines | Purpose                   |
-| ------------------------------ | ----- | ----- | ------------------------- |
-| `interactive-body-model.html`  | 3.9MB | 7,011 | Entire application        |
-| `diseases-data.js`             | 7.6MB | large | Disease data by body part |
-| `symptoms-data.js`             | 440KB | 1     | Symptom strings array     |
-| `symptoms-by-bodypart-data.js` | 100KB | small | Symptoms by body part     |
-| `generate-data-files.py`       | 15KB  | ~300  | Data generation script    |
 
 ---
 
-_Structure analysis: 2026-03-29_
+*Structure analysis: 2026-04-07*
