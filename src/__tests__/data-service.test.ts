@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   fetchDiseases,
   fetchSymptomsForPart,
+  getDefaultDataProvider,
   clearCache,
   type DiseaseEntry,
 } from "../data/data-service.js";
@@ -121,5 +122,29 @@ describe("DataService", () => {
 
     await fetchDiseases("brain");
     expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("getDefaultDataProvider returns a DataProvider that calls the internal functions", async () => {
+    const mockDiseases = makeFetchMock(SAMPLE_DISEASES_RAW);
+    const mockSymptoms = makeFetchMock(SAMPLE_SYMPTOMS_BY_PART);
+    const mockFetch = vi
+      .fn()
+      .mockImplementation((url: string) =>
+        url.includes("diseases") ? mockDiseases() : mockSymptoms(),
+      );
+    vi.stubGlobal("fetch", mockFetch);
+
+    const provider = getDefaultDataProvider("/my-assets");
+    const diseases = await provider.fetchDiseases("brain");
+    const symptoms = await provider.fetchSymptoms("brain");
+
+    expect(diseases).toHaveLength(2);
+    expect(symptoms).toEqual(["Headache", "Memory loss", "Confusion"]);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+
+    const diseaseUrl: string = mockFetch.mock.calls[0][0] as string;
+    expect(diseaseUrl).toContain("/my-assets/data/diseases/bp_brain.json");
+    const symptomUrl: string = mockFetch.mock.calls[1][0] as string;
+    expect(symptomUrl).toContain("/my-assets/data/symptoms-by-part.json");
   });
 });

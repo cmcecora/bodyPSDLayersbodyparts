@@ -16,13 +16,39 @@ export interface DiseaseEntry {
   name: string;
 }
 
+/**
+ * Interface for data providers. Allows swapping between internal JSON files
+ * and external API/static data sources.
+ */
+export interface DataProvider {
+  fetchDiseases(bodyPartId: string): Promise<DiseaseEntry[]>;
+  fetchSymptoms(bodyPartId: string): Promise<string[]>;
+}
+
 // Module-level singleton state
 const _diseaseCache = new Map<string, DiseaseEntry[]>();
 let _symptomsData: Record<string, string[]> | null = null;
 let _symptomsLoading: Promise<Record<string, string[]>> | null = null;
 
+/**
+ * Maps SVG organ IDs (used for rendering) to their data-file equivalents.
+ * Some SVG organs (lungs_left/right, muscle, knee_joint, etc.) don't have
+ * individual data files — they share a file with a simpler key.
+ */
+export const ORGAN_TO_DATA_KEY: Record<string, string> = {
+  lungs_left: "lungs",
+  lungs_right: "lungs",
+  muscle: "muscles",
+  knee_joint: "knee",
+  larynx_trachea: "larynx",
+  female_reproductive: "uterus",
+  male_reproductive: "penis",
+};
+
 function applyBpPrefix(bodyPartId: string): string {
-  return bodyPartId.startsWith("bp_") ? bodyPartId : `bp_${bodyPartId}`;
+  if (bodyPartId.startsWith("bp_")) return bodyPartId;
+  const translated = ORGAN_TO_DATA_KEY[bodyPartId] ?? bodyPartId;
+  return `bp_${translated}`;
 }
 
 /**
@@ -90,6 +116,19 @@ export async function fetchSymptomsForPart(
 
   const data = await _symptomsLoading;
   return data[key] ?? [];
+}
+
+/**
+ * Returns a DataProvider implementation that uses the default internal
+ * DataService functions.
+ *
+ * @param assetBase - optional base URL prefix for JSON files
+ */
+export function getDefaultDataProvider(assetBase = ""): DataProvider {
+  return {
+    fetchDiseases: (id) => fetchDiseases(id, assetBase),
+    fetchSymptoms: (id) => fetchSymptomsForPart(id, assetBase),
+  };
 }
 
 /**
