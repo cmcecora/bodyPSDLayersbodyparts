@@ -43,6 +43,7 @@ export class BodyMapExplorer extends LitElement {
     css`
       :host {
         display: block;
+        container-type: inline-size;
         font-family: var(--bme-font-family);
         background: var(--bme-surface);
         color: #333;
@@ -50,10 +51,20 @@ export class BodyMapExplorer extends LitElement {
 
       .layout {
         display: grid;
-        grid-template-columns: 260px 1fr 300px minmax(280px, 1fr);
+        grid-template-columns:
+          minmax(240px, 260px)
+          minmax(0, 1fr)
+          minmax(280px, 300px)
+          minmax(280px, 1fr);
+        grid-template-areas: "sidebar model detail data";
         min-height: 100vh;
         gap: var(--bme-space-md);
         padding: var(--bme-space-md);
+        align-items: start;
+      }
+
+      .layout > * {
+        min-width: 0;
       }
 
       .sr-only {
@@ -75,7 +86,12 @@ export class BodyMapExplorer extends LitElement {
         overflow: hidden;
       }
 
+      .sidebar-col {
+        grid-area: sidebar;
+      }
+
       .body-model-area {
+        grid-area: model;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -91,11 +107,42 @@ export class BodyMapExplorer extends LitElement {
         width: min(100%, 380px);
       }
 
+      .detail-panel-col {
+        grid-area: detail;
+      }
+
       .data-panel-col {
+        grid-area: data;
         overflow-y: auto;
         max-height: 100vh;
         position: sticky;
         top: var(--bme-space-md);
+      }
+
+      @container (max-width: 1280px) {
+        .layout {
+          grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+          grid-template-areas:
+            "model sidebar"
+            "detail data";
+        }
+      }
+
+      @container (max-width: 820px) {
+        .layout {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-areas:
+            "model"
+            "sidebar"
+            "detail"
+            "data";
+        }
+
+        .data-panel-col {
+          overflow: visible;
+          position: static;
+          max-height: none;
+        }
       }
     `,
   ];
@@ -862,7 +909,7 @@ export class BodyMapExplorer extends LitElement {
         ${this._liveAnnouncement}
       </div>
       <div class="layout">
-        <div class="panel">
+        <div class="panel sidebar-col">
           <body-map-sidebar
             .systems=${BODY_SYSTEMS}
             .activeSystemId=${this.activeSystemId}
@@ -889,7 +936,7 @@ export class BodyMapExplorer extends LitElement {
             @bp-highlight-click=${this._handleBpHighlightClick}
           ></body-map-model>
         </div>
-        <div class="panel">
+        <div class="panel detail-panel-col">
           <body-map-detail-panel
             .system=${this.activeSystem}
             .bodyPart=${this.activeSystem === null

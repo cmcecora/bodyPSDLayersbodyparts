@@ -34,8 +34,7 @@ export class BodyMapDataPanel extends LitElement {
       :host {
         display: block;
         font-family: var(--bme-font-family);
-        overflow-y: auto;
-        max-height: calc(100vh - 48px);
+        min-width: 0;
       }
 
       .panel-header {

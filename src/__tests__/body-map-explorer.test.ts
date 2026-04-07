@@ -704,6 +704,34 @@ describe("body-map-explorer", () => {
     });
   });
 
+  describe("EXPLORER-08: responsive shell style contract", () => {
+    it("declares container-query layout breakpoints on the explorer shell", () => {
+      const styleEntries = (
+        Array.isArray(BodyMapExplorer.styles)
+          ? BodyMapExplorer.styles
+          : [BodyMapExplorer.styles]
+      ) as Array<{ cssText: string }>;
+      const styles = styleEntries.map((style) => style.cssText).join("\n");
+
+      expect(styles).toContain("container-type: inline-size");
+      expect(styles).toContain("@container (max-width: 1280px)");
+      expect(styles).toContain("@container (max-width: 820px)");
+    });
+
+    it("drops sticky viewport locking from the data panel in narrow container mode", () => {
+      const styleEntries = (
+        Array.isArray(BodyMapExplorer.styles)
+          ? BodyMapExplorer.styles
+          : [BodyMapExplorer.styles]
+      ) as Array<{ cssText: string }>;
+      const styles = styleEntries.map((style) => style.cssText).join("\n");
+
+      expect(styles).toContain(".data-panel-col");
+      expect(styles).toContain("position: static");
+      expect(styles).toContain("max-height: none");
+    });
+  });
+
   describe("EXPLORER-05: 4th column data panel integration", () => {
     it("explorer renders body-map-data-panel element in shadow DOM", async () => {
       const dataPanel = el.shadowRoot?.querySelector(
