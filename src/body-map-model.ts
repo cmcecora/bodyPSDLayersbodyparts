@@ -531,6 +531,7 @@ export class BodyMapModel extends LitElement {
       ".body-section-group",
     );
     const partId = group?.getAttribute("data-part");
+    const partName = group?.getAttribute("data-name") ?? "";
 
     if (!partId) {
       return;
@@ -543,6 +544,19 @@ export class BodyMapModel extends LitElement {
     }
 
     this.requestUpdate();
+
+    this.dispatchEvent(
+      new CustomEvent("section-click", {
+        detail: {
+          sectionId: partId,
+          sectionName: partName,
+          clientX: event.clientX,
+          clientY: event.clientY,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _organImageUrl(id: string): string {
