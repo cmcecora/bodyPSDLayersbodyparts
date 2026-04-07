@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Map Explorer Standalone Testbed</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .controls {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .event-log {
+            background: #333;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 4px;
+        }
+
+        h2 { margin-top: 0; font-size: 1.2rem; }
+
+        input, button {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="controls">
+            <h2>Controls</h2>
+            <div>
+                <label>Selected Organ IDs (comma-separated):</label><br>
+                <input type="text" id="organ-input" placeholder="heart,brain">
+                <button onclick="setOrgans()">Set Selected</button>
+            </div>
+            <div>
+                <label>Active System ID:</label><br>
+                <input type="text" id="system-input" placeholder="nervous">
+                <button onclick="setSystem()">Set System</button>
+            </div>
+            <div>
+                <label>Asset Base Path:</label><br>
+                <input type="text" id="asset-input" placeholder="/">
+                <button onclick="setAssetBase()">Set Asset Base</button>
+            </div>
+            <div>
+                <button onclick="resetAll()">Reset All</button>
+            </div>
+            <div style="border-top: 1px solid #ccc; padding-top: 15px;">
+                <h2>Data Injection</h2>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button onclick="injectStaticData()" style="background: #28a745;">Inject Mock Static Data</button>
+                    <button onclick="injectProvider()" style="background: #17a2b8;">Inject Custom Data Provider</button>
+                    <button onclick="clearExternalData()" style="background: #dc3545;">Clear External Data</button>
+                </div>
+            </div>
+        </div>
+
+        <body-map-explorer id="explorer"></body-map-explorer>
+    </div>
+
+    <div class="event-log" id="log">
+        <h2>Event Log</h2>
+        <div id="log-content"></div>
+    </div>
+
+    <script type="module" src="../src/body-map-explorer.ts"></script>
+    <script>
+        const explorer = document.getElementById('explorer');
+        const logContent = document.getElementById('log-content');
+
+        function logEvent(name, detail) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${name}<br><pre>${JSON.stringify(detail, null, 2)}</pre>`;
+            logContent.prepend(entry);
+        }
+
+        explorer.addEventListener('organ-selected', (e) => logEvent('organ-selected', e.detail));
+        explorer.addEventListener('organ-deselected', (e) => logEvent('organ-deselected', e.detail));
+        explorer.addEventListener('body-part-selected', (e) => logEvent('body-part-selected', e.detail));
+        explorer.addEventListener('body-part-deselected', (e) => logEvent('body-part-deselected', e.detail));
+        explorer.addEventListener('system-selected', (e) => logEvent('system-selected', e.detail));
+
+        window.setOrgans = function() {
+            const val = document.getElementById('organ-input').value;
+            explorer.setAttribute('selected-organ-ids', val);
+        }
+
+        window.setSystem = function() {
+            const val = document.getElementById('system-input').value;
+            explorer.setAttribute('active-system-id', val);
+        }
+
+        window.setAssetBase = function() {
+            const val = document.getElementById('asset-input').value;
+            explorer.setAttribute('asset-base', val);
+        }
+
+        window.resetAll = function() {
+            explorer.setAttribute('selected-organ-ids', '');
+            explorer.setAttribute('active-system-id', '');
+            explorer.externalData = null;
+            document.getElementById('organ-input').value = '';
+            document.getElementById('system-input').value = '';
+            logContent.innerHTML = '';
+        }
+
+        window.injectStaticData = function() {
+            explorer.externalData = {
+                diseases: {
+                    heart: [{ name: "Mock Cardiac Disease A" }, { name: "Mock Cardiac Disease B" }],
+                    brain: [{ name: "Mock Neurological Condition" }],
+                    bp_head: [{ name: "Mock Head Section Disease" }]
+                },
+                symptoms: {
+                    heart: ["Mock Chest Pain", "Mock Shortness of Breath"],
+                    brain: ["Mock Headache"],
+                    bp_head: ["Mock Head Section Symptom"]
+                }
+            };
+            logEvent('external-data:static-injected', { detail: 'Selecting an organ will now use this mock data' });
+        }
+
+        window.injectProvider = function() {
+            explorer.externalData = {
+                fetchDiseases: async (id) => {
+                    logEvent('provider-call:fetchDiseases', { id });
+                    return [{ name: `Provider Disease for ${id}` }];
+                },
+                fetchSymptoms: async (id) => {
+                    logEvent('provider-call:fetchSymptoms', { id });
+                    return [`Provider Symptom for ${id}`];
+                }
+            };
+            logEvent('external-data:provider-injected', { detail: 'Provider methods will be called for each data request' });
+        }
+
+        window.clearExternalData = function() {
+            explorer.externalData = null;
+            logEvent('external-data:cleared', { detail: 'Fallback to internal JSON files' });
+        }
+    </script>
+</body>
+</html>

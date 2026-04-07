@@ -1,0 +1,518 @@
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import "../body-map-model.js";
+import { BodyMapModel } from "../body-map-model.js";
+import { ORGANS } from "../data/organs.js";
+import { SECTIONS } from "../data/sections.js";
+
+async function createFixture(): Promise<BodyMapModel> {
+  const el = document.createElement("body-map-model") as BodyMapModel;
+  document.body.appendChild(el);
+  await el.updateComplete;
+  return el;
+}
+
+describe("body-map-model", () => {
+  let el: BodyMapModel;
+
+  beforeEach(async () => {
+    el = await createFixture();
+  });
+
+  afterEach(() => {
+    el.remove();
+    document.body.innerHTML = "";
+  });
+
+  describe("MODEL-01: organ layer rendering", () => {
+    it("renders a body-map-model custom element with an SVG viewport", () => {
+      const svg = el.shadowRoot?.querySelector("svg");
+
+      expect(el.shadowRoot).toBeTruthy();
+      expect(el.tagName.toLowerCase()).toBe("body-map-model");
+      expect(svg?.getAttribute("viewBox")).toBe("0 0 698 1698");
+    });
+
+    it("renders 19 organ groups with hit-area paths and images", () => {
+      const groups = el.shadowRoot?.querySelectorAll(".body-part-group") ?? [];
+
+      expect(groups).toHaveLength(19);
+
+      groups.forEach((group) => {
+        expect(group.querySelector(".hit-area")?.tagName.toLowerCase()).toBe(
+          "path",
+        );
+        expect(group.querySelector(".part-image")?.tagName.toLowerCase()).toBe(
+          "image",
+        );
+      });
+    });
+
+    it("renders the body silhouette image", () => {
+      const silhouette = el.shadowRoot?.querySelector("#base-body");
+
+      expect(silhouette).toBeTruthy();
+      expect(silhouette?.getAttribute("href")).toContain("silhouette");
+    });
+
+    it("every hit-area path has a transform matching its organ position", () => {
+      const organsLayer = el.shadowRoot?.querySelector("#organs-layer");
+      const hitAreas = organsLayer?.querySelectorAll(".hit-area") ?? [];
+
+      expect(hitAreas.length).toBeGreaterThan(0);
+
+      hitAreas.forEach((path) => {
+        const group = path.closest(".body-part-group");
+        const partId = group?.getAttribute("data-part");
+        const organ = ORGANS.find((o) => o.id === partId);
+
+        expect(organ).toBeTruthy();
+        expect(path.getAttribute("transform")).toBe(
+          `translate(${organ!.imageX},${organ!.imageY})`,
+        );
+      });
+    });
+  });
+
+  describe("MODEL-02: hit-area clickability", () => {
+    it("clicking a hit-area fires organ-selection-change", async () => {
+      let detail: string[] | null = null;
+      const hitArea = el.shadowRoot?.querySelector(".hit-area");
+
+      el.addEventListener("organ-selection-change", (event) => {
+        detail = (event as CustomEvent<{ selected: string[] }>).detail.selected;
+      });
+
+      hitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      expect(detail).toContain("brain");
+    });
+  });
+
+  describe("MODEL-03: hover feedback", () => {
+    it("declares the blue hover and glow interaction styles", () => {
+      const styleEntries = (
+        Array.isArray(BodyMapModel.styles)
+          ? BodyMapModel.styles
+          : [BodyMapModel.styles]
+      ) as Array<{ cssText: string }>;
+      const styles = styleEntries.map((style) => style.cssText).join("\n");
+
+      expect(styles).toContain("rgba(100, 180, 255, 0.35)");
+      expect(styles).toContain("drop-shadow(0 0 6px rgba(66, 165, 245, 0.7))");
+    });
+  });
+
+  describe("MODEL-04: click selection toggle", () => {
+    it("toggles selected state on repeated clicks", async () => {
+      const hitArea = el.shadowRoot?.querySelector(".hit-area");
+
+      hitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+      expect(
+        hitArea?.closest(".body-part-group")?.classList.contains("selected"),
+      ).toBe(true);
+
+      hitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+      expect(
+        hitArea?.closest(".body-part-group")?.classList.contains("selected"),
+      ).toBe(false);
+    });
+
+    it("allows multiple organ selections at once", async () => {
+      const hitAreas = el.shadowRoot?.querySelectorAll(".hit-area") ?? [];
+
+      hitAreas[0]?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      hitAreas[1]?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      expect(
+        el.shadowRoot?.querySelectorAll(".body-part-group.selected"),
+      ).toHaveLength(2);
+    });
+  });
+
+  describe("MODEL-05: gender toggle", () => {
+    it("defaults to male and reflects gender changes to the host attribute", async () => {
+      expect(el.currentGender).toBe("male");
+      expect(el.getAttribute("current-gender")).toBe("male");
+
+      el.currentGender = "female";
+      await el.updateComplete;
+
+      expect(el.getAttribute("current-gender")).toBe("female");
+    });
+
+    it("clears a hidden reproductive organ selection when gender changes", async () => {
+      const maleGroup = el.shadowRoot?.querySelector(
+        '[data-part="male_reproductive"] .hit-area',
+      );
+
+      maleGroup?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+      expect(
+        el.shadowRoot
+          ?.querySelector('[data-part="male_reproductive"]')
+          ?.classList.contains("selected"),
+      ).toBe(true);
+
+      el.currentGender = "female";
+      await el.updateComplete;
+
+      expect(
+        el.shadowRoot
+          ?.querySelector('[data-part="male_reproductive"]')
+          ?.classList.contains("selected"),
+      ).toBe(false);
+    });
+  });
+
+  describe("MODEL-06: view switching", () => {
+    it("defaults to sections view and shows the sections layer", () => {
+      const sectionsLayer = el.shadowRoot?.querySelector("#sections-layer");
+
+      expect(el.currentView).toBe("sections");
+      expect(sectionsLayer?.getAttribute("style")).toContain("opacity: 1");
+    });
+
+    it("switching to sections hides organs and shows front section groups", async () => {
+      el.currentView = "sections";
+      await el.updateComplete;
+
+      const organsLayer = el.shadowRoot?.querySelector("#organs-layer");
+      const sectionsLayer = el.shadowRoot?.querySelector("#sections-layer");
+      const sectionGroups =
+        el.shadowRoot?.querySelectorAll(".body-section-group") ?? [];
+
+      expect(organsLayer?.getAttribute("style")).toContain("opacity: 0");
+      expect(sectionsLayer?.getAttribute("style")).toContain("opacity: 1");
+      expect(sectionGroups).toHaveLength(
+        SECTIONS.filter((section) => section.side === "front").length,
+      );
+    });
+
+    it("keeps the organs layer visible in organs2 mode", async () => {
+      el.currentView = "organs2";
+      await el.updateComplete;
+
+      expect(
+        el.shadowRoot?.querySelector("#organs-layer")?.getAttribute("style"),
+      ).toContain("opacity: 1");
+    });
+
+    it("sections view renders green body background image", async () => {
+      el.currentView = "sections";
+      await el.updateComplete;
+
+      const sectionsBaseBody = el.shadowRoot?.querySelector(
+        "#sections-base-body",
+      );
+
+      expect(sectionsBaseBody).toBeTruthy();
+      expect(sectionsBaseBody?.getAttribute("href")).toContain("sections-body");
+      expect(sectionsBaseBody?.getAttribute("href")).not.toContain(
+        "silhouette",
+      );
+      expect(sectionsBaseBody?.getAttribute("pointer-events")).toBe("none");
+    });
+  });
+
+  describe("MODEL-07: external image loading", () => {
+    it("uses external webp organ assets with no base64 data", () => {
+      const images = el.shadowRoot?.querySelectorAll(".part-image") ?? [];
+
+      images.forEach((image) => {
+        const href = image.getAttribute("href") ?? "";
+        expect(href).toContain(".webp");
+        expect(href).not.toContain("base64");
+      });
+    });
+  });
+
+  describe("data files", () => {
+    it("organs.ts exports 19 organ definitions", () => {
+      expect(ORGANS).toHaveLength(19);
+    });
+
+    it("each organ has required fields", () => {
+      for (const organ of ORGANS) {
+        expect(organ.id).toBeTruthy();
+        expect(organ.name).toBeTruthy();
+        expect(organ.hitAreaPath).toBeTruthy();
+        expect(organ.imageX).toBeDefined();
+        expect(organ.imageY).toBeDefined();
+        expect(organ.imageWidth).toBeGreaterThan(0);
+        expect(organ.imageHeight).toBeGreaterThan(0);
+      }
+    });
+
+    it("organs include exactly one male and one female reproductive entry", () => {
+      const male = ORGANS.find((organ) => organ.isMaleRepro);
+      const female = ORGANS.find((organ) => organ.isFemaleRepro);
+
+      expect(male?.id).toBe("male_reproductive");
+      expect(female?.id).toBe("female_reproductive");
+      expect(male?.isFemaleRepro).not.toBe(true);
+      expect(female?.isMaleRepro).not.toBe(true);
+    });
+
+    it("sections.ts exports 14 section definitions", () => {
+      expect(SECTIONS).toHaveLength(14);
+    });
+
+    it("sections include 7 front and 7 back entries", () => {
+      expect(
+        SECTIONS.filter((section) => section.side === "front"),
+      ).toHaveLength(7);
+      expect(
+        SECTIONS.filter((section) => section.side === "back"),
+      ).toHaveLength(7);
+    });
+  });
+
+  describe("MODEL-08: controlled organ selection via selectedOrganIds", () => {
+    it("setting selectedOrganIds externally renders the heart group with selected class without any click", async () => {
+      el.selectedOrganIds = ["heart"];
+      await el.updateComplete;
+
+      const heartGroup = el.shadowRoot?.querySelector('[data-part="heart"]');
+      expect(heartGroup?.classList.contains("selected")).toBe(true);
+    });
+
+    it("setting selectedOrganIds to empty array clears all selected classes", async () => {
+      el.selectedOrganIds = ["heart"];
+      await el.updateComplete;
+      el.selectedOrganIds = [];
+      await el.updateComplete;
+
+      const selected =
+        el.shadowRoot?.querySelectorAll(".body-part-group.selected") ?? [];
+      expect(selected).toHaveLength(0);
+    });
+  });
+
+  describe("MODEL-09: system-highlight via systemHighlightOrganIds", () => {
+    it("setting systemHighlightOrganIds renders those groups with system-highlighted class", async () => {
+      el.systemHighlightOrganIds = ["heart", "lungs_left"];
+      await el.updateComplete;
+
+      const heartGroup = el.shadowRoot?.querySelector('[data-part="heart"]');
+      const lungsGroup = el.shadowRoot?.querySelector(
+        '[data-part="lungs_left"]',
+      );
+
+      expect(heartGroup?.classList.contains("system-highlighted")).toBe(true);
+      expect(lungsGroup?.classList.contains("system-highlighted")).toBe(true);
+    });
+
+    it("systemHighlightOrganIds does not affect selectedOrganIds", async () => {
+      el.systemHighlightOrganIds = ["heart", "lungs_left"];
+      await el.updateComplete;
+
+      expect(el.selectedOrganIds).toEqual([]);
+      const selected =
+        el.shadowRoot?.querySelectorAll(".body-part-group.selected") ?? [];
+      expect(selected).toHaveLength(0);
+    });
+
+    it("system-highlighted groups do not gain selected class", async () => {
+      el.systemHighlightOrganIds = ["heart"];
+      await el.updateComplete;
+
+      const heartGroup = el.shadowRoot?.querySelector('[data-part="heart"]');
+      expect(heartGroup?.classList.contains("system-highlighted")).toBe(true);
+      expect(heartGroup?.classList.contains("selected")).toBe(false);
+    });
+  });
+
+  describe("section-click event", () => {
+    async function switchToSections(element: BodyMapModel): Promise<void> {
+      element.currentView = "sections";
+      await element.updateComplete;
+    }
+
+    function getSectionGroup(element: BodyMapModel): Element | null {
+      return element.shadowRoot?.querySelector(".body-section-group") ?? null;
+    }
+
+    function clickSectionGroup(sectionGroup: Element): void {
+      const hitArea =
+        sectionGroup.querySelector(".section-hit-area") ?? sectionGroup;
+      hitArea.dispatchEvent(
+        new MouseEvent("click", {
+          bubbles: true,
+          composed: true,
+          clientX: 350,
+          clientY: 200,
+        }),
+      );
+    }
+
+    it("dispatches a section-click CustomEvent when a section group is clicked", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      let fired = false;
+      el.addEventListener("section-click", () => {
+        fired = true;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(fired).toBe(true);
+    });
+
+    it("section-click event detail contains sectionId matching data-part attribute", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      const expectedId = sectionGroup?.getAttribute("data-part");
+      let receivedId: string | undefined;
+      el.addEventListener("section-click", (event) => {
+        receivedId = (event as CustomEvent).detail.sectionId;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(receivedId).toBe(expectedId);
+    });
+
+    it("section-click event detail contains sectionName matching data-name attribute", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      const expectedName = sectionGroup?.getAttribute("data-name");
+      let receivedName: string | undefined;
+      el.addEventListener("section-click", (event) => {
+        receivedName = (event as CustomEvent).detail.sectionName;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(receivedName).toBe(expectedName);
+    });
+
+    it("section-click event detail contains clientX and clientY numbers", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      let receivedX: number | undefined;
+      let receivedY: number | undefined;
+      el.addEventListener("section-click", (event) => {
+        receivedX = (event as CustomEvent).detail.clientX;
+        receivedY = (event as CustomEvent).detail.clientY;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(typeof receivedX).toBe("number");
+      expect(typeof receivedY).toBe("number");
+    });
+
+    it("section-click event has bubbles: true and composed: true", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      let receivedEvent: CustomEvent | undefined;
+      el.addEventListener("section-click", (event) => {
+        receivedEvent = event as CustomEvent;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(receivedEvent?.bubbles).toBe(true);
+      expect(receivedEvent?.composed).toBe(true);
+    });
+
+    it("existing section toggle selection behavior still works after click", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      // First click — should add to selection
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(sectionGroup?.classList.contains("selected")).toBe(true);
+      // Second click — should remove from selection
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(sectionGroup?.classList.contains("selected")).toBe(false);
+    });
+  });
+
+  describe("MODEL-10: organ-selection-change event detail", () => {
+    it("clicking an organ emits organ-selection-change with lastToggled and selectedOrganIds", async () => {
+      let detail: {
+        selected: string[];
+        selectedOrganIds: string[];
+        lastToggled: string;
+        isSelected: boolean;
+      } | null = null;
+      const brainHitArea = el.shadowRoot?.querySelector(
+        '[data-part="brain"] .hit-area',
+      );
+
+      el.addEventListener("organ-selection-change", (event) => {
+        detail = (event as CustomEvent).detail;
+      });
+
+      brainHitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      expect(detail).not.toBeNull();
+      expect(detail?.lastToggled).toBe("brain");
+      expect(detail?.selectedOrganIds).toContain("brain");
+      expect(detail?.isSelected).toBe(true);
+    });
+
+    it("deselecting an organ emits isSelected false and excludes it from selectedOrganIds", async () => {
+      el.selectedOrganIds = ["brain"];
+      await el.updateComplete;
+
+      let detail: {
+        selected: string[];
+        selectedOrganIds: string[];
+        lastToggled: string;
+        isSelected: boolean;
+      } | null = null;
+      const brainHitArea = el.shadowRoot?.querySelector(
+        '[data-part="brain"] .hit-area',
+      );
+
+      el.addEventListener("organ-selection-change", (event) => {
+        detail = (event as CustomEvent).detail;
+      });
+
+      brainHitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      expect(detail?.lastToggled).toBe("brain");
+      expect(detail?.isSelected).toBe(false);
+      expect(detail?.selectedOrganIds).not.toContain("brain");
+    });
+
+    it("organs2 view still emits organ2-click on click", async () => {
+      el.currentView = "organs2";
+      await el.updateComplete;
+
+      let organ2Detail: { organId: string } | null = null;
+      el.addEventListener("organ2-click", (event) => {
+        organ2Detail = (event as CustomEvent).detail;
+      });
+
+      const hitArea = el.shadowRoot?.querySelector(".hit-area");
+      hitArea?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await el.updateComplete;
+
+      expect(organ2Detail).not.toBeNull();
+      expect(organ2Detail?.organId).toBeTruthy();
+    });
+  });
+});
