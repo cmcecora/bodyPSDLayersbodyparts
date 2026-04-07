@@ -21,19 +21,17 @@
         min-height: 100vh;
       }
 
-      /* Four-column layout wrapper */
+      /* Three-column layout wrapper */
       .page-layout {
-        display: grid;
-        grid-template-columns: 240px minmax(0, 380px) 340px minmax(300px, 1fr);
+        display: flex;
         gap: 24px;
         width: 100%;
-        align-items: start;
+        align-items: flex-start;
       }
 
       /* Left column wrapper */
       .left-column {
-        grid-column: 1;
-        grid-row: 1 / -1;
+        flex: 0 0 240px;
         position: sticky;
         top: 20px;
         display: flex;
@@ -102,13 +100,30 @@
         object-fit: cover;
       }
 
+      /* Body Parts selected list */
+      .body-parts-panel {
+        width: 100%;
+      }
+      .body-parts-panel h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #4a90d9;
+      }
+      .body-parts-empty {
+        font-size: 13px;
+        color: #999;
+        font-style: italic;
+      }
+
       /* Center column: Body model */
       .body-model-container {
-        grid-column: 2;
-        grid-row: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
+        flex: 0 0 auto;
         max-width: 380px;
       }
 
@@ -132,14 +147,6 @@
         width: 100%;
         height: auto;
         display: block;
-      }
-
-      /* Smooth crossfade transitions for SVG layers */
-      #organs-layer,
-      #sections-layer,
-      #back-sections-layer,
-      #bp-highlight-layer {
-        transition: opacity 0.35s ease-in-out;
       }
 
       /* Hit area hover effect */
@@ -214,154 +221,95 @@
         color: #fff;
       }
 
+      /* Selected parts list in left panel */
+      .selected-list-container {
+        width: 100%;
+        min-height: 0;
+        transition: all 0.3s ease;
+      }
+      .selected-list-container.has-items {
+        min-height: 30px;
+      }
+      .selected-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+      }
+      .selected-list li {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border: 1px solid #d4e4f7;
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #2c3e50;
+        transition: all 0.25s ease;
+        animation: pillIn 0.25s ease forwards;
+        cursor: pointer;
+      }
+      .selected-list li:hover {
+        background: #eef4fb;
+        border-color: #a8c8e8;
+      }
+      .selected-list li .pill-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #4a90d9;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 600;
+        margin-right: 8px;
+        flex-shrink: 0;
+      }
+      .selected-list li .pill-name {
+        flex: 1;
+      }
+      .selected-list li .pill-remove {
+        margin-left: 8px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #e8e8e8;
+        color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+      }
+      .selected-list li .pill-remove:hover {
+        background: #ff6b6b;
+        color: #fff;
+      }
+
+      @keyframes pillIn {
+        from {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       /* Right column wrapper */
       .right-column {
-        grid-column: 3;
-        grid-row: 1;
+        flex: 0 0 375px;
         display: flex;
         flex-direction: column;
         gap: 20px;
-        align-self: start;
-      }
-
-      /* ── Spanning sections (diseases + symptoms, columns 2-3) ── */
-      .spanning-sections {
-        grid-column: 4;
-        grid-row: 1;
-        display: none;
-        flex-direction: column;
-        gap: 24px;
-        align-self: start;
-        position: sticky;
-        top: 20px;
-      }
-      .spanning-sections.visible {
-        display: flex;
-      }
-      .disease-section,
-      .symptom-section {
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      .disease-section-header,
-      .symptom-section-header {
-        font-size: 16px;
-        font-weight: 700;
-        color: #fff;
-        background: #434448;
-        margin: 0;
-        padding: 12px 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
-        user-select: none;
-      }
-      .disease-section-header:hover,
-      .symptom-section-header:hover {
-        background: #505358;
-      }
-      .section-chevron {
-        font-size: 12px;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .collapsed .section-chevron {
-        transform: rotate(-90deg);
-      }
-      .section-collapsible {
-        display: grid;
-        grid-template-rows: 1fr;
-        transition:
-          grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 0.25s ease;
-        opacity: 1;
-      }
-      .collapsed .section-collapsible {
-        grid-template-rows: 0fr;
-        opacity: 0;
-      }
-      .section-collapsible-inner {
-        overflow: hidden;
-      }
-      .section-count-badge {
-        background: #6cb5f4;
-        color: #fff;
-        font-size: 12px;
-        font-weight: 600;
-        padding: 2px 10px;
-        border-radius: 10px;
-        margin-left: 8px;
-      }
-      .section-search {
-        padding: 8px 12px;
-        border-bottom: 1px solid #f0f0f0;
-      }
-      .section-search input {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #dde3ec;
-        border-radius: 6px;
-        font-size: 13px;
-        outline: none;
-        box-sizing: border-box;
-      }
-      .section-search input:focus {
-        border-color: #6cb5f4;
-        box-shadow: 0 0 0 2px rgba(108, 181, 244, 0.15);
-      }
-      .disease-list-container,
-      .symptom-list-container {
-        max-height: 400px;
-        overflow-y: auto;
-        padding: 8px;
-      }
-      .disease-list,
-      .symptom-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-      .disease-list li,
-      .symptom-list li {
-        font-size: 13px;
-        color: #434448;
-        padding: 8px 12px;
-        border: 1px solid #f0f0f0;
-        border-radius: 6px;
-        background: #fafbfc;
-        line-height: 1.4;
-        cursor: default;
-        word-break: break-word;
-      }
-      .disease-list li:hover,
-      .symptom-list li:hover {
-        background: #eef4fb;
-        border-color: #d0dff0;
-      }
-      .show-more-item {
-        cursor: pointer !important;
-        font-weight: 600 !important;
-        color: #4a90d9 !important;
-        text-align: center;
-        grid-column: 1 / -1;
-        background: #f0f6ff !important;
-        border-color: #d0dff0 !important;
-      }
-      .show-more-item:hover {
-        background: #dbeafe !important;
-      }
-      .disease-list-empty,
-      .symptom-list-empty {
-        grid-column: 1 / -1;
-        text-align: center;
-        color: #999;
-        font-style: italic;
-        padding: 24px;
+        align-self: flex-start;
       }
 
       /* System description card */
@@ -562,9 +510,6 @@
       .view-toggle button.active.sections-active {
         background: #2a7c44;
       }
-      .view-toggle button.active.organs2-active {
-        background: #9b59b6;
-      }
       .view-toggle button:hover:not(.active) {
         background: #eef4fb;
       }
@@ -584,54 +529,45 @@
       .body-section-group.selected .section-hit-area:hover {
         fill: rgba(144, 238, 144, 0.55);
       }
-
-      .bp-highlight-ellipse {
-        fill: rgba(76, 175, 80, 0.3);
-        stroke: rgba(76, 175, 80, 0.55);
-        stroke-width: 2;
-        pointer-events: auto;
-        cursor: pointer;
-        filter: url(#bp-glow);
+      /* Green theme for panel when in sections view */
+      .body-parts-panel.sections-view h2 {
+        border-bottom-color: #2a7c44;
       }
-      .bp-highlight-ellipse:hover {
-        fill: rgba(76, 175, 80, 0.5);
-        stroke: rgba(76, 175, 80, 0.8);
+      .body-parts-panel.sections-view .selected-list li {
+        border-color: #b8dfc5;
       }
-
-      /* Disable section hit areas when a body part is selected */
-      .sections-disabled .section-hit-area {
-        pointer-events: none;
+      .body-parts-panel.sections-view .selected-list li:hover {
+        background: #edf7f0;
+        border-color: #8cc9a0;
+      }
+      .body-parts-panel.sections-view .selected-list li .pill-number {
+        background: #2a7c44;
       }
 
       /* Responsive */
       @media (max-width: 900px) {
         .page-layout {
-          grid-template-columns: 1fr;
+          flex-direction: column;
           gap: 20px;
         }
+        .body-parts-panel {
+          flex: none;
+          width: 100%;
+          position: static;
+        }
         .left-column {
-          grid-column: 1;
-          grid-row: auto;
+          flex: none;
           width: 100%;
           position: static;
         }
         .right-column {
-          grid-column: 1;
+          flex: none;
           width: 100%;
-        }
-        .spanning-sections {
-          grid-column: 1;
-          grid-row: auto;
-          position: static;
-        }
-        .body-part-cards-container {
-          grid-template-columns: 1fr;
         }
         body {
           padding: 10px;
         }
         .body-model-container {
-          grid-column: 1;
           max-width: 100%;
         }
         .gender-toggle button {
@@ -644,8 +580,13 @@
         }
 
         .view-toggle button {
+          padding: 5px 14px;
+          font-size: 12px;
+        }
+
+        .selected-list li {
+          font-size: 12px;
           padding: 5px 10px;
-          font-size: 11px;
         }
       }
       /* --- Dual-Face 3D Flip: New CSS Rules --- */
@@ -826,11 +767,9 @@
 
       /* --- Body part cards --- */
       .body-part-cards-container {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-auto-flow: row;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
-        align-items: start;
       }
       .body-part-card {
         background: #fff;
@@ -840,8 +779,6 @@
         position: relative;
         display: flex;
         flex-direction: column;
-        width: 100%;
-        box-sizing: border-box;
       }
       .body-part-card-close {
         position: absolute;
@@ -1022,84 +959,6 @@
         font-size: 16px;
       }
 
-      /* === Symptom Search === */
-      .symptom-search-container {
-        display: flex;
-        align-items: center;
-        padding: 10px 16px;
-        border-bottom: 1px solid #e5e7eb;
-        background: #fff;
-        flex-shrink: 0;
-        gap: 10px;
-      }
-      .symptom-search-icon {
-        flex-shrink: 0;
-      }
-      .symptom-search-input {
-        flex: 1;
-        border: 1.5px solid #d1d5db;
-        border-radius: 8px;
-        padding: 9px 12px;
-        font-size: 15px;
-        font-family: inherit;
-        color: #1f2937;
-        outline: none;
-        background: #fff;
-        transition:
-          border-color 0.25s ease,
-          box-shadow 0.3s ease;
-      }
-      .symptom-search-input::placeholder {
-        color: #b0b7c3;
-        font-weight: 400;
-      }
-      .symptom-search-input:focus {
-        border-color: #60a5fa;
-        box-shadow:
-          0 0 0 3px rgba(96, 165, 250, 0.25),
-          0 0 8px rgba(96, 165, 250, 0.15);
-      }
-      /* Skeleton loading */
-      .symptom-skeleton-item {
-        padding: 14px 24px;
-        border-bottom: 1px solid #f3f4f6;
-      }
-      .symptom-skeleton-bar {
-        height: 14px;
-        border-radius: 6px;
-        background: linear-gradient(
-          90deg,
-          #e5e7eb 25%,
-          #f3f4f6 50%,
-          #e5e7eb 75%
-        );
-        background-size: 200% 100%;
-        animation: skeleton-shimmer 1.2s ease-in-out infinite;
-      }
-      .symptom-skeleton-bar.short {
-        width: 55%;
-      }
-      .symptom-skeleton-bar.medium {
-        width: 72%;
-      }
-      .symptom-skeleton-bar.long {
-        width: 90%;
-      }
-      @keyframes skeleton-shimmer {
-        0% {
-          background-position: 200% 0;
-        }
-        100% {
-          background-position: -200% 0;
-        }
-      }
-      .symptom-modal-list .no-results {
-        padding: 20px 24px;
-        color: #9ca3af;
-        font-style: italic;
-        text-align: center;
-      }
-
       @media (max-width: 700px) {
         .symptom-modal {
           width: calc(100vw - 24px);
@@ -1117,10 +976,8 @@
 
       /* === Current Symptoms Panel === */
       .current-symptoms-panel {
-        margin-top: 10px;
-        padding: 0 10px;
-        width: 100%;
-        box-sizing: border-box;
+        margin-top: 12px;
+        padding: 0 8px;
       }
       .current-symptoms-panel h2 {
         font-size: 13px;
@@ -1184,7 +1041,7 @@
       <!-- Left column: Systems menu + Body parts list -->
       <div class="left-column">
         <!-- Body Systems sidebar -->
-        <div class="systems-panel collapsed" id="systemsPanel">
+        <div class="systems-panel" id="systemsPanel">
           <h2 id="systemsHeader">
             Body Systems <i class="systems-chevron">&#9660;</i>
           </h2>
@@ -1192,7 +1049,7 @@
         </div>
 
         <!-- Body Parts nav panel -->
-        <div class="body-parts-nav-panel collapsed" id="bodyPartsNavPanel">
+        <div class="body-parts-nav-panel" id="bodyPartsNavPanel">
           <h2 id="bodyPartsNavHeader">
             <span class="body-parts-header-left">Body Parts</span>
             <span class="body-parts-header-actions">
@@ -1211,19 +1068,39 @@
           </h2>
           <ul class="body-parts-nav-list" id="bodyPartsNavList"></ul>
         </div>
+
+        <!-- Selected body parts pill list -->
+        <div class="body-parts-panel">
+          <h2>My Body Parts</h2>
+          <div class="selected-list-container" id="selectedListContainer">
+            <ol class="selected-list" id="selectedList"></ol>
+          </div>
+          <p class="body-parts-empty" id="bodyPartsEmpty">
+            Click on body parts to add them
+          </p>
+        </div>
+
+        <!-- Current Symptoms pill list -->
+        <div
+          class="current-symptoms-panel"
+          id="currentSymptomsPanel"
+          style="display: none"
+        >
+          <h2>Current Symptoms</h2>
+          <div class="symptoms-list-container">
+            <ol class="symptoms-list" id="symptomsList"></ol>
+          </div>
+        </div>
       </div>
 
       <!-- Center column: Body model -->
       <div class="body-model-container">
         <!-- View Toggle -->
         <div class="view-toggle" id="viewToggle">
-          <button id="btn-organs" onclick="setView('organs')">Organs</button>
-          <button id="btn-organs2" onclick="setView('organs2')">Organs2</button>
-          <button
-            id="btn-sections"
-            class="active"
-            onclick="setView('sections')"
-          >
+          <button id="btn-organs" class="active" onclick="setView('organs')">
+            Organs
+          </button>
+          <button id="btn-sections" onclick="setView('sections')">
             Body Sections
           </button>
         </div>
@@ -1255,26 +1132,8 @@
                     flood-opacity="0.6"
                   />
                 </filter>
-
-                <filter
-                  id="bp-glow"
-                  x="-50%"
-                  y="-50%"
-                  width="200%"
-                  height="200%"
-                >
-                  <feGaussianBlur
-                    in="SourceGraphic"
-                    stdDeviation="6"
-                    result="blur"
-                  />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
               </defs>
-              <g id="organs-layer" style="opacity: 0">
+              <g id="organs-layer">
                 <image
                   id="base-body"
                   x="0"
@@ -1932,8 +1791,8 @@
               </g>
               <!-- END organs-layer -->
 
-              <!-- Body Sections Layer (visible by default) -->
-              <g id="sections-layer" style="opacity: 1">
+              <!-- Body Sections Layer (hidden by default) -->
+              <g id="sections-layer" style="display: none">
                 <!-- Green base body (non-interactive background) -->
                 <image
                   id="sections-base-body"
@@ -2113,9 +1972,6 @@
                 </g>
               </g>
               <!-- END sections-layer -->
-
-              <!-- Body-part highlight overlay (populated dynamically by toggleBodyPart) -->
-              <g id="bp-highlight-layer" style="opacity: 1"></g>
             </svg>
 
             <svg
@@ -2134,7 +1990,7 @@
                   />
                 </filter>
               </defs>
-              <g id="back-sections-layer" style="display: none">
+              <g id="back-sections-layer">
                 <image
                   id="back-sections-base-body"
                   x="0"
@@ -2322,21 +2178,9 @@
         >
           &#x21BB; Rotate Model
         </a>
-
-        <!-- Current Symptoms pill list -->
-        <div
-          class="current-symptoms-panel"
-          id="currentSymptomsPanel"
-          style="display: none"
-        >
-          <h2>Current Symptoms</h2>
-          <div class="symptoms-list-container">
-            <ol class="symptoms-list" id="symptomsList"></ol>
-          </div>
-        </div>
       </div>
 
-      <!-- Right column: System detail -->
+      <!-- Right column: System detail + Body parts -->
       <div class="right-column">
         <!-- System description card -->
         <div class="tooltip-panel" id="tooltipPanel">
@@ -2368,71 +2212,12 @@
             <div class="tooltip-panel-processes" id="tooltipProcesses"></div>
           </div>
         </div>
-      </div>
 
-      <!-- Column 4 sections: body parts + diseases + symptoms -->
-      <div class="spanning-sections" id="spanningSections">
-        <!-- Body part detail cards -->
+        <!-- Body part detail cards (2-per-row grid) -->
         <div
           class="body-part-cards-container"
           id="bodyPartCardsContainer"
         ></div>
-        <!-- Symptoms section -->
-        <div class="symptom-section" id="symptomSection">
-          <div
-            class="symptom-section-header"
-            onclick="toggleSectionCollapse('symptomSection')"
-          >
-            <span
-              >Symptoms
-              <span class="section-count-badge" id="symptomCount">0</span></span
-            >
-            <span class="section-chevron">&#9660;</span>
-          </div>
-          <div class="section-collapsible">
-            <div class="section-collapsible-inner">
-              <div class="section-search">
-                <input
-                  type="text"
-                  id="symptomSectionSearchInput"
-                  placeholder="Search symptoms..."
-                  autocomplete="off"
-                />
-              </div>
-              <div class="symptom-list-container">
-                <ul class="symptom-list" id="symptomSectionList"></ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Diseases section -->
-        <div class="disease-section" id="diseaseSection">
-          <div
-            class="disease-section-header"
-            onclick="toggleSectionCollapse('diseaseSection')"
-          >
-            <span
-              >Diseases
-              <span class="section-count-badge" id="diseaseCount">0</span></span
-            >
-            <span class="section-chevron">&#9660;</span>
-          </div>
-          <div class="section-collapsible">
-            <div class="section-collapsible-inner">
-              <div class="section-search">
-                <input
-                  type="text"
-                  id="diseaseSearchInput"
-                  placeholder="Search diseases..."
-                  autocomplete="off"
-                />
-              </div>
-              <div class="disease-list-container">
-                <ul class="disease-list" id="diseaseList"></ul>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -2447,36 +2232,10 @@
             &times;
           </button>
         </div>
-        <div class="symptom-search-container">
-          <svg
-            class="symptom-search-icon"
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="#6366f1"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            class="symptom-search-input"
-            id="symptomSearchInput"
-            placeholder="Search, e.g. headache"
-            autocomplete="off"
-          />
-        </div>
         <ul class="symptom-modal-list" id="symptomModalList"></ul>
       </div>
     </div>
 
-    <script src="symptoms-data.js"></script>
-    <script src="diseases-data.js"></script>
-    <script src="symptoms-by-bodypart-data.js"></script>
     <script>
       (function () {
         const BODY_SYSTEMS = [
@@ -3135,67 +2894,6 @@
         });
         let activeSystem = null;
 
-        // --- System-to-body-parts mapping ---
-        const SYSTEM_TO_BODY_PARTS = {
-          cardiovascular: ["bp_heart", "bp_blood_vessels", "bp_blood"],
-          digestive: [
-            "bp_stomach",
-            "bp_intestines",
-            "bp_colon",
-            "bp_rectum",
-            "bp_anus",
-            "bp_liver",
-            "bp_gallbladder",
-            "bp_pancreas",
-          ],
-          endocrine: [
-            "bp_pancreas",
-            "bp_thyroid",
-            "bp_parathyroid",
-            "bp_adrenal",
-            "bp_pituitary",
-            "bp_salivary_glands",
-            "bp_mammary",
-          ],
-          immune: [
-            "bp_lymphnode",
-            "bp_spleen",
-            "bp_appendix",
-            "bp_white_blood_cells",
-          ],
-          integumentary: ["bp_skin", "bp_hair"],
-          muscular: ["bp_muscles", "bp_tendons", "bp_skin"],
-          nervous: ["bp_brain", "bp_nerves", "bp_spine"],
-          reproductive: null,
-          respiratory: ["bp_lungs"],
-          skeletal: ["bp_bones", "bp_joints"],
-          urinary: [
-            "bp_kidneys",
-            "bp_bladder",
-            "bp_urinary_tract",
-            "bp_urethra",
-          ],
-        };
-
-        const REPRODUCTIVE_BODY_PARTS = {
-          female: [
-            "bp_vagina",
-            "bp_vulva",
-            "bp_uterus",
-            "bp_fallopian_tubes",
-            "bp_ovaries",
-            "bp_breasts",
-          ],
-          male: ["bp_penis", "bp_testicles", "bp_prostate"],
-        };
-
-        function getBodyPartsForSystem(systemId) {
-          if (systemId === "reproductive") {
-            return REPRODUCTIVE_BODY_PARTS[currentGender] || [];
-          }
-          return SYSTEM_TO_BODY_PARTS[systemId] || [];
-        }
-
         // --- Render systems sidebar ---
         function renderSystemsSidebar() {
           const list = document.getElementById("systemsList");
@@ -3382,56 +3080,17 @@
                 if (g) g.classList.remove("selected");
               });
             }
-            // Clear previous system's auto-added body parts
-            systemSelectedBodyParts.forEach(function (bpId) {
-              selectedBodyParts.delete(bpId);
-              // Remove section ellipses
-              var bpLayer = document.getElementById("bp-highlight-layer");
-              if (bpLayer) {
-                bpLayer
-                  .querySelectorAll('[data-bp-id="' + bpId + '"]')
-                  .forEach(function (el) {
-                    el.remove();
-                  });
-              }
-              // Clean up organ highlights for removed body parts
-              var bp = BODY_PARTS_DATA.find(function (b) {
-                return b.id === bpId;
-              });
-              if (bp && bp.organIds) {
-                bp.organIds.forEach(function (organId) {
-                  var keptByOther = [...selectedBodyParts].some(
-                    function (otherId) {
-                      var other = BODY_PARTS_DATA.find(function (b) {
-                        return b.id === otherId;
-                      });
-                      return other && other.organIds.includes(organId);
-                    },
-                  );
-                  if (!keptByOther) {
-                    selectedOrgans.delete(organId);
-                    var group = document.getElementById("group-" + organId);
-                    if (group) group.classList.remove("selected");
-                    document
-                      .querySelectorAll('[data-part="' + organId + '"]')
-                      .forEach(function (el) {
-                        el.classList.remove("selected");
-                      });
-                  }
-                });
-              }
-            });
-            systemSelectedBodyParts.clear();
           }
 
           activeSystem = systemId;
 
-          // Highlight all mapped SVG organs
+          // Highlight all mapped organs
           const sys = BODY_SYSTEMS.find(function (s) {
             return s.id === systemId;
           });
           if (sys) {
             sys.organs.forEach(function (organId) {
+              // Skip hidden gender organs
               if (organId === "male_reproductive" && currentGender !== "male")
                 return;
               if (
@@ -3446,67 +3105,6 @@
             });
           }
 
-          // Auto-select body parts for this system
-          systemSelectedBodyParts.clear();
-          var bpIds = getBodyPartsForSystem(systemId);
-          bpIds.forEach(function (bpId) {
-            if (!selectedBodyParts.has(bpId)) {
-              systemSelectedBodyParts.add(bpId);
-            }
-            selectedBodyParts.add(bpId);
-
-            // Highlight SVG organs for each body part
-            var bp = BODY_PARTS_DATA.find(function (b) {
-              return b.id === bpId;
-            });
-            if (bp && bp.organIds) {
-              bp.organIds.forEach(function (organId) {
-                selectedOrgans.add(organId);
-                var group = document.getElementById("group-" + organId);
-                if (group) group.classList.add("selected");
-                document
-                  .querySelectorAll('[data-part="' + organId + '"]')
-                  .forEach(function (el) {
-                    el.classList.add("selected");
-                  });
-              });
-            }
-          });
-
-          // Handle sections view: add ellipse highlights
-          if (currentView === "sections") {
-            var bpLayer = document.getElementById("bp-highlight-layer");
-            if (bpLayer) {
-              bpIds.forEach(function (bpId) {
-                var regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
-                if (!regionData) return;
-                bpLayer
-                  .querySelectorAll('[data-bp-id="' + bpId + '"]')
-                  .forEach(function (el) {
-                    el.remove();
-                  });
-                var regions = Array.isArray(regionData)
-                  ? regionData
-                  : [regionData];
-                regions.forEach(function (r) {
-                  var ellipse = document.createElementNS(
-                    "http://www.w3.org/2000/svg",
-                    "ellipse",
-                  );
-                  ellipse.setAttribute("cx", r.cx);
-                  ellipse.setAttribute("cy", r.cy);
-                  ellipse.setAttribute("rx", r.rx);
-                  ellipse.setAttribute("ry", r.ry);
-                  ellipse.setAttribute("class", "bp-highlight-ellipse");
-                  ellipse.setAttribute("data-bp-id", bpId);
-                  makeEllipseClickable(ellipse, bpId);
-                  bpLayer.appendChild(ellipse);
-                });
-              });
-              updateSectionHitAreaState();
-            }
-          }
-
           // Update sidebar active class
           document.querySelectorAll(".systems-list li").forEach(function (li) {
             li.classList.remove("active");
@@ -3515,8 +3113,6 @@
           if (activeLi) activeLi.classList.add("active");
 
           showTooltip(systemId);
-          renderBodyPartsNavPanel();
-          renderBodyPartCards();
           renderSelectedList();
         }
 
@@ -3534,48 +3130,6 @@
               });
             }
           }
-
-          // Remove system-added body parts
-          var bpLayer = document.getElementById("bp-highlight-layer");
-          systemSelectedBodyParts.forEach(function (bpId) {
-            selectedBodyParts.delete(bpId);
-            // Remove section ellipses
-            if (bpLayer) {
-              bpLayer
-                .querySelectorAll('[data-bp-id="' + bpId + '"]')
-                .forEach(function (el) {
-                  el.remove();
-                });
-            }
-            // Clean up organ highlights for removed body parts
-            var bp = BODY_PARTS_DATA.find(function (b) {
-              return b.id === bpId;
-            });
-            if (bp && bp.organIds) {
-              bp.organIds.forEach(function (organId) {
-                var keptByOther = [...selectedBodyParts].some(
-                  function (otherId) {
-                    var other = BODY_PARTS_DATA.find(function (b) {
-                      return b.id === otherId;
-                    });
-                    return other && other.organIds.includes(organId);
-                  },
-                );
-                if (!keptByOther) {
-                  selectedOrgans.delete(organId);
-                  var group = document.getElementById("group-" + organId);
-                  if (group) group.classList.remove("selected");
-                  document
-                    .querySelectorAll('[data-part="' + organId + '"]')
-                    .forEach(function (g) {
-                      g.classList.remove("selected");
-                    });
-                }
-              });
-            }
-          });
-          systemSelectedBodyParts.clear();
-
           activeSystem = null;
 
           document.querySelectorAll(".systems-list li").forEach(function (li) {
@@ -3583,16 +3137,12 @@
           });
 
           hideTooltip();
-          if (currentView === "sections") updateSectionHitAreaState();
-          renderBodyPartsNavPanel();
-          renderBodyPartCards();
           renderSelectedList();
         }
 
         function clearActiveSystemUI() {
           if (!activeSystem) return;
           activeSystem = null;
-          systemSelectedBodyParts.clear();
           document.querySelectorAll(".systems-list li").forEach(function (li) {
             li.classList.remove("active");
           });
@@ -3776,17 +3326,6 @@
             "Radiating leg pain",
             "Numbness",
             "Difficulty bending",
-            "Back pain",
-            "Back pain that comes and goes",
-            "Sudden back pain",
-            "Severe back pain",
-            "Lower back pain spreading to the groin",
-            "Back pain decreases during rest",
-            "Lower back pain spreading to the back of the thigh or knee",
-            "Paraspinal muscle tenderness",
-            "Difficulty bending down",
-            "Stiff spine in the morning",
-            "Back injury",
           ],
           back_upper_extremities: [
             "Arm pain",
@@ -3814,1093 +3353,54 @@
           ],
         };
 
-        // === ORGAN2 SYMPTOMS DATA ===
-        // Maps body part keys to their symptom lists for the Organs2 tab
-        const ORGAN2_SYMPTOMS = {
-          head: [
-            "Headache",
-            "Face pain",
-            "Sinus pain or pressure",
-            "Fever",
-            "Swollen face",
-            "Face tingling or numbness",
-            "Loss of consciousness",
-            "Problems with memory",
-            "Dizzy",
-            "Feeling sick or queasy",
-            "Hair loss",
-            "Skin changes on the face",
-            "Recent head or face area injury",
-            "Facial muscle weakness",
-          ],
-          ears: [
-            "Earache",
-            "Decreased hearing",
-            "Discharge from ear",
-            "Clogged ear",
-            "Itching in the ear",
-            "Ringing in ears",
-            "Ear injury",
-          ],
-          eyes: [
-            "Eye pain",
-            "Red eye",
-            "Red and stinging eyes",
-            "Itchy eye",
-            "Watery eyes",
-            "Yellow eyes",
-            "Pain around behind the eye",
-            "Visual impairment",
-            "Double vision",
-            "Temporary vision loss",
-            "Different sizes of both pupils",
-            "Skin changes on eyelid",
-            "Drooping eyelids",
-            "Dry discharge on eyelids",
-            "Eye flashes",
-            "Eyes sensitive to light",
-          ],
-          nose: [
-            "Painful nose",
-            "Swollen nose",
-            "Runny nose",
-            "Blocked nose",
-            "Itchy nose or throat",
-            "Nasal voice",
-            "Snoring",
-            "Sneezing",
-            "Inability to smell properly",
-            "Sinus pain or pressure",
-            "Bleeding from nose",
-            "Mucus dripping at the back of the throat",
-            "Nose injury",
-          ],
-          oral_cavity: [
-            "Changes in the mouth",
-            "Bad breath",
-            "Dryness in the mouth",
-            "Toothache",
-            "Difficulty biting or chewing",
-            "Gum pain",
-            "Swollen gums",
-            "Bleeding gums",
-            "Unusually red tongue",
-            "Burning sensation on tongue",
-            "Cough",
-            "Snoring",
-            "Vomiting",
-            "Coughing up blood",
-            "White spots on tonsils",
-            "Lip injury",
-            "Feeling sick or queasy",
-            "Red throat",
-            "Sore throat",
-            "Painful swallowing",
-          ],
-          neck_throat: [
-            "Sore throat",
-            "Painful swallowing",
-            "Difficult swallowing",
-            "Red throat",
-            "Cough",
-            "Clearing the throat",
-            "Whistling sound made while breathing",
-            "Mucus dripping at the back of the throat",
-            "Hoarse voice",
-            "Itchy nose or throat",
-            "Shortness of breath",
-            "Pain in the neck",
-            "Swollen neck",
-            "Stiff neck",
-            "Swollen neck veins",
-            "Neck injury",
-            "Enlarged lymph glands in the neck",
-            "Whiplash injury",
-          ],
-          chest: [
-            "Chest pain",
-            "Chest pain spreading to the left upper limb",
-            "Pressing chest pain",
-            "Heartburn",
-            "Palpitations",
-            "Fast heart rate",
-            "Slow heart rate",
-            "Cough",
-            "Shortness of breath",
-            "Shallow breathing",
-            "Rapid breathing",
-            "Whistling sound made while breathing",
-            "Chest injury",
-          ],
-          breasts: [
-            "Pain or tenderness in both breasts",
-            "Pain or tenderness in only one breast",
-            "Enlarged breasts",
-            "Lump in the breast",
-            "Milky discharge from the nipple outside of breastfeeding period",
-            "Leaking from the nipple discharge that is not milk",
-            "Ulcer on the nipple",
-            "Change in the nipple",
-            "Wrinkling or dimpling of skin on breast",
-          ],
-          upper_abdomen: [
-            "Stomach pain",
-            "Upper central abdominal pain",
-            "Upper left side abdominal pain",
-            "Upper right side abdominal pain",
-            "Burning or gnawing abdominal pain",
-            "Colic abdominal pain",
-            "Crampy abdominal pain",
-            "Sharp or stabbing abdominal pain",
-            "Pain when pressing the belly",
-            "Heartburn",
-            "Mass or lump in stomach",
-            "Increased abdominal size",
-            "Bloating",
-            "Vomiting",
-            "Feeling sick or queasy",
-            "Indigestion",
-            "Throwing up something that looks like blood or coffee grounds",
-            "Recent abdominal injury",
-          ],
-          middle_abdomen: [
-            "Abdominal cramps before period",
-            "Stomach pain",
-            "Central abdominal pain",
-            "Burning or gnawing abdominal pain",
-            "Colic abdominal pain",
-            "Crampy abdominal pain",
-            "Sharp or stabbing abdominal pain",
-            "Pain when pressing the belly",
-            "Mass or lump in stomach",
-            "Increased abdominal size",
-            "Bloating",
-            "Constipation",
-            "Diarrhea",
-            "Vomiting",
-            "Feeling sick or queasy",
-            "Black stool",
-            "Red stool",
-            "Recent abdominal injury",
-          ],
-          lower_abdomen: [
-            "Abdominal cramps before period",
-            "Stomach pain",
-            "Lower left side abdominal pain",
-            "Colic abdominal pain",
-            "Crampy abdominal pain",
-            "Lower right side abdominal pain",
-            "Lower abdominal pain",
-            "Sharp or stabbing abdominal pain",
-            "Pain when pressing the belly",
-            "Bloating",
-            "Increased abdominal size",
-            "Mass or lump in stomach",
-            "Accidental stool leakage",
-            "Constipation",
-            "Diarrhea",
-            "Black stool",
-            "Red stool",
-            "Recent abdominal injury",
-          ],
-          abdomen: [
-            "Stomach pain",
-            "Upper central abdominal pain",
-            "Upper left side abdominal pain",
-            "Upper right side abdominal pain",
-            "Burning or gnawing abdominal pain",
-            "Colic abdominal pain",
-            "Crampy abdominal pain",
-            "Sharp or stabbing abdominal pain",
-            "Pain when pressing the belly",
-            "Heartburn",
-            "Mass or lump in stomach",
-            "Increased abdominal size",
-            "Bloating",
-            "Vomiting",
-            "Feeling sick or queasy",
-            "Indigestion",
-            "Throwing up something that looks like blood or coffee grounds",
-            "Recent abdominal injury",
-            "Abdominal cramps before period",
-            "Central abdominal pain",
-            "Constipation",
-            "Diarrhea",
-            "Black stool",
-            "Red stool",
-            "Lower left side abdominal pain",
-            "Lower right side abdominal pain",
-            "Lower abdominal pain",
-            "Accidental stool leakage",
-          ],
-          sexual_organs_female: [
-            "Abnormal vaginal discharge",
-            "Vaginal bleeding after sex",
-            "Painful sex",
-            "Reddened vulva",
-            "Urinating often",
-            "Pain when urinating",
-            "Dark urine",
-            "Red urine",
-            "Leaking urine by accident",
-            "Urinating often at night",
-            "Pain in groin or genital area",
-            "Itching in crotch",
-            "Urgent need to urinate",
-            "Peeing small amounts at a time",
-            "Skin changes on or around genitals",
-          ],
-          sexual_organs_male: [],
-          back: [
-            "Excessive hair",
-            "Back pain",
-            "Back pain that comes and goes",
-            "Sudden back pain",
-            "Severe back pain",
-            "Middle or upper back pain",
-            "Back pain decreases during rest",
-            "Stiff spine in the morning",
-            "Spine asymmetry",
-            "Difficulty bending down",
-            "Back injury",
-          ],
-          lower_back: [
-            "Back pain",
-            "Lower back pain",
-            "Back pain that comes and goes",
-            "Sudden back pain",
-            "Severe back pain",
-            "Lower back pain spreading to the groin",
-            "Back pain decreases during rest",
-            "Lower back pain spreading to the back of the thigh or knee",
-            "Paraspinal muscle tenderness",
-            "Difficulty bending down",
-            "Stiff spine in the morning",
-            "Back injury",
-          ],
-          buttocks: [
-            "Butt pain",
-            "Hip pain",
-            "Pain when moving hip",
-            "Pain in lower limb",
-            "Pain in both lower limbs",
-            "Acute thigh or buttock pain appearing during exertion and relieving after short rest",
-            "Lower back pain spreading to the back of the thigh or knee",
-            "Anorectal pain",
-            "Hip swelling",
-            "Bleeding from anus",
-            "Ulcer, sore, or abscess near the anus",
-            "Itchy anus",
-            "Red stool",
-            "Black stool",
-          ],
-          anus: [
-            "Anorectal pain",
-            "Buttocks pain",
-            "Pain when passing stool",
-            "Itchy anus",
-            "Ulcer, sore, or abscess near the anus",
-            "Red stool",
-            "Bleeding from anus",
-            "Black stool",
-            "Foul-smelling stools",
-            "Diarrhea",
-            "Diarrhea with more than 6 bowel movements per day",
-            "Constipation",
-            "Accidental stool leakage",
-            "Worms in stool",
-          ],
-          upper_arm: [
-            "Pain in upper limb",
-            "Severe pain in upper limb",
-            "Shoulder pain",
-            "Pain when moving shoulder",
-            "Joint hard to move",
-            "Pain in both upper limbs",
-            "Swelling of the upper limb",
-            "Swollen shoulder",
-            "Tingling or numbness of one upper limb",
-            "Tingling or numbness of both upper limbs",
-            "Loss of feeling in both arms",
-            "Spasms in arms or hands",
-            "Arm injury",
-            "Limb weakness",
-          ],
-          elbow: [
-            "Pain in upper limb",
-            "Severe pain in upper limb",
-            "Elbow pain",
-            "Pain when moving elbow",
-            "Swollen elbow",
-            "Elbow injury",
-            "Joint hard to move",
-          ],
-          forearm: [
-            "Pain in upper limb",
-            "Pain in forearm",
-            "Pain in both upper limbs",
-            "Severe pain in upper limb",
-            "Swelling of the upper limb",
-            "Swollen elbow",
-            "Swollen wrist",
-            "Wrist pain",
-            "Pain when moving wrist",
-            "Elbow pain",
-            "Pain when moving elbow",
-            "Tingling or numbness of both upper limbs",
-            "Dropping hand",
-            "Loss of feeling in both arms",
-            "Spasms in arms or hands",
-            "Forearm injury",
-            "Limb weakness",
-            "Tingling or numbness of one upper limb",
-          ],
-          hand: [
-            "Wrist pain",
-            "Pain when moving wrist",
-            "Pain in hand or fingers",
-            "Pain in one finger",
-            "Pain of the skin around the nail",
-            "Swollen hand",
-            "Swollen wrist",
-            "Swollen finger",
-            "Skin changes on hands",
-            "Red hand",
-            "Grayish-blue fingers",
-            "Red skin on palms",
-            "Tingling fingers",
-            "Trembling of both hands",
-            "Trembling of one hand",
-            "Loss of muscles in hands",
-            "Stiff hands in the morning",
-            "Cold hands or fingers",
-            "Hand injury",
-          ],
-          thigh: [
-            "Pain in lower limb",
-            "Severe pain in lower limb",
-            "Thigh pain",
-            "Pain in both lower limbs",
-            "Hip pain",
-            "Pain when moving hip",
-            "Lower back pain spreading to the back of the thigh or knee",
-            "Limping due to pain",
-            "Acute thigh or buttock pain appearing during exertion and relieving after short rest",
-            "Pain when pressing lower limb",
-            "Swollen leg",
-            "Hip swelling",
-            "Swollen legs",
-            "Tingling or numbness in one lower limb",
-            "Tingling or numbness of both lower limbs",
-            "Red stretch marks on stomach, hips, or thighs",
-            "Thigh injury",
-          ],
-          legs: [
-            "Pain in lower limb",
-            "Severe pain in lower limb",
-            "Thigh pain",
-            "Pain in both lower limbs",
-            "Hip pain",
-            "Pain when moving hip",
-            "Lower back pain spreading to the back of the thigh or knee",
-            "Limping due to pain",
-            "Acute thigh or buttock pain appearing during exertion and relieving after short rest",
-            "Pain when pressing lower limb",
-            "Swollen leg",
-            "Hip swelling",
-            "Swollen legs",
-            "Tingling or numbness in one lower limb",
-            "Tingling or numbness of both lower limbs",
-            "Red stretch marks on stomach, hips, or thighs",
-            "Thigh injury",
-            "Pain in calf",
-            "Pain when pressing calf",
-            "Severe pain in calf while walking",
-            "Pain in one knee",
-            "Lower leg injury",
-            "Heavy legs at the end of the day",
-            "Loss of feeling in one arm or leg",
-          ],
-          knee: [
-            "Pain in lower limb",
-            "Severe pain in lower limb",
-            "Pain in both lower limbs",
-            "Pain in one knee",
-            "Pain when moving knee",
-            "Pain when pressing joint",
-            "Stiff joints",
-            "Limping due to pain",
-            "Swollen knee",
-            "Slower walk",
-            "Creaking joints during movement",
-            "Knee injury",
-          ],
-          lower_leg: [
-            "Pain in lower limb",
-            "Pain in both lower limbs",
-            "Severe pain in lower limb",
-            "Pain in calf",
-            "Pain when pressing calf",
-            "Severe pain in calf while walking",
-            "Pain in one knee",
-            "Swollen leg",
-            "Swollen legs",
-            "Tingling or numbness in one lower limb",
-            "Tingling or numbness of both lower limbs",
-            "Lower leg injury",
-            "Heavy legs at the end of the day",
-            "Loss of feeling in one arm or leg",
-          ],
-          foot: [
-            "Pain in one foot",
-            "Toe pain",
-            "Sore nail",
-            "Pain of the skin around the nail",
-            "Ankle pain",
-            "Big toe pain",
-            "Tingling or numbness of both feet",
-            "Swollen feet",
-            "Swollen toe",
-            "Skin changes on feet",
-            "Thickened nails",
-            "Enlarged fingertips and nails",
-            "Dark nail discoloration",
-            "White spots on nail",
-            "Yellow nails",
-            "Cold feet and toes",
-            "Dropping the front of the foot",
-            "Toe injury",
-            "Pain in both feet",
-            "Foot injury",
-            "Swollen foot",
-          ],
-        };
-
-        // Map organ SVG IDs to their Organ2 symptom key
-        const ORGAN_TO_ORGAN2_KEY = {
-          brain: "head",
-          larynx_trachea: "neck_throat",
-          thyroid: "neck_throat",
-          liver: "upper_abdomen",
-          lungs_right: "chest",
-          lungs_left: "chest",
-          heart: "chest",
-          knee_joint: "knee",
-          gallbladder: "upper_abdomen",
-          spleen: "upper_abdomen",
-          pancreas: "middle_abdomen",
-          kidneys: "lower_back",
-          stomach: "upper_abdomen",
-          intestines: "lower_abdomen",
-          muscle: "upper_arm",
-          thymus: "chest",
-          bladder: "lower_abdomen",
-          male_reproductive: "sexual_organs_male",
-          female_reproductive: "sexual_organs_female",
-        };
-
-        // Friendly display names for Organ2 symptom keys
-        const ORGAN2_DISPLAY_NAMES = {
-          head: "Head",
-          ears: "Ears",
-          eyes: "Eyes",
-          nose: "Nose",
-          oral_cavity: "Oral Cavity",
-          neck_throat: "Neck or Throat",
-          chest: "Chest",
-          breasts: "Breasts",
-          upper_abdomen: "Upper Abdomen",
-          middle_abdomen: "Middle Abdomen",
-          lower_abdomen: "Lower Abdomen",
-          abdomen: "Abdomen",
-          sexual_organs_female: "Sexual Organs (Female)",
-          sexual_organs_male: "Sexual Organs (Male)",
-          back: "Back",
-          lower_back: "Lower Back",
-          buttocks: "Buttocks",
-          anus: "Anus",
-          upper_arm: "Upper Arm",
-          elbow: "Elbow",
-          forearm: "Forearm",
-          hand: "Hand",
-          thigh: "Thigh",
-          legs: "Legs",
-          knee: "Knee",
-          lower_leg: "Lower Leg",
-          foot: "Foot",
-        };
-
-        // Map body part nav IDs (bp_xxx) to Organ2 symptom keys
-        const BP_TO_ORGAN2_KEY = {
-          bp_head: "head",
-          bp_face: "head",
-          bp_ears: "ears",
-          bp_eyes: "eyes",
-          bp_nose: "nose",
-          bp_mouth: "oral_cavity",
-          bp_gums: "oral_cavity",
-          bp_teeth: "oral_cavity",
-          bp_neck: "neck_throat",
-          bp_throat: "neck_throat",
-          bp_brain: "head",
-          bp_heart: "chest",
-          bp_blood: "chest",
-          bp_lungs: "chest",
-          bp_pancreas: "middle_abdomen",
-          bp_adrenal: "lower_back",
-          bp_parathyroid: "neck_throat",
-          bp_pituitary: "head",
-          bp_thyroid: "neck_throat",
-          bp_esophagus: "neck_throat",
-          bp_abdomen: "abdomen",
-          bp_stomach: "upper_abdomen",
-          bp_liver: "upper_abdomen",
-          bp_intestines: "lower_abdomen",
-          bp_gallbladder: "upper_abdomen",
-          bp_colon: "lower_abdomen",
-          bp_bladder: "lower_abdomen",
-          bp_urethra: "lower_abdomen",
-          bp_lymphnode: "neck_throat",
-          bp_spleen: "upper_abdomen",
-          bp_appendix: "lower_abdomen",
-          bp_muscles: "upper_arm",
-          bp_skin: "chest",
-          bp_bones: "knee",
-          bp_joints: "knee",
-          bp_spine: "back",
-          bp_back: "back",
-          bp_ankles: "foot",
-          bp_arms: "upper_arm",
-          bp_chest: "chest",
-          bp_elbow: "elbow",
-          bp_feet: "foot",
-          bp_hands: "hand",
-          bp_hips: "buttocks",
-          bp_butt: "buttocks",
-          bp_anus: "anus",
-          bp_kidneys: "lower_back",
-          bp_legs: "legs",
-          bp_pelvis: "lower_abdomen",
-          bp_ribs: "chest",
-          bp_shoulders: "upper_arm",
-          bp_breasts: "breasts",
-          bp_mammary: "breasts",
-          bp_uterus: "sexual_organs_female",
-          bp_penis: "sexual_organs_male",
-          bp_prostate: "sexual_organs_male",
-          bp_testicles: "sexual_organs_male",
-          // --- New granular body parts ---
-          bp_blood_vessels: "chest",
-          bp_cartilage: "knee",
-          bp_digestive_tract: "lower_abdomen",
-          bp_fallopian_tubes: "sexual_organs_female",
-          bp_fingers: "hand",
-          bp_groin: "lower_abdomen",
-          bp_hair: "head",
-          bp_knee: "knee",
-          bp_larynx: "neck_throat",
-          bp_lips: "oral_cavity",
-          bp_nails: "hand",
-          bp_sinuses: "nose",
-          bp_nerves: "head",
-          bp_ovaries: "sexual_organs_female",
-          bp_rectum: "lower_abdomen",
-          bp_respiratory_tract: "chest",
-          bp_salivary_glands: "oral_cavity",
-          bp_scalp: "head",
-          bp_skull: "head",
-          bp_tendons: "upper_arm",
-          bp_thigh: "thigh",
-          bp_thymus: "chest",
-          bp_toes: "foot",
-          bp_tongue: "oral_cavity",
-          bp_tonsils: "neck_throat",
-          bp_urinary_tract: "lower_abdomen",
-          bp_vagina: "sexual_organs_female",
-          bp_vulva: "sexual_organs_female",
-          bp_white_blood_cells: "chest",
-        };
-
-        // Approximate SVG coordinates for non-organ body parts (center of the body area)
-        // Used to position the modal caret when clicking from left nav panel
-        const BODY_PART_SVG_COORDS = {
-          head: { x: 349, y: 80 },
-          ears: { x: 390, y: 100 },
-          eyes: { x: 349, y: 75 },
-          nose: { x: 349, y: 95 },
-          oral_cavity: { x: 349, y: 115 },
-          neck_throat: { x: 349, y: 170 },
-          chest: { x: 349, y: 340 },
-          breasts: { x: 349, y: 330 },
-          upper_abdomen: { x: 349, y: 470 },
-          middle_abdomen: { x: 349, y: 560 },
-          lower_abdomen: { x: 349, y: 650 },
-          abdomen: { x: 349, y: 530 },
-          sexual_organs_female: { x: 349, y: 720 },
-          sexual_organs_male: { x: 349, y: 720 },
-          back: { x: 349, y: 400 },
-          lower_back: { x: 349, y: 550 },
-          buttocks: { x: 349, y: 700 },
-          anus: { x: 349, y: 730 },
-          upper_arm: { x: 220, y: 380 },
-          elbow: { x: 195, y: 480 },
-          forearm: { x: 180, y: 540 },
-          hand: { x: 155, y: 650 },
-          thigh: { x: 300, y: 850 },
-          legs: { x: 305, y: 950 },
-          knee: { x: 310, y: 1000 },
-          lower_leg: { x: 315, y: 1150 },
-          foot: { x: 320, y: 1400 },
-        };
-
-        // Highlight ellipse regions for each body part on the Body Sections view.
-        // Each entry defines {cx, cy, rx, ry} in SVG viewBox coords (0 0 698 1698).
-        // Bilateral parts use an array of two regions (left + right, mirrored across x=349).
-        const BODY_PART_HIGHLIGHT_REGIONS = {
-          // --- Head & Neck (calibrated from zoomed grid overlay) ---
-          bp_head: { cx: 345, cy: 160, rx: 63, ry: 75 },
-          bp_face: { cx: 345, cy: 186, rx: 45, ry: 45 },
-          bp_ears: [
-            { cx: 280, cy: 180, rx: 7, ry: 22 },
-            { cx: 410, cy: 180, rx: 7, ry: 22 },
-          ],
-          bp_eyes: [
-            { cx: 310, cy: 175, rx: 10, ry: 6 },
-            { cx: 380, cy: 175, rx: 10, ry: 6 },
-          ],
-          bp_nose: { cx: 345, cy: 200, rx: 6, ry: 8 },
-          bp_mouth: { cx: 345, cy: 235, rx: 12, ry: 5 },
-          bp_gums: { cx: 345, cy: 235, rx: 15, ry: 8 },
-          bp_teeth: { cx: 345, cy: 235, rx: 10, ry: 4 },
-          bp_neck: { cx: 345, cy: 290, rx: 42, ry: 18 },
-          bp_throat: { cx: 345, cy: 290, rx: 16, ry: 18 },
-          bp_brain: { cx: 345, cy: 100, rx: 38, ry: 35 },
-          bp_pituitary: { cx: 345, cy: 112, rx: 8, ry: 8 },
-
-          // --- Chest / Upper Body (organ image positions + grid calibration) ---
-          bp_heart: { cx: 370, cy: 420, rx: 32, ry: 42 },
-          bp_blood: { cx: 345, cy: 500, rx: 80, ry: 150 },
-          bp_lungs: [
-            { cx: 300, cy: 430, rx: 50, ry: 55 },
-            { cx: 400, cy: 430, rx: 50, ry: 55 },
-          ],
-          bp_chest: { cx: 345, cy: 390, rx: 98, ry: 70 },
-          bp_ribs: { cx: 345, cy: 400, rx: 82, ry: 65 },
-          bp_breasts: [
-            { cx: 295, cy: 455, rx: 40, ry: 40 },
-            { cx: 405, cy: 455, rx: 40, ry: 40 },
-          ],
-          bp_mammary: [
-            { cx: 295, cy: 455, rx: 24, ry: 20 },
-            { cx: 405, cy: 455, rx: 24, ry: 20 },
-          ],
-          bp_thyroid: { cx: 350, cy: 320, rx: 22, ry: 20 },
-          bp_esophagus: { cx: 345, cy: 360, rx: 14, ry: 95 },
-          bp_thymus: { cx: 355, cy: 310, rx: 16, ry: 20 },
-          bp_shoulders: [
-            { cx: 230, cy: 330, rx: 32, ry: 20 },
-            { cx: 490, cy: 330, rx: 32, ry: 20 },
-          ],
-
-          // --- Abdomen (organ image positions as reference) ---
-          bp_abdomen: { cx: 345, cy: 650, rx: 78, ry: 110 },
-          bp_stomach: { cx: 370, cy: 610, rx: 50, ry: 40 },
-          bp_liver: { cx: 327, cy: 610, rx: 58, ry: 38 },
-          bp_gallbladder: { cx: 304, cy: 570, rx: 14, ry: 18 },
-          bp_spleen: { cx: 430, cy: 555, rx: 24, ry: 22 },
-          bp_pancreas: { cx: 355, cy: 565, rx: 42, ry: 24 },
-          bp_kidneys: [
-            { cx: 310, cy: 620, rx: 28, ry: 25 },
-            { cx: 410, cy: 620, rx: 28, ry: 25 },
-          ],
-          bp_adrenal: [
-            { cx: 300, cy: 595, rx: 15, ry: 10 },
-            { cx: 391, cy: 595, rx: 15, ry: 10 },
-          ],
-          bp_intestines: { cx: 355, cy: 690, rx: 80, ry: 60 },
-          bp_colon: { cx: 355, cy: 710, rx: 85, ry: 55 },
-          bp_appendix: { cx: 306, cy: 735, rx: 15, ry: 18 },
-          bp_lymphnode: { cx: 345, cy: 205, rx: 24, ry: 16 },
-          bp_parathyroid: { cx: 345, cy: 320, rx: 18, ry: 14 },
-
-          // --- Lower Torso / Pelvis ---
-          bp_pelvis: { cx: 345, cy: 760, rx: 75, ry: 40 },
-          bp_hips: [
-            { cx: 290, cy: 770, rx: 35, ry: 30 },
-            { cx: 400, cy: 770, rx: 35, ry: 30 },
-          ],
-          bp_bladder: { cx: 355, cy: 810, rx: 35, ry: 30 },
-          bp_urethra: { cx: 345, cy: 835, rx: 10, ry: 18 },
-          bp_butt: { cx: 345, cy: 770, rx: 62, ry: 35 },
-          bp_anus: { cx: 345, cy: 810, rx: 10, ry: 10 },
-          bp_uterus: { cx: 355, cy: 830, rx: 48, ry: 30 },
-          bp_penis: { cx: 355, cy: 870, rx: 30, ry: 40 },
-          bp_prostate: { cx: 355, cy: 845, rx: 22, ry: 18 },
-          bp_testicles: { cx: 355, cy: 905, rx: 26, ry: 22 },
-
-          // --- Arms (grid-calibrated from body outline) ---
-          bp_arms: [
-            { cx: 225, cy: 480, rx: 20, ry: 140 },
-            { cx: 465, cy: 480, rx: 20, ry: 140 },
-          ],
-          bp_elbow: [
-            { cx: 205, cy: 530, rx: 16, ry: 22 },
-            { cx: 485, cy: 530, rx: 16, ry: 22 },
-          ],
-          bp_hands: [
-            { cx: 135, cy: 840, rx: 22, ry: 35 },
-            { cx: 575, cy: 840, rx: 22, ry: 35 },
-          ],
-
-          // --- Legs (grid-calibrated from body outline) ---
-          bp_legs: [
-            { cx: 310, cy: 1100, rx: 30, ry: 200 },
-            { cx: 400, cy: 1100, rx: 30, ry: 200 },
-          ],
-          bp_thigh: [
-            { cx: 310, cy: 930, rx: 32, ry: 70 },
-            { cx: 400, cy: 930, rx: 32, ry: 70 },
-          ],
-          bp_knee: [
-            { cx: 305, cy: 1190, rx: 22, ry: 30 },
-            { cx: 400, cy: 1190, rx: 22, ry: 30 },
-          ],
-          bp_ankles: [
-            { cx: 300, cy: 1490, rx: 15, ry: 18 },
-            { cx: 410, cy: 1490, rx: 15, ry: 18 },
-          ],
-          bp_feet: [
-            { cx: 290, cy: 1540, rx: 28, ry: 45 },
-            { cx: 420, cy: 1540, rx: 28, ry: 45 },
-          ],
-
-          // --- Whole-body / diffuse ---
-          bp_muscles: { cx: 345, cy: 600, rx: 90, ry: 250 },
-          bp_skin: { cx: 345, cy: 600, rx: 100, ry: 280 },
-          bp_bones: { cx: 345, cy: 600, rx: 80, ry: 260 },
-          bp_joints: [
-            { cx: 305, cy: 1190, rx: 22, ry: 30 },
-            { cx: 400, cy: 1190, rx: 22, ry: 30 },
-          ],
-          bp_spine: { cx: 345, cy: 500, rx: 15, ry: 200 },
-          bp_back: { cx: 345, cy: 450, rx: 70, ry: 140 },
-
-          // --- New granular body parts ---
-          // Head subparts
-          bp_scalp: { cx: 345, cy: 80, rx: 40, ry: 25 },
-          bp_skull: { cx: 345, cy: 120, rx: 42, ry: 50 },
-          bp_hair: { cx: 345, cy: 75, rx: 42, ry: 22 },
-          bp_sinuses: { cx: 345, cy: 185, rx: 18, ry: 14 },
-          bp_lips: { cx: 345, cy: 240, rx: 14, ry: 5 },
-          bp_tongue: { cx: 345, cy: 245, rx: 10, ry: 8 },
-          bp_salivary_glands: [
-            { cx: 305, cy: 225, rx: 12, ry: 10 },
-            { cx: 385, cy: 225, rx: 12, ry: 10 },
-          ],
-          // Throat subparts
-          bp_larynx: { cx: 345, cy: 280, rx: 14, ry: 12 },
-          bp_tonsils: [
-            { cx: 332, cy: 268, rx: 6, ry: 6 },
-            { cx: 358, cy: 268, rx: 6, ry: 6 },
-          ],
-          // Systemic/diffuse
-          bp_blood_vessels: { cx: 345, cy: 500, rx: 75, ry: 140 },
-          bp_nerves: { cx: 345, cy: 500, rx: 70, ry: 200 },
-          bp_cartilage: { cx: 345, cy: 700, rx: 75, ry: 200 },
-          bp_tendons: { cx: 345, cy: 800, rx: 80, ry: 200 },
-          bp_white_blood_cells: { cx: 345, cy: 500, rx: 65, ry: 130 },
-          bp_respiratory_tract: { cx: 345, cy: 400, rx: 80, ry: 70 },
-          bp_digestive_tract: { cx: 355, cy: 650, rx: 70, ry: 120 },
-          // Abdomen/Pelvis subparts
-          bp_rectum: { cx: 355, cy: 770, rx: 16, ry: 16 },
-          bp_groin: [
-            { cx: 310, cy: 800, rx: 25, ry: 20 },
-            { cx: 400, cy: 800, rx: 25, ry: 20 },
-          ],
-          bp_urinary_tract: { cx: 355, cy: 820, rx: 28, ry: 35 },
-          // Reproductive subparts
-          bp_ovaries: [
-            { cx: 320, cy: 820, rx: 14, ry: 12 },
-            { cx: 390, cy: 820, rx: 14, ry: 12 },
-          ],
-          bp_fallopian_tubes: [
-            { cx: 330, cy: 815, rx: 25, ry: 12 },
-            { cx: 380, cy: 815, rx: 25, ry: 12 },
-          ],
-          bp_vagina: { cx: 355, cy: 850, rx: 18, ry: 22 },
-          bp_vulva: { cx: 355, cy: 865, rx: 22, ry: 15 },
-          // Extremity subparts
-          bp_fingers: [
-            { cx: 135, cy: 825, rx: 18, ry: 20 },
-            { cx: 575, cy: 825, rx: 18, ry: 20 },
-          ],
-          bp_toes: [
-            { cx: 280, cy: 1570, rx: 18, ry: 12 },
-            { cx: 430, cy: 1570, rx: 18, ry: 12 },
-          ],
-          bp_nails: [
-            { cx: 135, cy: 855, rx: 12, ry: 8 },
-            { cx: 575, cy: 855, rx: 12, ry: 8 },
-          ],
-        };
-
         // === SHARED STATE ===
         const selectedOrgans = new Set();
         const selectedSections = new Set();
         const selectedSymptoms = new Map(); // key: "sectionId::symptomName", value: { section, symptom, sectionName }
-        let currentView = "sections"; // 'organs', 'organs2', or 'sections'
+        let currentView = "organs"; // 'organs' or 'sections'
         let currentGender = "male";
         let isFlipped = false;
-        let organ2HighlightedGroup = null; // tracks the highlighted organ in organs2 mode
-
-        // === SYMPTOM SEARCH STATE ===
-        let searchDebounceTimer = null;
-        let currentModalContext = null; // { type: 'section'|'organ2', key, name }
-        let searchFirstKeystroke = true;
-
-        // Full symptom list loaded via <script src="symptoms-data.js">
-        var FULL_SYMPTOMS = window.SYMPTOMS_DATA || null;
-
-        function filterSymptoms(query) {
-          var lowerQuery = query.toLowerCase();
-          // Search the full 18K list if loaded, otherwise search inline arrays for current region
-          var pool;
-          if (FULL_SYMPTOMS) {
-            pool = FULL_SYMPTOMS;
-          } else {
-            var ctx = currentModalContext;
-            pool =
-              ctx.type === "section"
-                ? SECTION_SYMPTOMS[ctx.key] || []
-                : ORGAN2_SYMPTOMS[ctx.key] || [];
-          }
-          var results = [];
-          for (var i = 0; i < pool.length && results.length < 50; i++) {
-            if (pool[i].toLowerCase().indexOf(lowerQuery) !== -1) {
-              results.push(pool[i]);
-            }
-          }
-          return results;
-        }
-
-        function renderSkeletonList() {
-          symptomModalList.textContent = "";
-          var widths = [
-            "long",
-            "medium",
-            "short",
-            "long",
-            "medium",
-            "short",
-            "medium",
-          ];
-          widths.forEach(function (w) {
-            var li = document.createElement("li");
-            li.className = "symptom-skeleton-item";
-            var bar = document.createElement("div");
-            bar.className = "symptom-skeleton-bar " + w;
-            li.appendChild(bar);
-            symptomModalList.appendChild(li);
-          });
-        }
-
-        function renderModalSymptomItems(
-          symptoms,
-          regionKey,
-          displayName,
-          sourceType,
-        ) {
-          symptomModalList.textContent = "";
-          if (symptoms.length === 0) {
-            var noResults = document.createElement("li");
-            noResults.className = "no-results";
-            noResults.textContent = "No matching symptoms found";
-            symptomModalList.appendChild(noResults);
-            return;
-          }
-          symptoms.forEach(function (symptom) {
-            var key = regionKey + "::" + symptom;
-            var isSelected = selectedSymptoms.has(key);
-            var li = document.createElement("li");
-            if (isSelected) li.className = "selected";
-            li.dataset.key = key;
-
-            var nameSpan = document.createElement("span");
-            nameSpan.textContent = symptom;
-            li.appendChild(nameSpan);
-
-            if (isSelected) {
-              var checkSpan = document.createElement("span");
-              checkSpan.className = "symptom-check";
-              checkSpan.textContent = "\u2713";
-              li.appendChild(checkSpan);
-            }
-
-            li.addEventListener("click", function () {
-              if (sourceType === "section") {
-                window._selectSymptom(regionKey, displayName, symptom);
-              } else {
-                window._selectOrgan2Symptom(regionKey, displayName, symptom);
-              }
-            });
-
-            symptomModalList.appendChild(li);
-          });
-        }
-
-        function getDefaultSymptoms(ctx) {
-          return ctx.type === "section"
-            ? SECTION_SYMPTOMS[ctx.key] || []
-            : ORGAN2_SYMPTOMS[ctx.key] || [];
-        }
 
         // --- View toggle ---
-        let initialViewLoaded = false;
         window.setView = function (view) {
           currentView = view;
 
-          // Close symptom modal when switching views
-          closeSymptomModal();
-
-          // Get layer elements
-          const organsLayer = document.getElementById("organs-layer");
-          const sectionsLayer = document.getElementById("sections-layer");
-          const backSectionsLayer = document.getElementById("back-sections-layer");
-          const bpLayer = document.getElementById("bp-highlight-layer");
-
-          const isOrgansView = view === "organs" || view === "organs2";
-          const isSectionsView = view === "sections";
-          const showFrontSections = isSectionsView && !isFlipped;
-          const showBackSections = isSectionsView && isFlipped;
-
-          // On initial load, skip the fade animation since layers are already
-          // set to correct visibility via inline styles
-          if (!initialViewLoaded) {
-            initialViewLoaded = true;
-            // Just set display properties without animation
-            organsLayer.style.display = isOrgansView ? "" : "none";
-            sectionsLayer.style.display = showFrontSections ? "" : "none";
-            backSectionsLayer.style.display = showBackSections ? "" : "none";
-
-            if (showFrontSections) {
-              bpLayer.style.display = "";
-              // Re-create ellipses for any body parts already selected
-              while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
-              selectedBodyParts.forEach((bpId) => {
-                const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
-                if (!regionData) return;
-                const regions = Array.isArray(regionData)
-                  ? regionData
-                  : [regionData];
-                regions.forEach((r) => {
-                  const ellipse = document.createElementNS(
-                    "http://www.w3.org/2000/svg",
-                    "ellipse",
-                  );
-                  ellipse.setAttribute("cx", r.cx);
-                  ellipse.setAttribute("cy", r.cy);
-                  ellipse.setAttribute("rx", r.rx);
-                  ellipse.setAttribute("ry", r.ry);
-                  ellipse.setAttribute("class", "bp-highlight-ellipse");
-                  ellipse.setAttribute("data-bp-id", bpId);
-                  makeEllipseClickable(ellipse, bpId);
-                  bpLayer.appendChild(ellipse);
-                });
-              });
-              updateSectionHitAreaState();
-            } else {
-              if (bpLayer) {
-                bpLayer.style.display = "none";
-                while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
-              }
-            }
-
-            // Set initial opacities
-            organsLayer.style.opacity = isOrgansView ? "1" : "0";
-            sectionsLayer.style.opacity = showFrontSections ? "1" : "0";
-            backSectionsLayer.style.opacity = showBackSections ? "1" : "0";
-            bpLayer.style.opacity = showFrontSections ? "1" : "0";
-          } else {
-            // Smooth crossfade transition for subsequent view switches
-            // First, fade out all layers
-            organsLayer.style.opacity = "0";
-            sectionsLayer.style.opacity = "0";
-            backSectionsLayer.style.opacity = "0";
-            if (bpLayer) bpLayer.style.opacity = "0";
-
-            // After a brief delay, set display properties and fade in the target layer
-            setTimeout(function() {
-              // Set display properties
-              organsLayer.style.display = isOrgansView ? "" : "none";
-              sectionsLayer.style.display = showFrontSections ? "" : "none";
-              backSectionsLayer.style.display = showBackSections ? "" : "none";
-
-              // Show/hide body-part highlight overlay on sections view
-              if (showFrontSections) {
-                bpLayer.style.display = "";
-                // Re-create ellipses for any body parts already selected
-                while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
-                selectedBodyParts.forEach((bpId) => {
-                  const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
-                  if (!regionData) return;
-                  const regions = Array.isArray(regionData)
-                    ? regionData
-                    : [regionData];
-                  regions.forEach((r) => {
-                    const ellipse = document.createElementNS(
-                      "http://www.w3.org/2000/svg",
-                      "ellipse",
-                    );
-                    ellipse.setAttribute("cx", r.cx);
-                    ellipse.setAttribute("cy", r.cy);
-                    ellipse.setAttribute("rx", r.rx);
-                    ellipse.setAttribute("ry", r.ry);
-                    ellipse.setAttribute("class", "bp-highlight-ellipse");
-                    ellipse.setAttribute("data-bp-id", bpId);
-                    makeEllipseClickable(ellipse, bpId);
-                    bpLayer.appendChild(ellipse);
-                  });
-                });
-                updateSectionHitAreaState();
-                // Fade in sections and highlight layer
-                sectionsLayer.style.opacity = "1";
-                bpLayer.style.opacity = "1";
-              } else {
-                if (bpLayer) {
-                  bpLayer.style.display = "none";
-                  while (bpLayer.firstChild) bpLayer.removeChild(bpLayer.firstChild);
-                  bpLayer.style.opacity = "0";
-                }
-                // Remove disabled state when leaving sections view
-                sectionsLayer.classList.remove("sections-disabled");
-                // Fade in the appropriate layer
-                if (isOrgansView) {
-                  organsLayer.style.opacity = "1";
-                } else if (showBackSections) {
-                  backSectionsLayer.style.opacity = "1";
-                }
-              }
-            }, 50);
-          }
+          // Toggle SVG layers
+          document.getElementById("organs-layer").style.display =
+            view === "organs" ? "" : "none";
+          document.getElementById("sections-layer").style.display =
+            view === "sections" ? "" : "none";
 
           // Toggle active tab
           const btnOrgans = document.getElementById("btn-organs");
-          const btnOrgans2 = document.getElementById("btn-organs2");
           const btnSections = document.getElementById("btn-sections");
           btnOrgans.classList.toggle("active", view === "organs");
-          btnOrgans2.classList.toggle("active", view === "organs2");
-          btnOrgans2.classList.toggle("organs2-active", view === "organs2");
           btnSections.classList.toggle("active", view === "sections");
           btnSections.classList.toggle("sections-active", view === "sections");
 
-          // Toggle gender controls (relevant for organs and organs2)
-          document.querySelector(".gender-toggle").style.display = isOrgansView
-            ? "flex"
-            : "none";
+          // Toggle gender controls (only relevant for organs)
+          document.querySelector(".gender-toggle").style.display =
+            view === "organs" ? "flex" : "none";
 
-          // Hide rotate button on organs/organs2 tab, show on sections tab
+          // Hide rotate button on organs tab, show on sections tab
           document.getElementById("rotateLink").style.display =
             view === "sections" ? "" : "none";
+
+          // Update left panel
+          const panel = document.querySelector(".body-parts-panel");
+          panel.classList.toggle("sections-view", view === "sections");
+
+          const heading = panel.querySelector("h2");
+          heading.textContent =
+            view === "organs" ? "My Body Parts" : "My Body Sections";
+
+          const emptyMsg = document.getElementById("bodyPartsEmpty");
+          emptyMsg.textContent =
+            view === "organs"
+              ? "Click on body parts to add them"
+              : "Click on body sections to add them";
+
+          renderSelectedList();
         };
 
         // --- Gender toggle ---
@@ -4929,109 +3429,12 @@
             if (g) g.classList.remove("selected");
             renderSelectedList();
           }
-
-          // If reproductive system is active, swap body parts to match new gender
-          if (activeSystem === "reproductive") {
-            var oldGender = gender === "male" ? "female" : "male";
-            var oldBpIds = REPRODUCTIVE_BODY_PARTS[oldGender] || [];
-            var newBpIds = REPRODUCTIVE_BODY_PARTS[gender] || [];
-            var bpLayer = document.getElementById("bp-highlight-layer");
-
-            // Remove old gender's body parts
-            oldBpIds.forEach(function (bpId) {
-              systemSelectedBodyParts.delete(bpId);
-              selectedBodyParts.delete(bpId);
-              if (bpLayer) {
-                bpLayer
-                  .querySelectorAll('[data-bp-id="' + bpId + '"]')
-                  .forEach(function (el) {
-                    el.remove();
-                  });
-              }
-            });
-
-            // Add new gender's body parts
-            newBpIds.forEach(function (bpId) {
-              if (!selectedBodyParts.has(bpId)) {
-                systemSelectedBodyParts.add(bpId);
-              }
-              selectedBodyParts.add(bpId);
-
-              // Highlight SVG organs
-              var bp = BODY_PARTS_DATA.find(function (b) {
-                return b.id === bpId;
-              });
-              if (bp && bp.organIds) {
-                bp.organIds.forEach(function (organId) {
-                  selectedOrgans.add(organId);
-                  var group = document.getElementById("group-" + organId);
-                  if (group) group.classList.add("selected");
-                });
-              }
-
-              // Add section ellipses if in sections view
-              if (currentView === "sections" && bpLayer) {
-                var regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
-                if (regionData) {
-                  var regions = Array.isArray(regionData)
-                    ? regionData
-                    : [regionData];
-                  regions.forEach(function (r) {
-                    var ellipse = document.createElementNS(
-                      "http://www.w3.org/2000/svg",
-                      "ellipse",
-                    );
-                    ellipse.setAttribute("cx", r.cx);
-                    ellipse.setAttribute("cy", r.cy);
-                    ellipse.setAttribute("rx", r.rx);
-                    ellipse.setAttribute("ry", r.ry);
-                    ellipse.setAttribute("class", "bp-highlight-ellipse");
-                    ellipse.setAttribute("data-bp-id", bpId);
-                    makeEllipseClickable(ellipse, bpId);
-                    bpLayer.appendChild(ellipse);
-                  });
-                }
-              }
-            });
-
-            if (currentView === "sections") updateSectionHitAreaState();
-            renderBodyPartsNavPanel();
-            renderBodyPartCards();
-          }
         };
 
         // --- Rotate model ---
         window.rotateModel = function () {
           const inner = document.getElementById("svgInner");
-          const sectionsLayer = document.getElementById("sections-layer");
-          const backSectionsLayer = document.getElementById(
-            "back-sections-layer",
-          );
-          const flipDuration = 700; // matches CSS transition: 0.7s
-
           isFlipped = !isFlipped;
-
-          if (currentView === "sections") {
-            // Show both layers during the flip so backface-visibility handles it
-            sectionsLayer.style.display = "";
-            backSectionsLayer.style.display = "";
-            sectionsLayer.style.opacity = "1";
-            backSectionsLayer.style.opacity = "1";
-
-            // After the animation completes, hide the inactive layer
-            setTimeout(function () {
-              sectionsLayer.style.display = isFlipped ? "none" : "";
-              backSectionsLayer.style.display = isFlipped ? "" : "none";
-              sectionsLayer.style.opacity = isFlipped ? "0" : "1";
-              backSectionsLayer.style.opacity = isFlipped ? "1" : "0";
-            }, flipDuration);
-
-            // Hide body-part highlights when flipped to back (no back regions defined yet)
-            const bpLayer = document.getElementById("bp-highlight-layer");
-            bpLayer.style.display = isFlipped ? "none" : "";
-            bpLayer.style.opacity = isFlipped ? "0" : "1";
-          }
-
           inner.classList.toggle("flipped", isFlipped);
 
           const link = document.getElementById("rotateLink");
@@ -5039,14 +3442,6 @@
             ? "\u21BB Rotate to Front"
             : "\u21BB Rotate Model";
         };
-
-        // --- Organs2: clear temporary highlight ---
-        function clearOrgan2Highlight() {
-          if (organ2HighlightedGroup) {
-            organ2HighlightedGroup.classList.remove("selected");
-            organ2HighlightedGroup = null;
-          }
-        }
 
         // --- Click to select/deselect ORGANS ---
         document
@@ -5066,21 +3461,6 @@
                 currentGender !== "female"
               )
                 return;
-
-              // Organs2 mode: open symptom modal instead of toggling selection
-              if (currentView === "organs2") {
-                const organ2Key = ORGAN_TO_ORGAN2_KEY[partId];
-                if (organ2Key) {
-                  // Use the organ's actual SVG name (e.g., "Brain", "Left Lung")
-                  const displayName = group.dataset.name;
-                  // Highlight this organ while modal is open
-                  clearOrgan2Highlight();
-                  group.classList.add("selected");
-                  organ2HighlightedGroup = group;
-                  openOrgan2Modal(organ2Key, displayName, e);
-                }
-                return;
-              }
 
               if (selectedOrgans.has(partId)) {
                 selectedOrgans.delete(partId);
@@ -5114,19 +3494,6 @@
 
               const allGroups = getSectionGroups(partId);
               const partName = group.dataset.name;
-
-              // If already selected, deselect it (toggle off)
-              if (selectedSections.has(partId)) {
-                selectedSections.delete(partId);
-                allGroups.forEach((g) => {
-                  g.classList.remove("selected");
-                  const img = g.querySelector(".section-image");
-                  if (img) img.style.opacity = "0";
-                });
-                renderSelectedList();
-                closeSymptomModal();
-                return;
-              }
 
               // Deselect all currently selected sections first (single-select)
               selectedSections.forEach((prevPartId) => {
@@ -5252,22 +3619,34 @@
         function openSymptomModal(sectionId, sectionName, e) {
           if (e) lastModalClickEvent = e;
           symptomModalTitle.textContent = sectionName;
+          const symptoms = SECTION_SYMPTOMS[sectionId] || [];
 
-          // Set modal context for search
-          currentModalContext = {
-            type: "section",
-            key: sectionId,
-            name: sectionName,
-          };
-          searchFirstKeystroke = true;
+          // Build list items using DOM methods
+          symptomModalList.textContent = "";
+          symptoms.forEach(function (symptom) {
+            const key = sectionId + "::" + symptom;
+            const isSelected = selectedSymptoms.has(key);
+            const li = document.createElement("li");
+            if (isSelected) li.className = "selected";
+            li.dataset.key = key;
 
-          // Reset search input
-          var searchInput = document.getElementById("symptomSearchInput");
-          searchInput.value = "";
+            const nameSpan = document.createElement("span");
+            nameSpan.textContent = symptom;
+            li.appendChild(nameSpan);
 
-          // Render default symptoms
-          var symptoms = SECTION_SYMPTOMS[sectionId] || [];
-          renderModalSymptomItems(symptoms, sectionId, sectionName, "section");
+            if (isSelected) {
+              const checkSpan = document.createElement("span");
+              checkSpan.className = "symptom-check";
+              checkSpan.textContent = "\u2713";
+              li.appendChild(checkSpan);
+            }
+
+            li.addEventListener("click", function () {
+              window._selectSymptom(sectionId, sectionName, symptom);
+            });
+
+            symptomModalList.appendChild(li);
+          });
 
           // Position modal near the click point
           positionModal(lastModalClickEvent);
@@ -5275,129 +3654,16 @@
           // Show with animation
           symptomModalOverlay.classList.remove("closing");
           symptomModalOverlay.classList.add("active");
-
-          // Auto-focus search input
-          requestAnimationFrame(function () {
-            searchInput.focus();
-          });
-
-          // Full symptom data loaded synchronously via script tag
         }
 
         function closeSymptomModal() {
           symptomModalOverlay.classList.add("closing");
-          // Clear organs2 highlight when modal closes
-          clearOrgan2Highlight();
-          // Deselect any selected body sections when modal closes
-          selectedSections.forEach(function (partId) {
-            getSectionGroups(partId).forEach(function (g) {
-              g.classList.remove("selected");
-              var img = g.querySelector(".section-image");
-              if (img) img.style.opacity = "0";
-            });
-          });
-          selectedSections.clear();
           // Wait for close animation to finish then hide
           setTimeout(function () {
             symptomModalOverlay.classList.remove("active");
             symptomModalOverlay.classList.remove("closing");
           }, 240);
         }
-
-        // Convert SVG coordinates to screen coordinates for modal positioning
-        function svgCoordsToScreen(svgX, svgY) {
-          const svg = document.querySelector(".body-model-svg");
-          if (!svg)
-            return {
-              clientX: window.innerWidth / 2,
-              clientY: window.innerHeight / 2,
-            };
-          const pt = svg.createSVGPoint();
-          pt.x = svgX;
-          pt.y = svgY;
-          const screenPt = pt.matrixTransform(svg.getScreenCTM());
-          return { clientX: screenPt.x, clientY: screenPt.y };
-        }
-
-        // Open the symptom modal for Organs2 view
-        function openOrgan2Modal(organ2Key, displayName, eventOrCoords) {
-          symptomModalTitle.textContent = displayName;
-
-          // Set modal context for search
-          currentModalContext = {
-            type: "organ2",
-            key: organ2Key,
-            name: displayName,
-          };
-          searchFirstKeystroke = true;
-
-          // Reset search input
-          var searchInput = document.getElementById("symptomSearchInput");
-          searchInput.value = "";
-
-          // Render default symptoms
-          var symptoms = ORGAN2_SYMPTOMS[organ2Key] || [];
-          renderModalSymptomItems(symptoms, organ2Key, displayName, "organ2");
-
-          // Position modal
-          if (eventOrCoords && eventOrCoords.clientX !== undefined) {
-            lastModalClickEvent = eventOrCoords;
-          }
-          positionModal(lastModalClickEvent);
-
-          // Show with animation
-          symptomModalOverlay.classList.remove("closing");
-          symptomModalOverlay.classList.add("active");
-
-          // Auto-focus search input
-          requestAnimationFrame(function () {
-            searchInput.focus();
-          });
-
-          // Full symptom data loaded synchronously via script tag
-        }
-
-        // Toggle symptom selection in Organs2 mode
-        // Re-render modal list preserving current search state
-        function rerenderModalList(regionKey, displayName, sourceType) {
-          var searchInput = document.getElementById("symptomSearchInput");
-          var query = searchInput ? searchInput.value.trim() : "";
-          if (query.length > 0) {
-            var results = filterSymptoms(query);
-            renderModalSymptomItems(
-              results,
-              regionKey,
-              displayName,
-              sourceType,
-            );
-          } else {
-            renderModalSymptomItems(
-              getDefaultSymptoms(currentModalContext),
-              regionKey,
-              displayName,
-              sourceType,
-            );
-          }
-        }
-
-        window._selectOrgan2Symptom = function (
-          organ2Key,
-          displayName,
-          symptom,
-        ) {
-          const key = organ2Key + "::" + symptom;
-          if (selectedSymptoms.has(key)) {
-            selectedSymptoms.delete(key);
-          } else {
-            selectedSymptoms.set(key, {
-              section: organ2Key,
-              symptom: symptom,
-              sectionName: displayName,
-            });
-          }
-          rerenderModalList(organ2Key, displayName, "organ2");
-          renderSymptomsList();
-        };
 
         window._selectSymptom = function (sectionId, sectionName, symptom) {
           const key = sectionId + "::" + symptom;
@@ -5410,7 +3676,8 @@
               sectionName: sectionName,
             });
           }
-          rerenderModalList(sectionId, sectionName, "section");
+          // Re-render the modal list to update checkmarks
+          openSymptomModal(sectionId, sectionName);
           renderSymptomsList();
         };
 
@@ -5492,59 +3759,94 @@
           }
         });
 
-        // === Symptom search input handler ===
-        (function setupSearchHandler() {
-          var searchInput = document.getElementById("symptomSearchInput");
-          searchInput.addEventListener("input", function () {
-            var query = searchInput.value.trim();
+        // --- Render selected list (view-aware) ---
+        function renderSelectedList() {
+          const listEl = document.getElementById("selectedList");
+          const container = document.getElementById("selectedListContainer");
 
-            if (query.length === 0) {
-              // Reset to default symptom list
-              searchFirstKeystroke = true;
-              clearTimeout(searchDebounceTimer);
-              var ctx = currentModalContext;
-              if (ctx) {
-                renderModalSymptomItems(
-                  getDefaultSymptoms(ctx),
-                  ctx.key,
-                  ctx.name,
-                  ctx.type,
-                );
-              }
-              return;
-            }
+          const selectedSet =
+            currentView === "organs" ? selectedOrgans : selectedSections;
+          const sortOrder =
+            currentView === "organs" ? ORGAN_SORT_ORDER : SECTION_SORT_ORDER;
+          const idPrefix = currentView === "organs" ? "group-" : "section-";
 
-            // First keystroke: show skeleton for 1 second, then filter
-            if (searchFirstKeystroke) {
-              searchFirstKeystroke = false;
-              renderSkeletonList();
-              clearTimeout(searchDebounceTimer);
-              searchDebounceTimer = setTimeout(function () {
-                var q = searchInput.value.trim();
-                if (q.length === 0) return;
-                var ctx = currentModalContext;
-                var results = filterSymptoms(q);
-                renderModalSymptomItems(results, ctx.key, ctx.name, ctx.type);
-              }, 1000);
-              return;
-            }
-
-            // Subsequent keystrokes: 250ms debounce
-            clearTimeout(searchDebounceTimer);
-            searchDebounceTimer = setTimeout(function () {
-              var q = searchInput.value.trim();
-              if (q.length === 0) return;
-              var ctx = currentModalContext;
-              var results = filterSymptoms(q);
-              renderModalSymptomItems(results, ctx.key, ctx.name, ctx.type);
-            }, 250);
+          // Sort selected items by order
+          const sorted = [...selectedSet].sort((a, b) => {
+            return sortOrder.indexOf(a) - sortOrder.indexOf(b);
           });
-        })();
 
-        // --- Render selected list (removed — pill panel no longer exists) ---
-        function renderSelectedList() {}
+          // Collect nav-only body parts (those with no organIds, only visible in organs view)
+          const navOnlyItems =
+            currentView === "organs"
+              ? [
+                  ...(typeof selectedBodyParts !== "undefined"
+                    ? selectedBodyParts
+                    : []),
+                ]
+                  .map((bpId) => {
+                    if (typeof BODY_PARTS_DATA === "undefined") return null;
+                    const bp = BODY_PARTS_DATA.find((b) => b.id === bpId);
+                    return bp && bp.organIds.length === 0 ? bp : null;
+                  })
+                  .filter(Boolean)
+              : [];
 
-        window.deselectPart = function () {};
+          const hasAny = sorted.length > 0 || navOnlyItems.length > 0;
+          container.classList.toggle("has-items", hasAny);
+          const emptyMsg = document.getElementById("bodyPartsEmpty");
+          if (emptyMsg) emptyMsg.style.display = hasAny ? "none" : "block";
+
+          const organPills = sorted
+            .map((partId, i) => {
+              let group = document.getElementById(idPrefix + partId);
+              if (!group) {
+                // Handle paired groups (e.g. arms split into left/right)
+                group = document.querySelector(`[data-part="${partId}"]`);
+              }
+              const name = group ? group.dataset.name : partId;
+              return `<li data-part="${partId}">
+        <span class="pill-number">${i + 1}</span>
+        <span class="pill-name">${name}</span>
+        <span class="pill-remove" onclick="deselectPart('${partId}')">&times;</span>
+      </li>`;
+            })
+            .join("");
+
+          const navPills = navOnlyItems
+            .map((bp, j) => {
+              const num = sorted.length + j + 1;
+              return `<li data-nav-part="${bp.id}">
+        <span class="pill-number">${num}</span>
+        <span class="pill-name">${bp.name}</span>
+        <span class="pill-remove" onclick="toggleBodyPart('${bp.id}')">&times;</span>
+      </li>`;
+            })
+            .join("");
+
+          listEl.innerHTML = organPills + navPills;
+        }
+
+        // --- Deselect from pill list (view-aware) ---
+        window.deselectPart = function (partId) {
+          if (currentView === "organs") {
+            selectedOrgans.delete(partId);
+            const group = document.getElementById("group-" + partId);
+            if (group) group.classList.remove("selected");
+            clearActiveSystemUI();
+            syncBodyPartsFromOrgan(partId, false);
+          } else {
+            selectedSections.delete(partId);
+            // Handle paired groups (e.g. both arms)
+            document
+              .querySelectorAll(`.body-section-group[data-part="${partId}"]`)
+              .forEach((g) => {
+                g.classList.remove("selected");
+                const img = g.querySelector(".section-image");
+                if (img) img.style.opacity = "0";
+              });
+          }
+          renderSelectedList();
+        };
 
         // --- Touch support for mobile ---
         document
@@ -5884,14 +4186,6 @@
               "The spine (vertebral column) consists of 33 vertebrae that protect the spinal cord, support the body's weight, and enable flexible movement. It forms the central axis of the skeleton.",
           },
           {
-            id: "bp_back",
-            name: "Back",
-            image: "bpart_images/spine.png",
-            organIds: [],
-            description:
-              "The back extends from the neck to the pelvis, comprising muscles, vertebrae, and connective tissue. It provides structural support, enables movement, and protects the spinal cord.",
-          },
-          {
             id: "bp_ankles",
             name: "Ankles",
             image: "bpart_images/ankle.png",
@@ -5946,22 +4240,6 @@
             organIds: [],
             description:
               "The hip joint is a ball-and-socket joint connecting the femur to the pelvis. It bears body weight and enables walking, running, and a wide range of leg movements.",
-          },
-          {
-            id: "bp_butt",
-            name: "Butt",
-            image: "bpart_images/pelvis.png",
-            organIds: [],
-            description:
-              "The buttocks are formed by the gluteal muscles — the largest muscle group in the body. They provide power for walking, running, climbing, and maintaining posture.",
-          },
-          {
-            id: "bp_anus",
-            name: "Anus",
-            image: "bpart_images/pelvis.png",
-            organIds: [],
-            description:
-              "The anus is the opening at the end of the digestive tract through which solid waste is eliminated. It is controlled by internal and external sphincter muscles.",
           },
           {
             id: "bp_kidneys",
@@ -6051,264 +4329,11 @@
             description:
               "The testicles are male reproductive glands that produce sperm and the hormone testosterone. They are housed in the scrotum, which maintains a temperature slightly lower than body temperature.",
           },
-          {
-            id: "bp_blood_vessels",
-            name: "Blood Vessels",
-            image: "bpart_images/bloodvessel.png",
-            organIds: [],
-            description:
-              "Blood vessels are the network of arteries, veins, and capillaries that carry blood throughout the body. They deliver oxygen and nutrients to tissues and return waste products for elimination.",
-          },
-          {
-            id: "bp_cartilage",
-            name: "Cartilage",
-            image: "bpart_images/bonesjoints.png",
-            organIds: [],
-            description:
-              "Cartilage is a flexible connective tissue found in joints, the ear, nose, and between vertebrae. It provides cushioning, reduces friction, and supports structural shape without the rigidity of bone.",
-          },
-          {
-            id: "bp_digestive_tract",
-            name: "Digestive Tract",
-            image: "bpart_images/intestines.png",
-            organIds: [],
-            description:
-              "The digestive tract is the continuous tube from mouth to anus that processes food. It includes the esophagus, stomach, small intestine, and large intestine, breaking down nutrients for absorption.",
-          },
-          {
-            id: "bp_fallopian_tubes",
-            name: "Fallopian Tubes",
-            image: "bpart_images/uterus.png",
-            organIds: [],
-            description:
-              "The fallopian tubes are paired structures connecting the ovaries to the uterus. They transport eggs from the ovaries and are typically where fertilization occurs.",
-          },
-          {
-            id: "bp_fingers",
-            name: "Fingers",
-            image: "bpart_images/hand.png",
-            organIds: [],
-            description:
-              "The fingers are the digits of the hand, each containing three phalanges (except the thumb with two). They enable fine motor skills, grip, touch sensation, and intricate manipulation of objects.",
-          },
-          {
-            id: "bp_groin",
-            name: "Groin",
-            image: "bpart_images/pelvis.png",
-            organIds: [],
-            description:
-              "The groin is the area where the abdomen meets the upper thigh. It contains the inguinal canal, lymph nodes, and major blood vessels, and is a common site for hernias and muscle strains.",
-          },
-          {
-            id: "bp_hair",
-            name: "Hair",
-            image: "bpart_images/head.png",
-            organIds: [],
-            description:
-              "Hair is a protein filament growing from follicles in the skin. It provides insulation, UV protection, and sensory input. Hair growth cycles through active growth, regression, and resting phases.",
-          },
-          {
-            id: "bp_knee",
-            name: "Knee",
-            image: "bpart_images/bonesjoints.png",
-            organIds: [],
-            description:
-              "The knee is the largest joint in the body, connecting the femur to the tibia. It contains cartilage, ligaments (ACL, MCL, PCL, LCL), and menisci that enable bending, straightening, and weight-bearing.",
-          },
-          {
-            id: "bp_larynx",
-            name: "Larynx",
-            image: "bpart_images/neck.png",
-            organIds: [],
-            description:
-              "The larynx (voice box) is a cartilaginous structure in the throat that houses the vocal cords. It produces sound for speech, protects the airway during swallowing, and regulates airflow to the lungs.",
-          },
-          {
-            id: "bp_lips",
-            name: "Lips",
-            image: "bpart_images/mouthteethgums.png",
-            organIds: [],
-            description:
-              "The lips are muscular folds surrounding the mouth opening. They assist in speech, eating, facial expression, and sensory perception. Their thin skin and rich blood supply give them their characteristic color.",
-          },
-          {
-            id: "bp_nails",
-            name: "Nails",
-            image: "bpart_images/hand.png",
-            organIds: [],
-            description:
-              "Nails are hard keratin plates covering the tips of fingers and toes. They protect the sensitive nail bed, aid in fine manipulation, and can indicate systemic health through changes in color or texture.",
-          },
-          {
-            id: "bp_sinuses",
-            name: "Sinuses",
-            image: "bpart_images/nose.png",
-            organIds: [],
-            description:
-              "The paranasal sinuses are air-filled cavities in the skull bones surrounding the nose. They lighten the skull, produce mucus, warm and humidify inhaled air, and contribute to voice resonance.",
-          },
-          {
-            id: "bp_nerves",
-            name: "Nerves",
-            image: "bpart_images/brain.png",
-            organIds: [],
-            description:
-              "Nerves are bundles of fibers that transmit electrical signals between the brain, spinal cord, and body. They control movement, sensation, and autonomic functions like heart rate and digestion.",
-          },
-          {
-            id: "bp_ovaries",
-            name: "Ovaries",
-            image: "bpart_images/uterus.png",
-            organIds: [],
-            description:
-              "The ovaries are paired female reproductive glands that produce eggs (ova) and hormones including estrogen and progesterone. They regulate the menstrual cycle and play a key role in fertility.",
-          },
-          {
-            id: "bp_rectum",
-            name: "Rectum",
-            image: "bpart_images/colon.png",
-            organIds: [],
-            description:
-              "The rectum is the final section of the large intestine, connecting the sigmoid colon to the anus. It stores stool before elimination and contains stretch receptors that signal the urge to defecate.",
-          },
-          {
-            id: "bp_respiratory_tract",
-            name: "Respiratory Tract",
-            image: "bpart_images/lungs.png",
-            organIds: [],
-            description:
-              "The respiratory tract is the system of airways from the nose to the lungs. It filters, warms, and humidifies air, and facilitates gas exchange — delivering oxygen and removing carbon dioxide.",
-          },
-          {
-            id: "bp_salivary_glands",
-            name: "Salivary Glands",
-            image: "bpart_images/mouthteethgums.png",
-            organIds: [],
-            description:
-              "The salivary glands produce saliva, which moistens food for swallowing, begins starch digestion, and protects teeth from decay. The three major pairs are the parotid, submandibular, and sublingual glands.",
-          },
-          {
-            id: "bp_scalp",
-            name: "Scalp",
-            image: "bpart_images/head.png",
-            organIds: [],
-            description:
-              "The scalp is the skin covering the top of the head. It is richly vascularized, contains numerous hair follicles, and consists of five tissue layers that protect the skull and brain beneath.",
-          },
-          {
-            id: "bp_skull",
-            name: "Skull",
-            image: "bpart_images/skull.png",
-            organIds: [],
-            description:
-              "The skull is the bony structure forming the head, composed of 22 bones. The cranium protects the brain while the facial bones support the eyes, nose, and mouth and anchor the muscles of facial expression.",
-          },
-          {
-            id: "bp_tendons",
-            name: "Tendons",
-            image: "bpart_images/upperextremitymuscle.png",
-            organIds: [],
-            description:
-              "Tendons are tough, fibrous bands of connective tissue that attach muscles to bones. They transmit the force of muscle contraction to produce movement and can withstand significant tension.",
-          },
-          {
-            id: "bp_thigh",
-            name: "Thigh",
-            image: "bpart_images/femur.png",
-            organIds: [],
-            description:
-              "The thigh is the upper portion of the leg between the hip and knee. It contains the femur (the body's longest bone) and powerful muscle groups including the quadriceps, hamstrings, and adductors.",
-          },
-          {
-            id: "bp_thymus",
-            name: "Thymus",
-            image: "bpart_images/chest.png",
-            organIds: ["thymus"],
-            description:
-              "The thymus is a small gland located behind the sternum. It is essential for developing the immune system, producing T-cells during childhood. It gradually shrinks after puberty.",
-          },
-          {
-            id: "bp_toes",
-            name: "Toes",
-            image: "bpart_images/foot.png",
-            organIds: [],
-            description:
-              "The toes are the digits of the foot, providing balance and propulsion during walking and running. Each toe (except the big toe) has three phalanges connected by joints.",
-          },
-          {
-            id: "bp_tongue",
-            name: "Tongue",
-            image: "bpart_images/mouthteethgums.png",
-            organIds: [],
-            description:
-              "The tongue is a muscular organ in the mouth essential for tasting, chewing, swallowing, and speech. It is covered with taste buds that detect sweet, sour, salty, bitter, and umami flavors.",
-          },
-          {
-            id: "bp_tonsils",
-            name: "Tonsils",
-            image: "bpart_images/neck.png",
-            organIds: [],
-            description:
-              "The tonsils are lymphoid tissue masses at the back of the throat. They serve as a first line of immune defense, trapping pathogens entering through the mouth and nose.",
-          },
-          {
-            id: "bp_urinary_tract",
-            name: "Urinary Tract",
-            image: "bpart_images/urinarytract.png",
-            organIds: [],
-            description:
-              "The urinary tract is the drainage system for urine, consisting of the kidneys, ureters, bladder, and urethra. It filters blood, removes waste, regulates fluid balance, and eliminates urine.",
-          },
-          {
-            id: "bp_vagina",
-            name: "Vagina",
-            image: "bpart_images/uterus.png",
-            organIds: [],
-            description:
-              "The vagina is a muscular canal extending from the vulva to the cervix. It serves as the birth canal, receives the penis during intercourse, and provides an outlet for menstrual flow.",
-          },
-          {
-            id: "bp_vulva",
-            name: "Vulva",
-            image: "bpart_images/uterus.png",
-            organIds: [],
-            description:
-              "The vulva encompasses the external female genitalia, including the labia majora, labia minora, clitoris, and vaginal opening. It protects the internal reproductive organs and provides sensory function.",
-          },
-          {
-            id: "bp_white_blood_cells",
-            name: "White Blood Cells",
-            image: "bpart_images/circulatory.png",
-            organIds: [],
-            description:
-              "White blood cells (leukocytes) are immune system cells that defend against infection and disease. Types include neutrophils, lymphocytes, monocytes, eosinophils, and basophils, each with specialized roles.",
-          },
         ];
 
         // --- Body Parts nav state ---
         const selectedBodyParts = new Set(); // tracks nav-selected body part IDs
-        const systemSelectedBodyParts = new Set(); // tracks body parts auto-added by system click
         let isBodyPartsNavSorted = false;
-
-        // Disable/enable section hit areas based on whether body parts are selected
-        function updateSectionHitAreaState() {
-          const frontLayer = document.getElementById("sections-layer");
-          const backLayer = document.getElementById("back-sections-layer");
-          const shouldDisable =
-            selectedBodyParts.size > 0 && currentView === "sections";
-          if (frontLayer)
-            frontLayer.classList.toggle("sections-disabled", shouldDisable);
-          if (backLayer)
-            backLayer.classList.toggle("sections-disabled", shouldDisable);
-        }
-
-        // Add click handler to a bp-highlight-ellipse so clicking it deselects
-        function makeEllipseClickable(ellipse, bpId) {
-          ellipse.addEventListener("click", function (e) {
-            e.stopPropagation();
-            toggleBodyPart(bpId);
-          });
-        }
 
         function getBodyPartIdsForOrgan(organId) {
           return BODY_PARTS_DATA.filter((bp) =>
@@ -6379,100 +4404,9 @@
           const bp = BODY_PARTS_DATA.find((b) => b.id === bpId);
           if (!bp) return;
 
-          // Organs2 mode: open symptom modal instead of toggling body part cards
-          if (currentView === "organs2") {
-            const organ2Key = BP_TO_ORGAN2_KEY[bpId];
-            if (!organ2Key) return;
-            const displayName = bp.name;
-            const hasOrganInModel = bp.organIds.length > 0;
-
-            // Clear any previous highlight
-            clearOrgan2Highlight();
-
-            if (hasOrganInModel) {
-              // Highlight the first organ in the model while modal is open
-              const firstOrganId = bp.organIds[0];
-              const organGroup = document.getElementById(
-                "group-" + firstOrganId,
-              );
-              if (organGroup) {
-                organGroup.classList.add("selected");
-                organ2HighlightedGroup = organGroup;
-
-                const rect = organGroup.getBoundingClientRect();
-                const fakeEvent = {
-                  clientX: rect.left + rect.width / 2,
-                  clientY: rect.top + rect.height / 2,
-                };
-                openOrgan2Modal(organ2Key, displayName, fakeEvent);
-              }
-            } else {
-              // Non-organ body part: use approximate SVG coordinates
-              const coords = BODY_PART_SVG_COORDS[organ2Key];
-              if (coords) {
-                const screenCoords = svgCoordsToScreen(coords.x, coords.y);
-                openOrgan2Modal(organ2Key, displayName, screenCoords);
-              } else {
-                // Fallback: center of viewport
-                openOrgan2Modal(organ2Key, displayName, {
-                  clientX: window.innerWidth / 2,
-                  clientY: window.innerHeight / 2,
-                });
-              }
-            }
-            return;
-          }
-
-          // Sections mode: highlight body part regions on the body silhouette
-          if (currentView === "sections") {
-            const bpLayer = document.getElementById("bp-highlight-layer");
-            const regionData = BODY_PART_HIGHLIGHT_REGIONS[bpId];
-
-            if (selectedBodyParts.has(bpId)) {
-              selectedBodyParts.delete(bpId);
-              systemSelectedBodyParts.delete(bpId);
-              // Remove highlight ellipses for this body part
-              bpLayer
-                .querySelectorAll(`[data-bp-id="${bpId}"]`)
-                .forEach((el) => el.remove());
-            } else {
-              selectedBodyParts.add(bpId);
-              if (regionData) {
-                const regions = Array.isArray(regionData)
-                  ? regionData
-                  : [regionData];
-                regions.forEach((r, i) => {
-                  const ellipse = document.createElementNS(
-                    "http://www.w3.org/2000/svg",
-                    "ellipse",
-                  );
-                  ellipse.setAttribute("cx", r.cx);
-                  ellipse.setAttribute("cy", r.cy);
-                  ellipse.setAttribute("rx", r.rx);
-                  ellipse.setAttribute("ry", r.ry);
-                  ellipse.setAttribute("class", "bp-highlight-ellipse");
-                  ellipse.setAttribute("data-bp-id", bpId);
-                  makeEllipseClickable(ellipse, bpId);
-                  bpLayer.appendChild(ellipse);
-                });
-              }
-            }
-
-            const li = document.querySelector(
-              `.body-parts-nav-item[data-bp-id="${bpId}"]`,
-            );
-            if (li) li.classList.toggle("active", selectedBodyParts.has(bpId));
-
-            updateSectionHitAreaState();
-            renderBodyPartCards();
-            renderSelectedList();
-            return;
-          }
-
           if (selectedBodyParts.has(bpId)) {
             // Deselect
             selectedBodyParts.delete(bpId);
-            systemSelectedBodyParts.delete(bpId);
             // Remove organ highlights (only if not kept by active system or other nav selection)
             bp.organIds.forEach((organId) => {
               const keptBySystem =
@@ -6539,329 +4473,10 @@
             </div>`;
             })
             .join("");
-          renderSpanningSections();
         }
-
-        // Disease and Symptom spanning sections
-        var DISEASES_BY_BP = window.DISEASES_BY_BODY_PART || {};
-        var SYMPTOMS_BY_BP = window.SYMPTOMS_BY_BODY_PART || {};
-        var diseaseSearchTimer = null;
-        var symptomSectionSearchTimer = null;
-        var diseaseSearchFirstKeystroke = true;
-        var symptomSectionSearchFirstKeystroke = true;
-        var GLOBAL_SEARCH_MAX_RESULTS = 300;
-        var ALL_DISEASES = buildGlobalDiseasesPool();
-        var ALL_SYMPTOMS = buildGlobalSymptomsPool();
-
-        function buildGlobalDiseasesPool() {
-          var seen = {};
-          var result = [];
-          Object.keys(DISEASES_BY_BP).forEach(function (bpId) {
-            var diseases = DISEASES_BY_BP[bpId];
-            if (!Array.isArray(diseases)) return;
-            for (var i = 0; i < diseases.length; i++) {
-              var d = diseases[i];
-              if (!d || !d.name) continue;
-              var key = (d.name || "") + "::" + (d.code || "");
-              if (seen[key]) continue;
-              seen[key] = true;
-              result.push({ name: d.name, code: d.code || "" });
-            }
-          });
-          result.sort(function (a, b) {
-            return a.name.localeCompare(b.name, undefined, {
-              sensitivity: "base",
-            });
-          });
-          return result;
-        }
-
-        function buildGlobalSymptomsPool() {
-          if (Array.isArray(FULL_SYMPTOMS) && FULL_SYMPTOMS.length > 0) {
-            return FULL_SYMPTOMS.slice();
-          }
-          var seen = {};
-          var result = [];
-          Object.keys(SYMPTOMS_BY_BP).forEach(function (bpId) {
-            var symptoms = SYMPTOMS_BY_BP[bpId];
-            if (!Array.isArray(symptoms)) return;
-            for (var i = 0; i < symptoms.length; i++) {
-              var s = symptoms[i];
-              if (!s || seen[s]) continue;
-              seen[s] = true;
-              result.push(s);
-            }
-          });
-          result.sort(function (a, b) {
-            return a.localeCompare(b, undefined, { sensitivity: "base" });
-          });
-          return result;
-        }
-
-        function filterGlobalDiseases(query) {
-          var lowerQuery = query.toLowerCase();
-          var results = [];
-          for (var i = 0; i < ALL_DISEASES.length; i++) {
-            var disease = ALL_DISEASES[i];
-            if (
-              disease.name.toLowerCase().indexOf(lowerQuery) !== -1 ||
-              disease.code.toLowerCase().indexOf(lowerQuery) !== -1
-            ) {
-              results.push(disease);
-              if (results.length >= GLOBAL_SEARCH_MAX_RESULTS) break;
-            }
-          }
-          return results;
-        }
-
-        function filterGlobalSymptoms(query) {
-          var lowerQuery = query.toLowerCase();
-          var results = [];
-          for (var i = 0; i < ALL_SYMPTOMS.length; i++) {
-            if (ALL_SYMPTOMS[i].toLowerCase().indexOf(lowerQuery) !== -1) {
-              results.push(ALL_SYMPTOMS[i]);
-              if (results.length >= GLOBAL_SEARCH_MAX_RESULTS) break;
-            }
-          }
-          return results;
-        }
-
-        function renderColumnSearchSkeleton(listEl) {
-          listEl.textContent = "";
-          var widths = [
-            "long",
-            "medium",
-            "short",
-            "long",
-            "medium",
-            "short",
-            "medium",
-          ];
-          widths.forEach(function (w) {
-            var li = document.createElement("li");
-            li.className = "symptom-skeleton-item";
-            var bar = document.createElement("div");
-            bar.className = "symptom-skeleton-bar " + w;
-            li.appendChild(bar);
-            listEl.appendChild(li);
-          });
-        }
-
-        window.toggleSectionCollapse = function (sectionId) {
-          var section = document.getElementById(sectionId);
-          if (section) section.classList.toggle("collapsed");
-        };
-
-        function renderSpanningSections() {
-          var container = document.getElementById("spanningSections");
-          if (selectedBodyParts.size === 0) {
-            container.classList.remove("visible");
-            return;
-          }
-          container.classList.add("visible");
-          clearTimeout(diseaseSearchTimer);
-          clearTimeout(symptomSectionSearchTimer);
-          diseaseSearchFirstKeystroke = true;
-          symptomSectionSearchFirstKeystroke = true;
-          document.getElementById("diseaseSearchInput").value = "";
-          document.getElementById("symptomSectionSearchInput").value = "";
-          renderDiseaseList();
-          renderSymptomSectionList();
-        }
-
-        function getDiseasesForSelection() {
-          var seen = {};
-          var result = [];
-          selectedBodyParts.forEach(function (bpId) {
-            var diseases = DISEASES_BY_BP[bpId];
-            if (diseases) {
-              for (var i = 0; i < diseases.length; i++) {
-                var d = diseases[i];
-                if (!seen[d.name]) {
-                  seen[d.name] = true;
-                  result.push(d);
-                }
-              }
-            }
-          });
-          result.sort(function (a, b) {
-            return a.name.localeCompare(b.name, undefined, {
-              sensitivity: "base",
-            });
-          });
-          return result;
-        }
-
-        function getSymptomsForSelection() {
-          var seen = {};
-          var result = [];
-          selectedBodyParts.forEach(function (bpId) {
-            var symptoms = SYMPTOMS_BY_BP[bpId];
-            if (symptoms) {
-              for (var i = 0; i < symptoms.length; i++) {
-                var s = symptoms[i];
-                if (!seen[s]) {
-                  seen[s] = true;
-                  result.push(s);
-                }
-              }
-            }
-          });
-          result.sort(function (a, b) {
-            return a.localeCompare(b, undefined, { sensitivity: "base" });
-          });
-          return result;
-        }
-
-        function renderDiseaseList(filterQuery) {
-          var isSearchMode = !!filterQuery;
-          var diseases = isSearchMode
-            ? filterGlobalDiseases(filterQuery)
-            : getDiseasesForSelection();
-          document.getElementById("diseaseCount").textContent = diseases.length;
-          var listEl = document.getElementById("diseaseList");
-          var BATCH_SIZE = 200;
-          var toRender = isSearchMode ? diseases : diseases.slice(0, BATCH_SIZE);
-          var fragment = document.createDocumentFragment();
-
-          if (diseases.length === 0) {
-            var emptyLi = document.createElement("li");
-            emptyLi.className = "disease-list-empty";
-            emptyLi.textContent = filterQuery
-              ? "No matching diseases"
-              : "No disease data for selected body parts";
-            fragment.appendChild(emptyLi);
-          } else {
-            for (var i = 0; i < toRender.length; i++) {
-              var li = document.createElement("li");
-              li.textContent = toRender[i].name;
-              li.title = toRender[i].code;
-              fragment.appendChild(li);
-            }
-            if (!isSearchMode && diseases.length > BATCH_SIZE) {
-              var moreLi = document.createElement("li");
-              moreLi.className = "show-more-item";
-              var remaining = diseases.length - BATCH_SIZE;
-              moreLi.textContent = "+ " + remaining + " more diseases...";
-              moreLi.addEventListener("click", function () {
-                var remainFrag = document.createDocumentFragment();
-                for (var j = BATCH_SIZE; j < diseases.length; j++) {
-                  var rli = document.createElement("li");
-                  rli.textContent = diseases[j].name;
-                  rli.title = diseases[j].code;
-                  remainFrag.appendChild(rli);
-                }
-                moreLi.remove();
-                listEl.appendChild(remainFrag);
-              });
-              fragment.appendChild(moreLi);
-            }
-          }
-
-          while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
-          listEl.appendChild(fragment);
-        }
-
-        function renderSymptomSectionList(filterQuery) {
-          var isSearchMode = !!filterQuery;
-          var symptoms = isSearchMode
-            ? filterGlobalSymptoms(filterQuery)
-            : getSymptomsForSelection();
-          document.getElementById("symptomCount").textContent = symptoms.length;
-          var listEl = document.getElementById("symptomSectionList");
-          var fragment = document.createDocumentFragment();
-
-          if (symptoms.length === 0) {
-            var emptyLi = document.createElement("li");
-            emptyLi.className = "symptom-list-empty";
-            emptyLi.textContent = filterQuery
-              ? "No matching symptoms"
-              : "No symptom data for selected body parts";
-            fragment.appendChild(emptyLi);
-          } else {
-            for (var i = 0; i < symptoms.length; i++) {
-              var li = document.createElement("li");
-              li.textContent = symptoms[i];
-              fragment.appendChild(li);
-            }
-          }
-
-          while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
-          listEl.appendChild(fragment);
-        }
-
-        document
-          .getElementById("diseaseSearchInput")
-          .addEventListener("input", function () {
-            var q = this.value.trim();
-            if (q.length === 0) {
-              diseaseSearchFirstKeystroke = true;
-              clearTimeout(diseaseSearchTimer);
-              renderDiseaseList();
-              return;
-            }
-            if (diseaseSearchFirstKeystroke) {
-              diseaseSearchFirstKeystroke = false;
-              renderColumnSearchSkeleton(document.getElementById("diseaseList"));
-              clearTimeout(diseaseSearchTimer);
-              diseaseSearchTimer = setTimeout(function () {
-                var currentQ = document
-                  .getElementById("diseaseSearchInput")
-                  .value.trim();
-                if (currentQ.length === 0) return;
-                renderDiseaseList(currentQ);
-              }, 1000);
-              return;
-            }
-            clearTimeout(diseaseSearchTimer);
-            diseaseSearchTimer = setTimeout(function () {
-              var currentQ = document
-                .getElementById("diseaseSearchInput")
-                .value.trim();
-              if (currentQ.length === 0) return;
-              renderDiseaseList(currentQ);
-            }, 250);
-          });
-        document
-          .getElementById("symptomSectionSearchInput")
-          .addEventListener("input", function () {
-            var q = this.value.trim();
-            if (q.length === 0) {
-              symptomSectionSearchFirstKeystroke = true;
-              clearTimeout(symptomSectionSearchTimer);
-              renderSymptomSectionList();
-              return;
-            }
-            if (symptomSectionSearchFirstKeystroke) {
-              symptomSectionSearchFirstKeystroke = false;
-              renderColumnSearchSkeleton(
-                document.getElementById("symptomSectionList"),
-              );
-              clearTimeout(symptomSectionSearchTimer);
-              symptomSectionSearchTimer = setTimeout(function () {
-                var currentQ = document
-                  .getElementById("symptomSectionSearchInput")
-                  .value.trim();
-                if (currentQ.length === 0) return;
-                renderSymptomSectionList(currentQ);
-              }, 1000);
-              return;
-            }
-            clearTimeout(symptomSectionSearchTimer);
-            symptomSectionSearchTimer = setTimeout(function () {
-              var currentQ = document
-                .getElementById("symptomSectionSearchInput")
-                .value.trim();
-              if (currentQ.length === 0) return;
-              renderSymptomSectionList(currentQ);
-            }, 250);
-          });
 
         renderBodyPartsNavPanel();
         renderBodyPartCards();
-
-        // Set default view to Body Sections on page load
-        setView("sections");
       })();
     </script>
   </body>
