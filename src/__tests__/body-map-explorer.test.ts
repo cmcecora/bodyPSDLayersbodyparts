@@ -6,6 +6,7 @@ import { BodyMapModel } from "../body-map-model.js";
 import { BodyMapDetailPanel } from "../body-map-detail-panel.js";
 import { BodyMapDataPanel } from "../body-map-data-panel.js";
 import { BodyMapModal } from "../body-map-modal.js";
+import { designTokens } from "../styles/tokens.css.js";
 
 // Mock fetchDiseases and fetchSymptomsForPart to avoid real network calls in explorer tests
 vi.mock("../data/data-service.js", () => ({
@@ -729,6 +730,50 @@ describe("body-map-explorer", () => {
       expect(styles).toContain(".data-panel-col");
       expect(styles).toContain("position: static");
       expect(styles).toContain("max-height: none");
+    });
+  });
+
+  describe("EXPLORER-09: polish token and focus contract", () => {
+    it("defines shared polish tokens for radius, shadow, and focus treatment", () => {
+      const styles = designTokens.cssText;
+
+      expect(styles).toContain("--bme-radius-lg");
+      expect(styles).toContain("--bme-shadow-soft");
+      expect(styles).toContain("--bme-focus-ring");
+    });
+
+    it("applies shared polish tokens and focus-visible states across panel components", () => {
+      const sidebarStyles = (
+        Array.isArray(BodyMapSidebar.styles)
+          ? BodyMapSidebar.styles
+          : [BodyMapSidebar.styles]
+      )
+        .map((style) => style.cssText)
+        .join("\n");
+      const detailStyles = (
+        Array.isArray(BodyMapDetailPanel.styles)
+          ? BodyMapDetailPanel.styles
+          : [BodyMapDetailPanel.styles]
+      )
+        .map((style) => style.cssText)
+        .join("\n");
+      const dataStyles = (
+        Array.isArray(BodyMapDataPanel.styles)
+          ? BodyMapDataPanel.styles
+          : [BodyMapDataPanel.styles]
+      )
+        .map((style) => style.cssText)
+        .join("\n");
+
+      expect(sidebarStyles).toContain(":focus-visible");
+      expect(sidebarStyles).toContain("var(--bme-focus-ring)");
+      expect(sidebarStyles).toContain("var(--bme-radius-lg)");
+
+      expect(detailStyles).toContain("var(--bme-radius-lg)");
+      expect(detailStyles).toContain("var(--bme-shadow-soft)");
+
+      expect(dataStyles).toContain(":focus-visible");
+      expect(dataStyles).toContain("var(--bme-shadow-soft)");
     });
   });
 

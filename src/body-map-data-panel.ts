@@ -35,23 +35,29 @@ export class BodyMapDataPanel extends LitElement {
         display: block;
         font-family: var(--bme-font-family);
         min-width: 0;
+        color: var(--bme-text);
       }
 
       .panel-header {
-        background: var(--bme-header-bg);
+        background: linear-gradient(135deg, var(--bme-header-bg), #32485d);
         color: var(--bme-header-text);
-        padding: var(--bme-space-sm) var(--bme-space-md);
-        border-radius: 8px 8px 0 0;
+        padding: var(--bme-space-sm) var(--bme-panel-padding);
+        border-radius: var(--bme-radius-lg) var(--bme-radius-lg) 0 0;
         font-size: var(--bme-font-size-heading);
         font-weight: 600;
         margin: 0;
         position: sticky;
         top: 0;
-        z-index: 1;
+        z-index: 2;
       }
 
       .panel-body {
-        padding: var(--bme-space-md);
+        padding: var(--bme-panel-padding);
+        background: linear-gradient(
+          180deg,
+          var(--bme-panel),
+          var(--bme-surface-elevated)
+        );
       }
 
       .search-input {
@@ -59,49 +65,81 @@ export class BodyMapDataPanel extends LitElement {
         box-sizing: border-box;
         padding: 10px 14px;
         border: 1px solid var(--bme-border);
-        border-radius: 8px;
+        border-radius: var(--bme-radius-md);
         font-size: var(--bme-font-size-body);
         font-family: var(--bme-font-family);
         margin-bottom: var(--bme-space-md);
+        background: var(--bme-surface-elevated);
         outline: none;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease,
+          background 0.15s ease;
       }
 
-      .search-input:focus {
-        border-color: var(--bme-accent);
+      .search-input:focus-visible {
+        border-color: var(--bme-accent-strong);
+        background: var(--bme-panel);
+        box-shadow: var(--bme-focus-ring);
       }
 
       .organ-card {
-        background: var(--bme-panel);
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        background: linear-gradient(
+          180deg,
+          var(--bme-panel),
+          var(--bme-surface-elevated)
+        );
+        border-radius: var(--bme-radius-lg);
+        box-shadow: var(--bme-shadow-soft);
         margin-bottom: var(--bme-space-md);
         overflow: hidden;
         border: 1px solid var(--bme-border);
+      }
+
+      .organ-card:focus-within {
+        box-shadow: var(--bme-shadow-strong);
       }
 
       .card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        width: 100%;
         padding: 14px 20px;
+        border: none;
+        background: transparent;
         cursor: pointer;
         user-select: none;
         font-weight: 600;
         font-size: var(--bme-font-size-heading);
-        color: #1f2937;
-        transition: background 0.15s ease;
+        color: var(--bme-text);
+        text-align: left;
+        font-family: var(--bme-font-family);
+        transition:
+          background 0.15s ease,
+          box-shadow 0.15s ease;
       }
 
       .card-header:hover {
-        background: #f9fafb;
+        background: var(--bme-accent-soft);
+      }
+
+      .card-header:focus-visible {
+        outline: none;
+        background: var(--bme-accent-soft);
+        box-shadow: inset var(--bme-focus-ring);
       }
 
       .count-badge {
-        background: var(--bme-accent);
+        background: linear-gradient(
+          135deg,
+          var(--bme-accent-strong),
+          var(--bme-accent)
+        );
         color: #fff;
         font-size: 12px;
         padding: 2px 10px;
-        border-radius: 10px;
+        border-radius: 999px;
         font-weight: 500;
         flex-shrink: 0;
       }
@@ -124,20 +162,33 @@ export class BodyMapDataPanel extends LitElement {
       .subsection-heading {
         font-size: var(--bme-font-size-label);
         font-weight: 600;
-        color: #6b7280;
+        color: var(--bme-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        width: 100%;
         padding: 8px 20px 4px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        border: none;
+        background: transparent;
         cursor: pointer;
         user-select: none;
-        transition: background 0.15s ease;
+        text-align: left;
+        font-family: var(--bme-font-family);
+        transition:
+          background 0.15s ease,
+          box-shadow 0.15s ease;
       }
 
       .subsection-heading:hover {
-        background: #f9fafb;
+        background: var(--bme-accent-soft);
+      }
+
+      .subsection-heading:focus-visible {
+        outline: none;
+        background: var(--bme-accent-soft);
+        box-shadow: inset var(--bme-focus-ring);
       }
 
       .subsection-chevron {
@@ -174,7 +225,7 @@ export class BodyMapDataPanel extends LitElement {
         padding: 10px 20px;
         border-bottom: 1px solid var(--bme-divider);
         font-size: var(--bme-font-size-body);
-        color: #374151;
+        color: var(--bme-text);
       }
 
       .data-list li:last-child {
@@ -182,7 +233,7 @@ export class BodyMapDataPanel extends LitElement {
       }
 
       .empty-state {
-        color: #9ca3af;
+        color: var(--bme-text-muted);
         font-size: var(--bme-font-size-label);
         text-align: center;
         padding: var(--bme-space-md);
@@ -190,9 +241,13 @@ export class BodyMapDataPanel extends LitElement {
 
       /* Error state */
       .error-card {
-        background: var(--bme-panel);
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        background: linear-gradient(
+          180deg,
+          var(--bme-panel),
+          var(--bme-surface-elevated)
+        );
+        border-radius: var(--bme-radius-lg);
+        box-shadow: var(--bme-shadow-soft);
         margin-bottom: var(--bme-space-md);
         overflow: hidden;
         border: 1px solid var(--bme-border);
@@ -211,21 +266,33 @@ export class BodyMapDataPanel extends LitElement {
         border: 1px solid var(--bme-destructive);
         color: var(--bme-destructive);
         padding: 4px 12px;
-        border-radius: 6px;
+        border-radius: var(--bme-radius-sm);
         cursor: pointer;
         font-size: var(--bme-font-size-label);
         font-family: var(--bme-font-family);
+        transition:
+          background 0.15s ease,
+          box-shadow 0.15s ease;
       }
 
       .retry-btn:hover {
         background: rgba(220, 38, 38, 0.06);
       }
 
+      .retry-btn:focus-visible {
+        outline: none;
+        box-shadow: var(--bme-focus-ring);
+      }
+
       /* Skeleton shimmer */
       .skeleton-card {
-        background: var(--bme-panel);
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        background: linear-gradient(
+          180deg,
+          var(--bme-panel),
+          var(--bme-surface-elevated)
+        );
+        border-radius: var(--bme-radius-lg);
+        box-shadow: var(--bme-shadow-soft);
         margin-bottom: var(--bme-space-md);
         overflow: hidden;
         border: 1px solid var(--bme-border);
@@ -389,6 +456,7 @@ export class BodyMapDataPanel extends LitElement {
       <div class="error-card organ-card">
         <p class="error-message">Failed to load data.</p>
         <button
+          type="button"
           class="retry-btn"
           @click=${() => this._handleRetryClick(organId)}
         >
@@ -421,14 +489,21 @@ export class BodyMapDataPanel extends LitElement {
 
     return html`
       <div class="organ-card">
-        <div class="card-header" @click=${() => this._toggleCollapse(organId)}>
+        <button
+          type="button"
+          class="card-header"
+          aria-expanded=${String(!isCollapsed)}
+          @click=${() => this._toggleCollapse(organId)}
+        >
           <span>${name}</span>
           <span class="count-badge">${totalCount}</span>
-        </div>
+        </button>
         <div class="card-content ${isCollapsed ? "collapsed" : ""}">
           <div class="card-content-inner">
-            <div
+            <button
+              type="button"
               class="subsection-heading"
+              aria-expanded=${String(!diseasesCollapsed)}
               @click=${() => this._toggleSubsection(organId, "diseases")}
             >
               <span>Diseases (${filteredDiseases.length})</span>
@@ -438,7 +513,7 @@ export class BodyMapDataPanel extends LitElement {
                   : ""}"
                 >&#9660;</span
               >
-            </div>
+            </button>
             <div
               class="subsection-content ${diseasesCollapsed ? "collapsed" : ""}"
             >
@@ -454,8 +529,10 @@ export class BodyMapDataPanel extends LitElement {
                     `}
               </div>
             </div>
-            <div
+            <button
+              type="button"
               class="subsection-heading"
+              aria-expanded=${String(!symptomsCollapsed)}
               @click=${() => this._toggleSubsection(organId, "symptoms")}
             >
               <span>Symptoms (${filteredSymptoms.length})</span>
@@ -465,7 +542,7 @@ export class BodyMapDataPanel extends LitElement {
                   : ""}"
                 >&#9660;</span
               >
-            </div>
+            </button>
             <div
               class="subsection-content ${symptomsCollapsed ? "collapsed" : ""}"
             >
