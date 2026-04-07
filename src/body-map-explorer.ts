@@ -232,6 +232,32 @@ export class BodyMapExplorer extends LitElement {
     );
   }
 
+  private _dispatchOrganSelectionEvent(
+    eventName: "organ-selected" | "organ-deselected",
+    organId: string,
+  ) {
+    this.dispatchEvent(
+      new CustomEvent(eventName, {
+        detail: { organId },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+
+    this.dispatchEvent(
+      new CustomEvent(
+        eventName === "organ-selected"
+          ? "body-part-selected"
+          : "body-part-deselected",
+        {
+          detail: { organId, bodyPartId: organId },
+          bubbles: true,
+          composed: true,
+        },
+      ),
+    );
+  }
+
   private _handleSystemToggleRequest(
     event: CustomEvent<{ systemId: BodySystemId }>,
   ) {
@@ -265,12 +291,9 @@ export class BodyMapExplorer extends LitElement {
 
     this.selectedOrganIds = nextIds;
 
-    this.dispatchEvent(
-      new CustomEvent(wasSelected ? "organ-deselected" : "organ-selected", {
-        detail: { organId },
-        bubbles: true,
-        composed: true,
-      }),
+    this._dispatchOrganSelectionEvent(
+      wasSelected ? "organ-deselected" : "organ-selected",
+      organId,
     );
 
     if (!wasSelected) {
@@ -344,12 +367,9 @@ export class BodyMapExplorer extends LitElement {
     this.selectedOrganIds = selectedOrganIds;
     this._detailBodyPartId = null;
 
-    this.dispatchEvent(
-      new CustomEvent(isSelected ? "organ-selected" : "organ-deselected", {
-        detail: { organId: lastToggled },
-        bubbles: true,
-        composed: true,
-      }),
+    this._dispatchOrganSelectionEvent(
+      isSelected ? "organ-selected" : "organ-deselected",
+      lastToggled,
     );
 
     const mappedSystemIds = ORGAN_TO_SYSTEM[lastToggled] ?? [];
