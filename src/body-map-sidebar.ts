@@ -6,7 +6,7 @@ import {
   type BodySystemDefinition,
   type BodySystemId,
 } from "./data/systems.js";
-import { ORGANS } from "./data/organs.js";
+import { BODY_PARTS } from "./data/body-parts.js";
 
 @customElement("body-map-sidebar")
 export class BodyMapSidebar extends LitElement {
@@ -213,6 +213,15 @@ export class BodyMapSidebar extends LitElement {
         color: var(--bme-accent);
       }
 
+      .body-part-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: #f0f0f0;
+      }
+
       .body-part-check {
         width: 14px;
         flex-shrink: 0;
@@ -236,6 +245,8 @@ export class BodyMapSidebar extends LitElement {
 
   @property({ attribute: false }) selectedOrganIds: string[] = [];
 
+  @property({ type: String, attribute: "asset-base" }) assetBase = "";
+
   @state() private _bodyPartsExpanded = true;
   @state() private _bodyPartsSearch = "";
   @state() private _bodyPartsSortAZ = false;
@@ -250,29 +261,40 @@ export class BodyMapSidebar extends LitElement {
     );
   }
 
-  private _emitOrganSelect(organId: string) {
+  private _emitBodyPartSelect(bodyPartId: string, organIds: string[]) {
     this.dispatchEvent(
-      new CustomEvent("organ-select-request", {
-        detail: { organId },
+      new CustomEvent("body-part-select-request", {
+        detail: { bodyPartId, organIds },
         bubbles: true,
         composed: true,
       }),
     );
   }
 
-  private _filteredOrgans() {
+  private _filteredBodyParts() {
     const q = this._bodyPartsSearch.toLowerCase();
-    let organs = q
-      ? ORGANS.filter((o) => o.name.toLowerCase().includes(q))
-      : ORGANS;
+    let parts = q
+      ? BODY_PARTS.filter((p) => p.name.toLowerCase().includes(q))
+      : BODY_PARTS;
     if (this._bodyPartsSortAZ) {
-      organs = [...organs].sort((a, b) => a.name.localeCompare(b.name));
+      parts = [...parts].sort((a, b) => a.name.localeCompare(b.name));
     }
-    return organs;
+    return parts;
+  }
+
+  private _bodyPartImageUrl(imageFile: string): string {
+    const base = this.assetBase.replace(/\/$/, "");
+    const prefix = base ? `${base}/assets` : "/assets";
+    return `${prefix}/body-parts/${imageFile}`;
+  }
+
+  private _systemThumbnailUrl(thumbnail: string): string {
+    const base = this.assetBase.replace(/\/$/, "");
+    return base ? `${base}${thumbnail}` : thumbnail;
   }
 
   render() {
-    const filteredOrgans = this._filteredOrgans();
+    const filteredBodyParts = this._filteredBodyParts();
 
     return html`
       <div class="panel-header">Body Systems</div>
@@ -293,7 +315,11 @@ export class BodyMapSidebar extends LitElement {
                   class="system-dot"
                   style="background:${system.color}"
                 ></span>
-                <img class="system-thumb" src=${system.thumbnail} alt="" />
+                <img
+                  class="system-thumb"
+                  src=${this._systemThumbnailUrl(system.thumbnail)}
+                  alt=""
+                />
                 <span class="system-title">${system.title}</span>
               </button>
             </li>
@@ -344,14 +370,16 @@ export class BodyMapSidebar extends LitElement {
                 }}
               />
             </div>
-            ${filteredOrgans.length === 0
+            ${filteredBodyParts.length === 0
               ? html`<p class="empty-parts">No results</p>`
               : html`
                   <ul class="body-parts-list">
-                    ${filteredOrgans.map((organ) => {
-                      const isSelected = this.selectedOrganIds.includes(
-                        organ.id,
-                      );
+                    ${filteredBodyParts.map((bp) => {
+                      const isSelected =
+                        bp.organIds.length > 0 &&
+                        bp.organIds.some((id) =>
+                          this.selectedOrganIds.includes(id),
+                        );
                       return html`
                         <li>
                           <button
@@ -359,12 +387,18 @@ export class BodyMapSidebar extends LitElement {
                             class="body-part-btn ${isSelected
                               ? "selected"
                               : ""}"
-                            @click=${() => this._emitOrganSelect(organ.id)}
+                            @click=${() =>
+                              this._emitBodyPartSelect(bp.id, bp.organIds)}
                           >
+                            <img
+                              class="body-part-icon"
+                              src=${this._bodyPartImageUrl(bp.imageFile)}
+                              alt=""
+                            />
                             <span class="body-part-check"
                               >${isSelected ? "✓" : nothing}</span
                             >
-                            ${organ.name}
+                            ${bp.name}
                           </button>
                         </li>
                       `;
