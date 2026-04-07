@@ -108,6 +108,9 @@ export class BodyMapExplorer extends LitElement {
   @state() private _errorIds: Map<string, string> = new Map();
   @state() private _filterQuery = "";
 
+  @state() private _currentGender: "male" | "female" = "male";
+  @state() private _currentView: "organs" | "organs2" | "sections" = "organs";
+
   // Modal state
   @state() private _modalSectionId: string | null = null;
   @state() private _modalSectionName = "";
@@ -188,6 +191,28 @@ export class BodyMapExplorer extends LitElement {
           this.activeSystem.detailBodyPartIds ?? [],
         );
       }
+      // Filter reproductive system entries by current gender
+      if (this.activeSystem.id === "reproductive") {
+        const excludeOrganId =
+          this._currentGender === "male"
+            ? "female_reproductive"
+            : "male_reproductive";
+        const maleBpIds = new Set(["bp_penis", "bp_prostate", "bp_testicles"]);
+        const femaleBpIds = new Set([
+          "bp_vagina",
+          "bp_vulva",
+          "bp_fallopian_tubes",
+          "bp_ovaries",
+          "bp_breasts",
+        ]);
+        const excludedBpIds =
+          this._currentGender === "male" ? femaleBpIds : maleBpIds;
+        entries = entries.filter(
+          (e) =>
+            !e.organIds.includes(excludeOrganId) && !excludedBpIds.has(e.id),
+        );
+      }
+
       const focusedBodyPartId = this._activeDetailBodyPart?.id;
 
       if (focusedBodyPartId === undefined) {
@@ -248,13 +273,36 @@ export class BodyMapExplorer extends LitElement {
     });
 
     // Include bp_ items explicitly listed in the active system's detailBodyPartIds
-    const systemDetailIds = this.activeSystem?.detailBodyPartIds ?? [];
+    let systemDetailIds = this.activeSystem?.detailBodyPartIds ?? [];
+    let filteredDedupedSystem = dedupedSystem;
+
+    // Filter reproductive system display by current gender
+    if (this.activeSystem?.id === "reproductive") {
+      const maleBpIds = new Set(["bp_penis", "bp_prostate", "bp_testicles"]);
+      const femaleBpIds = new Set([
+        "bp_vagina",
+        "bp_vulva",
+        "bp_fallopian_tubes",
+        "bp_ovaries",
+        "bp_breasts",
+      ]);
+      const excludedBpIds =
+        this._currentGender === "male" ? femaleBpIds : maleBpIds;
+      const excludeOrganId =
+        this._currentGender === "male"
+          ? "female_reproductive"
+          : "male_reproductive";
+      systemDetailIds = systemDetailIds.filter((id) => !excludedBpIds.has(id));
+      filteredDedupedSystem = filteredDedupedSystem.filter(
+        (id) => id !== excludeOrganId,
+      );
+    }
 
     return Array.from(
       new Set([
         ...filteredSelectedOrgans,
         ...this._selectedBodyPartIds,
-        ...dedupedSystem,
+        ...filteredDedupedSystem,
         ...systemDetailIds,
       ]),
     );
@@ -341,10 +389,40 @@ export class BodyMapExplorer extends LitElement {
     }
   }
 
-  private _handleBodyPartSelectRequest(
+  private async _handleBodyPartSelectRequest(
     event: CustomEvent<{ bodyPartId: string; organIds: string[] }>,
   ) {
     const { bodyPartId, organIds } = event.detail;
+
+    // In Organs2 view, sidebar clicks open the modal instead of toggling selection
+    if (this._currentView === "organs2") {
+      const bodyPart = BODY_PARTS.find((bp) => bp.id === bodyPartId);
+      const displayName = bodyPart?.name ?? bodyPartId;
+      this._modalSectionId = bodyPartId;
+      this._modalSectionName = displayName;
+      this._modalAnchorX = 0;
+      this._modalAnchorY = 0;
+      this._modalDiseases = [];
+      this._modalSymptoms = [];
+      this._modalError = null;
+      this._modalLoading = true;
+      try {
+        const provider = this._activeDataProvider;
+        const [diseases, symptoms] = await Promise.all([
+          provider.fetchDiseases(bodyPartId).catch(() => [] as DiseaseEntry[]),
+          provider.fetchSymptoms(bodyPartId).catch(() => [] as string[]),
+        ]);
+        this._modalDiseases = Array.from(
+          new Map(diseases.map((d) => [d.name, d])).values(),
+        );
+        this._modalSymptoms = [...new Set(symptoms)].sort();
+      } catch (err) {
+        this._modalError = String(err);
+      } finally {
+        this._modalLoading = false;
+      }
+      return;
+    }
 
     // Toggle data-panel tracking by bodyPartId (bp_* key maps directly to data files)
     const isBodyPartSelected = this._selectedBodyPartIds.includes(bodyPartId);
@@ -519,13 +597,20 @@ export class BodyMapExplorer extends LitElement {
       sectionName: string;
       clientX: number;
       clientY: number;
+      selected?: boolean;
     }>,
   ) {
-    const { sectionId, sectionName, clientX, clientY } = event.detail;
+    const {
+      sectionId,
+      sectionName,
+      clientX,
+      clientY,
+      selected = true,
+    } = event.detail;
 
-    // Toggle: clicking the same section closes the modal
-    if (this._modalSectionId === sectionId) {
-      this._closeModal();
+    // If the section was deselected, close its modal (if open) and return
+    if (!selected) {
+      if (this._modalSectionId === sectionId) this._closeModal();
       return;
     }
 
@@ -597,14 +682,60 @@ export class BodyMapExplorer extends LitElement {
     this._modalSectionId = null;
     void this._handleSectionClick(
       new CustomEvent("section-click", {
-        detail: { sectionId, sectionName, clientX, clientY },
+        detail: { sectionId, sectionName, clientX, clientY, selected: true },
       }) as CustomEvent<{
         sectionId: string;
         sectionName: string;
         clientX: number;
         clientY: number;
+        selected?: boolean;
       }>,
     );
+  }
+
+  private _handleGenderChange(
+    event: CustomEvent<{ gender: "male" | "female" }>,
+  ) {
+    this._currentGender = event.detail.gender;
+  }
+
+  private _handleViewChange(
+    event: CustomEvent<{ view: "organs" | "organs2" | "sections" }>,
+  ) {
+    this._currentView = event.detail.view;
+  }
+
+  private async _handleOrgan2Click(event: CustomEvent<{ organId: string }>) {
+    const { organId } = event.detail;
+    const dataKey = ORGAN_TO_DATA_KEY[organId] ?? organId;
+    const bpKey = `bp_${dataKey}`;
+    const bodyPart = BODY_PARTS.find((bp) => bp.organIds.includes(organId));
+    const displayName = bodyPart?.name ?? organId;
+
+    this._modalSectionId = bpKey;
+    this._modalSectionName = displayName;
+    this._modalAnchorX = 0;
+    this._modalAnchorY = 0;
+    this._modalDiseases = [];
+    this._modalSymptoms = [];
+    this._modalError = null;
+    this._modalLoading = true;
+
+    try {
+      const provider = this._activeDataProvider;
+      const [diseases, symptoms] = await Promise.all([
+        provider.fetchDiseases(bpKey).catch(() => [] as DiseaseEntry[]),
+        provider.fetchSymptoms(bpKey).catch(() => [] as string[]),
+      ]);
+      this._modalDiseases = Array.from(
+        new Map(diseases.map((d) => [d.name, d])).values(),
+      );
+      this._modalSymptoms = [...new Set(symptoms)].sort();
+    } catch (err) {
+      this._modalError = String(err);
+    } finally {
+      this._modalLoading = false;
+    }
   }
 
   private _handleSymptomToggle(
@@ -636,6 +767,9 @@ export class BodyMapExplorer extends LitElement {
             .assetBase=${this.assetBase}
             @organ-selection-change=${this._handleOrganSelectionChange}
             @section-click=${this._handleSectionClick}
+            @organ2-click=${this._handleOrgan2Click}
+            @gender-change=${this._handleGenderChange}
+            @view-change=${this._handleViewChange}
           ></body-map-model>
         </div>
         <div class="panel">

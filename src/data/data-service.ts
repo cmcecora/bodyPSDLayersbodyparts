@@ -71,7 +71,7 @@ export async function fetchDiseases(
   const prefix = assetBase.replace(/\/$/, "");
   const url = `${prefix}/data/diseases/${key}.json`;
 
-  let raw: Array<{ code: string; name: string }>;
+  let raw: Array<{ name: string }>;
   try {
     const response = await fetch(url);
     raw = await response.json();
