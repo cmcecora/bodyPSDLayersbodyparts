@@ -83,6 +83,14 @@
             <div>
                 <button onclick="resetAll()">Reset All</button>
             </div>
+            <div style="border-top: 1px solid #ccc; padding-top: 15px;">
+                <h2>Data Injection</h2>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button onclick="injectStaticData()" style="background: #28a745;">Inject Mock Static Data</button>
+                    <button onclick="injectProvider()" style="background: #17a2b8;">Inject Custom Data Provider</button>
+                    <button onclick="clearExternalData()" style="background: #dc3545;">Clear External Data</button>
+                </div>
+            </div>
         </div>
 
         <body-map-explorer id="explorer"></body-map-explorer>
@@ -127,9 +135,45 @@
         window.resetAll = function() {
             explorer.setAttribute('selected-organ-ids', '');
             explorer.setAttribute('active-system-id', '');
+            explorer.externalData = null;
             document.getElementById('organ-input').value = '';
             document.getElementById('system-input').value = '';
             logContent.innerHTML = '';
+        }
+
+        window.injectStaticData = function() {
+            explorer.externalData = {
+                diseases: {
+                    heart: [{ name: "Mock Cardiac Disease A" }, { name: "Mock Cardiac Disease B" }],
+                    brain: [{ name: "Mock Neurological Condition" }],
+                    bp_head: [{ name: "Mock Head Section Disease" }]
+                },
+                symptoms: {
+                    heart: ["Mock Chest Pain", "Mock Shortness of Breath"],
+                    brain: ["Mock Headache"],
+                    bp_head: ["Mock Head Section Symptom"]
+                }
+            };
+            logEvent('external-data:static-injected', { detail: 'Selecting an organ will now use this mock data' });
+        }
+
+        window.injectProvider = function() {
+            explorer.externalData = {
+                fetchDiseases: async (id) => {
+                    logEvent('provider-call:fetchDiseases', { id });
+                    return [{ name: `Provider Disease for ${id}` }];
+                },
+                fetchSymptoms: async (id) => {
+                    logEvent('provider-call:fetchSymptoms', { id });
+                    return [`Provider Symptom for ${id}`];
+                }
+            };
+            logEvent('external-data:provider-injected', { detail: 'Provider methods will be called for each data request' });
+        }
+
+        window.clearExternalData = function() {
+            explorer.externalData = null;
+            logEvent('external-data:cleared', { detail: 'Fallback to internal JSON files' });
         }
     </script>
 </body>
