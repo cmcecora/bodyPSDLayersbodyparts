@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Body Systems Sidebar & Detail Panel** - Build `<body-map-sidebar>` and `<body-map-detail-panel>` with bidirectional organ-to-system selection (completed 2026-04-06)
 - [x] **Phase 4: Data Layer, Disease/Symptom Panels & Modal** - Implement lazy per-body-part JSON loading, disease/symptom lists with search, and the organ detail modal (completed 2026-04-07)
 - [x] **Phase 5: Web Component API** - Build the `<body-map-explorer>` orchestrator with its full public API (attributes, properties, events, dual data mode) (completed 2026-04-07)
-- [ ] **Phase 6: Polish, Back View & Performance** - Accessibility, keyboard nav, mobile layout, visual polish, back-view artwork, and performance profiling
+- [x] **Phase 6: Polish, Back View & Performance** - Accessibility, keyboard nav, mobile layout, visual polish, back-view artwork, and performance profiling (completed 2026-04-07)
 
 ## Phase Details
 
@@ -137,8 +137,15 @@ Plans:
 4. The front/back rotation button animates with a CSS 3D flip and the back view renders correctly for the female green body model (body sections tab)
 5. Initial page load (component shell + critical assets) is under 500 KB; only viewport-visible organ images load on first paint
 6. No repeated DOM queries in hot interaction paths — cached references used throughout
-   **Plans**: TBD
+   **Plans**: 4/4 plans complete
    **UI hint**: yes
+
+Plans:
+
+- [x] 06-01-PLAN.md — Keyboard navigation, ARIA semantics, and live-region announcements
+- [x] 06-02-PLAN.md — Container-query responsive layout and shared visual polish
+- [x] 06-03-PLAN.md — 3D front/back flip scene with male and female back-view assets
+- [x] 06-04-PLAN.md — Initial-render performance, cached lookups, and budget enforcement
 
 ## Progress
 
@@ -152,4 +159,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 3. Body Systems Sidebar & Detail Panel        | 2/2            | Complete    | 2026-04-06 |
 | 4. Data Layer, Disease/Symptom Panels & Modal | 4/4            | Complete    | 2026-04-07 |
 | 5. Web Component API                          | 2/2            | Complete    | 2026-04-07 |
-| 6. Polish, Back View & Performance            | 0/TBD          | In progress | -          |
+| 6. Polish, Back View & Performance            | 4/4            | Complete    | 2026-04-07 |

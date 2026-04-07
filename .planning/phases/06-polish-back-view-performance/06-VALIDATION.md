@@ -1,9 +1,9 @@
 ---
 phase: 6
 slug: polish-back-view-performance
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-07
 ---
 
@@ -38,11 +38,11 @@ created: 2026-04-07
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 6-01-01 | 01 | 1 | UX-03, UX-04 | T-06-01 | Keyboard focus stays on intended organ/system targets only | unit | `npm test` | ❌ W0 | ⬜ pending |
-| 6-01-02 | 01 | 1 | UX-05 | T-06-02 | Live region announces only user-visible selections | unit | `npm test` | ❌ W0 | ⬜ pending |
-| 6-02-01 | 02 | 1 | UX-01, UX-02 | — | Responsive layout changes remain within component container | unit | `npm test` | ❌ W0 | ⬜ pending |
-| 6-03-01 | 03 | 2 | BACK-01, BACK-02, BACK-03 | T-06-03 | Hidden face cannot receive focus/clicks during flip | unit + browser | `npm test` | ❌ W0 | ⬜ pending |
-| 6-04-01 | 04 | 2 | PERF-01, PERF-02, PERF-03 | — | Deferred assets are absent from initial render path | build + unit | `npm run build` | ❌ W0 | ⬜ pending |
+| 6-01-01 | 01 | 1 | UX-03, UX-04 | T-06-01 | Keyboard focus stays on intended organ/system targets only | unit | `npm test` | ✅ | ✅ green |
+| 6-01-02 | 01 | 1 | UX-05 | T-06-02 | Live region announces only user-visible selections | unit | `npm test` | ✅ | ✅ green |
+| 6-02-01 | 02 | 1 | UX-01, UX-02 | — | Responsive layout changes remain within component container | unit | `npm test` | ✅ | ✅ green |
+| 6-03-01 | 03 | 2 | BACK-01, BACK-02, BACK-03 | T-06-03 | Hidden face cannot receive focus/clicks during flip | unit + browser | `npm test` | ✅ | ✅ green |
+| 6-04-01 | 04 | 2 | PERF-01, PERF-02, PERF-03 | — | Deferred assets are absent from initial render path | build + unit | `npm run build` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,10 +50,10 @@ created: 2026-04-07
 
 ## Wave 0 Requirements
 
-- [ ] `src/__tests__/body-map-model.test.ts` — add keyboard and back-view assertions for UX-03/BACK-01/BACK-03
-- [ ] `src/__tests__/body-map-explorer.test.ts` — add live-region and responsive orchestration assertions for UX-02/UX-05
-- [ ] Optional focused a11y test file for keyboard traversal and ARIA labels if existing suites become too broad
-- [ ] Build-size verification step or script that captures bundle + critical initial asset budget for PERF-01
+- [x] `src/__tests__/body-map-model.test.ts` — keyboard and back-view assertions cover UX-03/BACK-01/BACK-03
+- [x] `src/__tests__/body-map-explorer.test.ts` — live-region, responsive, and performance orchestration assertions cover UX-02/UX-05/PERF-02
+- [x] Existing suites remained broad enough; no extra focused a11y file was required
+- [x] `scripts/check-build-budget.js` captures bundle + critical first-paint asset budget for PERF-01/PERF-03
 
 ---
 
@@ -70,11 +70,11 @@ created: 2026-04-07
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 15s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 15s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** complete
