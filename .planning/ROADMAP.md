@@ -95,8 +95,15 @@ Plans:
 4. Clicking a body section opens a modal positioned relative to the clicked region, showing a skeleton loader while data fetches
 5. The modal can be dismissed by clicking outside it or pressing Escape
 6. Data is split into per-body-part JSON files; the network tab shows only the file(s) for selected parts loading on demand
-   **Plans**: TBD
+   **Plans**: 4 plans
    **UI hint**: yes
+
+Plans:
+
+- [ ] 04-01-PLAN.md — DataService singleton with fetch/cache, split-diseases script, section mapping
+- [ ] 04-02-PLAN.md — Fix section-click event dispatch in body-map-model
+- [ ] 04-03-PLAN.md — 4th column data panel component with collapsible cards, search, skeleton states
+- [ ] 04-04-PLAN.md — Body-section modal with tabs, checkboxes, positioned carat, dismiss behavior
 
 ### Phase 5: Web Component API
 
@@ -137,7 +144,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | --------------------------------------------- | -------------- | ----------- | ---------- |
 | 1. Scaffolding & Asset Extraction             | 2/2            | Complete    | 2026-03-29 |
 | 2. Core SVG Body Model                        | 3/3            | Complete    | 2026-04-06 |
-| 3. Body Systems Sidebar & Detail Panel        | 2/2 | Complete   | 2026-04-06 |
-| 4. Data Layer, Disease/Symptom Panels & Modal | 0/TBD          | Not started | -          |
+| 3. Body Systems Sidebar & Detail Panel        | 2/2            | Complete    | 2026-04-06 |
+| 4. Data Layer, Disease/Symptom Panels & Modal | 0/4            | In progress | -          |
 | 5. Web Component API                          | 0/TBD          | Not started | -          |
 | 6. Polish, Back View & Performance            | 0/TBD          | Not started | -          |
