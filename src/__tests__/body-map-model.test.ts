@@ -620,4 +620,156 @@ describe("body-map-model", () => {
       expect(organ2Detail?.organId).toBeTruthy();
     });
   });
+
+  describe("MODEL-10: keyboard and aria accessibility", () => {
+    it("exposes roving tabindex and pressed semantics for organ targets", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
+      const brainGroup = el.shadowRoot?.querySelector(
+        "#group-brain",
+      ) as SVGGElement | null;
+      const larynxGroup = el.shadowRoot?.querySelector(
+        "#group-larynx_trachea",
+      ) as SVGGElement | null;
+      const activeViewTab = el.shadowRoot?.querySelector(
+        ".view-tab.active-organs",
+      ) as HTMLButtonElement | null;
+      const activeGenderButton = el.shadowRoot?.querySelector(
+        ".gender-btn.active",
+      ) as HTMLButtonElement | null;
+
+      expect(brainGroup?.getAttribute("tabindex")).toBe("0");
+      expect(larynxGroup?.getAttribute("tabindex")).toBe("-1");
+      expect(brainGroup?.getAttribute("role")).toBe("button");
+      expect(brainGroup?.getAttribute("aria-label")).toBe("Select Brain");
+      expect(brainGroup?.getAttribute("aria-pressed")).toBe("false");
+
+      expect(activeViewTab?.getAttribute("aria-pressed")).toBe("true");
+      expect(activeGenderButton?.getAttribute("aria-pressed")).toBe("true");
+    });
+
+    it("moves organ focus with ArrowRight and selects the active organ with Enter", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
+      const brainGroup = el.shadowRoot?.querySelector(
+        "#group-brain",
+      ) as SVGGElement | null;
+      const larynxGroup = el.shadowRoot?.querySelector(
+        "#group-larynx_trachea",
+      ) as SVGGElement | null;
+      let detail:
+        | {
+            selectedOrganIds: string[];
+            lastToggled: string;
+            isSelected: boolean;
+          }
+        | undefined;
+
+      el.addEventListener("organ-selection-change", (event) => {
+        detail = (event as CustomEvent<typeof detail>).detail ?? undefined;
+      });
+
+      brainGroup?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "ArrowRight",
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      expect(brainGroup?.getAttribute("tabindex")).toBe("-1");
+      expect(larynxGroup?.getAttribute("tabindex")).toBe("0");
+
+      larynxGroup?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      expect(detail).toMatchObject({
+        lastToggled: "larynx_trachea",
+        isSelected: true,
+      });
+      expect(detail?.selectedOrganIds).toContain("larynx_trachea");
+    });
+
+    it("exposes pressed state on sections controls", async () => {
+      el.currentView = "sections";
+      await el.updateComplete;
+
+      const activeViewTab = el.shadowRoot?.querySelector(
+        ".view-tab.active-sections",
+      ) as HTMLButtonElement | null;
+      const activeGenderButton = el.shadowRoot?.querySelector(
+        ".gender-btn.active",
+      ) as HTMLButtonElement | null;
+      const rotateButton = el.shadowRoot?.querySelector(
+        ".rotate-btn",
+      ) as HTMLButtonElement | null;
+
+      expect(activeViewTab?.getAttribute("aria-pressed")).toBe("true");
+      expect(activeGenderButton?.getAttribute("aria-pressed")).toBe("true");
+      expect(rotateButton?.getAttribute("aria-label")).toBe("View Back");
+      expect(rotateButton?.getAttribute("aria-pressed")).toBe("false");
+    });
+
+    it("supports keyboard semantics for visible body sections", async () => {
+      el.currentView = "sections";
+      el.currentGender = "male";
+      await el.updateComplete;
+
+      const sectionGroups = Array.from(
+        el.shadowRoot?.querySelectorAll(".body-section-group") ?? [],
+      ) as SVGGElement[];
+      const [headSection, upperBodySection] = sectionGroups;
+      let sectionDetail:
+        | {
+            sectionId: string;
+            selected: boolean;
+          }
+        | undefined;
+
+      el.addEventListener("section-click", (event) => {
+        sectionDetail = (event as CustomEvent<typeof sectionDetail>).detail;
+      });
+
+      expect(headSection?.getAttribute("tabindex")).toBe("0");
+      expect(upperBodySection?.getAttribute("tabindex")).toBe("-1");
+      expect(headSection?.getAttribute("role")).toBe("button");
+      expect(headSection?.getAttribute("aria-label")).toBe("Select Head & Neck");
+      expect(headSection?.getAttribute("aria-pressed")).toBe("false");
+
+      headSection?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "ArrowRight",
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      expect(headSection?.getAttribute("tabindex")).toBe("-1");
+      expect(upperBodySection?.getAttribute("tabindex")).toBe("0");
+
+      upperBodySection?.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: " ",
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      expect(sectionDetail).toMatchObject({
+        sectionId: "upper_body",
+        selected: true,
+      });
+    });
+  });
 });
