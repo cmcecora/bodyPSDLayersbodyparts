@@ -4,3 +4,4 @@ node_modules/
 dist/
 *.local
 .vite/
+public/data/diseases/
