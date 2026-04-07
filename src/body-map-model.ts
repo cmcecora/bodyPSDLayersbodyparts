@@ -29,17 +29,19 @@ export class BodyMapModel extends LitElement {
         perspective: 1200px;
         max-width: 380px;
         width: 100%;
+        aspect-ratio: 698 / 1698;
       }
 
       .svg-inner {
         position: relative;
         transform-style: preserve-3d;
+        height: 100%;
       }
 
       svg {
         display: block;
         width: 100%;
-        height: auto;
+        height: 100%;
       }
 
       .view-tabs {

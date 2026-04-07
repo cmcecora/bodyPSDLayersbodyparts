@@ -94,7 +94,7 @@ describe("body-map-detail-panel", () => {
 
   it("renders empty state when system is null", () => {
     expect(detail.shadowRoot?.textContent).toContain(
-      "Select a body system to see details.",
+      "Select a body system or body part to see details.",
     );
   });
 

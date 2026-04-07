@@ -9,5 +9,8 @@
     "require_research": false,
     "require_plan_check": true,
     "require_verification": true
+  },
+  "workflow": {
+    "_auto_chain_active": false
   }
 }

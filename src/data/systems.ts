@@ -18,6 +18,7 @@ export interface BodySystemDefinition {
   thumbnail: string;
   description: string;
   organIds: string[];
+  detailBodyPartIds?: string[];
 }
 
 export const BODY_SYSTEMS: BodySystemDefinition[] = [
@@ -60,6 +61,7 @@ export const BODY_SYSTEMS: BodySystemDefinition[] = [
     thumbnail: "/assets/systems/integumentary.webp",
     description: `The Integumentary System, predominantly comprised of the skin, can be affected by opioid analgesics and medications applied to the skin. In Anne\u2019s case, one of the opioid medications she used comes in the form of a patch that is directly applied to the skin to allow for slow opioid absorption over time. The patch she used caused an allergic reaction and resultant rash that required the medication to be discontinued.`,
     organIds: [],
+    detailBodyPartIds: ["bp_skin"],
   },
   {
     id: "muscular",

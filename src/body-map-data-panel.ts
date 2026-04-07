@@ -3,6 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { designTokens } from "./styles/tokens.css.js";
 import type { DiseaseEntry } from "./data/data-service.js";
 import { ORGANS } from "./data/organs.js";
+import { BODY_PARTS } from "./data/body-parts.js";
 
 /**
  * Standalone debounce utility — module-level, not inside render (per research Pitfall 3).
@@ -294,7 +295,11 @@ export class BodyMapDataPanel extends LitElement {
   }, 250);
 
   private _getOrganName(organId: string): string {
-    return ORGANS.find((o) => o.id === organId)?.name ?? organId;
+    return (
+      ORGANS.find((o) => o.id === organId)?.name ??
+      BODY_PARTS.find((p) => p.id === organId)?.name ??
+      organId
+    );
   }
 
   private _filterItems<T>(

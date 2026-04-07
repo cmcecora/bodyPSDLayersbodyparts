@@ -9,15 +9,15 @@ Milestone 1 refactors a 7K-line monolithic HTML file into a distributable, frame
 **Phase Numbering:**
 
 - Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+- Decimal phases (2.2, 2.3): Urgent insertions (marked with INSERTED)
 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Scaffolding & Asset Extraction** - Set up Vite + Lit + TypeScript build pipeline and extract all base64 assets into external files (completed 2026-03-29)
 - [x] **Phase 2: Core SVG Body Model** - Build the `<body-map-model>` sub-component with organ layers, hit areas, hover/click interaction, and external image loading (completed 2026-04-06)
 - [x] **Phase 3: Body Systems Sidebar & Detail Panel** - Build `<body-map-sidebar>` and `<body-map-detail-panel>` with bidirectional organ-to-system selection (completed 2026-04-06)
-- [ ] **Phase 4: Data Layer, Disease/Symptom Panels & Modal** - Implement lazy per-body-part JSON loading, disease/symptom lists with search, and the organ detail modal
-- [ ] **Phase 5: Web Component API** - Build the `<body-map-explorer>` orchestrator with its full public API (attributes, properties, events, dual data mode)
+- [x] **Phase 4: Data Layer, Disease/Symptom Panels & Modal** - Implement lazy per-body-part JSON loading, disease/symptom lists with search, and the organ detail modal (completed 2026-04-07)
+- [x] **Phase 5: Web Component API** - Build the `<body-map-explorer>` orchestrator with its full public API (attributes, properties, events, dual data mode) (completed 2026-04-07)
 - [ ] **Phase 6: Polish, Back View & Performance** - Accessibility, keyboard nav, mobile layout, visual polish, back-view artwork, and performance profiling
 
 ## Phase Details
@@ -103,7 +103,7 @@ Plans:
 - [x] 04-01-PLAN.md — DataService singleton with fetch/cache, split-diseases script, section mapping
 - [x] 04-02-PLAN.md — Fix section-click event dispatch in body-map-model
 - [x] 04-03-PLAN.md — 4th column data panel component with collapsible cards, search, skeleton states
-- [ ] 04-04-PLAN.md — Body-section modal with tabs, checkboxes, positioned carat, dismiss behavior
+- [x] 04-04-PLAN.md — Body-section modal with tabs, checkboxes, positioned carat, dismiss behavior
 
 ### Phase 5: Web Component API
 
@@ -117,11 +117,12 @@ Plans:
 3. A host app can programmatically set selected body parts by writing to the component's property API
 4. Setting the `asset-base` attribute redirects all image loads to the specified URL prefix, enabling CDN or custom asset hosting
 5. The component operates in dual data mode: bundled JSON data used by default, external data accepted via props when provided
-**Plans:** 1 plan
+**Plans:** 2 plans
 
 Plans:
 
-- [ ] 05-01-PLAN.md — Define public attributes, properties, and CustomEvents for orchestrator control
+- [x] 05-01-PLAN.md — Define public attributes, properties, and CustomEvents for orchestrator control
+- [x] 05-02-PLAN.md — Implement DataProvider interface and Dual Data Mode logic
 
 ### Phase 6: Polish, Back View & Performance
 
@@ -150,5 +151,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Core SVG Body Model                        | 3/3            | Complete    | 2026-04-06 |
 | 3. Body Systems Sidebar & Detail Panel        | 2/2            | Complete    | 2026-04-06 |
 | 4. Data Layer, Disease/Symptom Panels & Modal | 4/4            | Complete    | 2026-04-07 |
-| 5. Web Component API                          | 0/1            | In progress | -          |
-| 6. Polish, Back View & Performance            | 0/TBD          | Not started | -          |
+| 5. Web Component API                          | 2/2            | Complete    | 2026-04-07 |
+| 6. Polish, Back View & Performance            | 0/TBD          | In progress | -          |

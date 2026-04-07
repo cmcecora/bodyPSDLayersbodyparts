@@ -12,6 +12,7 @@ vi.mock("../data/data-service.js", () => ({
   fetchDiseases: vi.fn().mockResolvedValue([{ name: "Test Disease" }]),
   fetchSymptomsForPart: vi.fn().mockResolvedValue(["Test Symptom"]),
   clearCache: vi.fn(),
+  ORGAN_TO_DATA_KEY: {},
 }));
 
 async function createFixture(): Promise<BodyMapExplorer> {
@@ -63,7 +64,9 @@ describe("body-map-explorer", () => {
       const { detail } = await getShadowChildren(el);
       expect(detail?.system).toBeNull();
       const emptyText = detail?.shadowRoot?.textContent ?? "";
-      expect(emptyText).toContain("Select a body system to see details.");
+      expect(emptyText).toContain(
+        "Select a body system or body part to see details.",
+      );
     });
   });
 
@@ -102,6 +105,53 @@ describe("body-map-explorer", () => {
       await detail?.updateComplete;
 
       expect(detail!.system?.id).toBe("cardiovascular");
+    });
+
+    it("activating a system renders the related body-part photo stack", async () => {
+      const { sidebar, detail } = await getShadowChildren(el);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("system-toggle-request", {
+          detail: { systemId: "respiratory" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const photoIds = Array.from(
+        detail!.shadowRoot?.querySelectorAll("[data-photo-id]") ?? [],
+      ).map((node) => node.getAttribute("data-photo-id"));
+
+      expect(photoIds).toEqual([
+        "bp_lungs",
+        "bp_neck",
+        "bp_throat",
+        "bp_esophagus",
+      ]);
+    });
+
+    it("systems without organ photo mappings can render configured fallback body-part photos", async () => {
+      const { sidebar, detail } = await getShadowChildren(el);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("system-toggle-request", {
+          detail: { systemId: "integumentary" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const photoIds = Array.from(
+        detail!.shadowRoot?.querySelectorAll("[data-photo-id]") ?? [],
+      ).map((node) => node.getAttribute("data-photo-id"));
+
+      expect(photoIds).toEqual(["bp_skin"]);
     });
 
     it("clicking the same sidebar row again clears activeSystemId and systemHighlightOrganIds", async () => {
@@ -155,7 +205,9 @@ describe("body-map-explorer", () => {
 
       expect(detail!.system).toBeNull();
       const emptyText = detail?.shadowRoot?.textContent ?? "";
-      expect(emptyText).toContain("Select a body system to see details.");
+      expect(emptyText).toContain(
+        "Select a body system or body part to see details.",
+      );
     });
 
     it("toggling off does not change existing selectedOrganIds", async () => {
@@ -259,7 +311,9 @@ describe("body-map-explorer", () => {
       expect(sidebar!.activeSystemId).toBeNull();
       expect(detail!.system).toBeNull();
       const emptyText = detail?.shadowRoot?.textContent ?? "";
-      expect(emptyText).toContain("Select a body system to see details.");
+      expect(emptyText).toContain(
+        "Select a body system or body part to see details.",
+      );
     });
 
     it("organ-selection-change updates model selectedOrganIds via explorer binding", async () => {
@@ -282,6 +336,93 @@ describe("body-map-explorer", () => {
       await model?.updateComplete;
 
       expect(model!.selectedOrganIds).toEqual(["heart"]);
+    });
+  });
+
+  describe("EXPLORER-03B: body-part detail panel state", () => {
+    it("selecting a standalone body part shows its photo in the detail panel", async () => {
+      const { sidebar, detail } = await getShadowChildren(el);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_face", organIds: [] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const photoIds = Array.from(
+        detail!.shadowRoot?.querySelectorAll("[data-photo-id]") ?? [],
+      ).map((node) => node.getAttribute("data-photo-id"));
+
+      expect(detail!.system).toBeNull();
+      expect(photoIds).toEqual(["bp_face"]);
+      expect(detail!.shadowRoot?.textContent ?? "").toContain("Face");
+    });
+
+    it("selecting a standalone body part overrides a previously active system", async () => {
+      const { sidebar, detail } = await getShadowChildren(el);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("system-toggle-request", {
+          detail: { systemId: "cardiovascular" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_face", organIds: [] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const photoIds = Array.from(
+        detail!.shadowRoot?.querySelectorAll("[data-photo-id]") ?? [],
+      ).map((node) => node.getAttribute("data-photo-id"));
+
+      expect(detail!.system).toBeNull();
+      expect(photoIds).toEqual(["bp_face"]);
+      expect(detail!.shadowRoot?.textContent ?? "").toContain("Face");
+    });
+
+    it("passes asset-base through to detail photo urls", async () => {
+      el.remove();
+      document.body.innerHTML = "";
+
+      el = document.createElement("body-map-explorer") as BodyMapExplorer;
+      el.setAttribute("asset-base", "/preview");
+      document.body.appendChild(el);
+      await el.updateComplete;
+
+      const { sidebar, detail } = await getShadowChildren(el);
+      sidebar!.dispatchEvent(
+        new CustomEvent("system-toggle-request", {
+          detail: { systemId: "cardiovascular" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const image = detail!.shadowRoot?.querySelector(
+        ".detail-photo",
+      ) as HTMLImageElement | null;
+
+      expect(image?.getAttribute("src")).toBe(
+        "/preview/assets/body-parts/heart.webp",
+      );
     });
   });
 
