@@ -1,4 +1,4 @@
-import { LitElement, html, css, nothing } from "lit";
+import { LitElement, html, css, nothing, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "./body-map-model.js";
 import "./body-map-sidebar.js";
@@ -31,6 +31,8 @@ import {
 
 @customElement("body-map-explorer")
 export class BodyMapExplorer extends LitElement {
+  private _dataSourceEpoch = 0;
+
   static styles = [
     designTokens,
     css`
@@ -374,6 +376,7 @@ export class BodyMapExplorer extends LitElement {
   private async _loadOrganData(organId: string) {
     if (this._diseasesMap.has(organId) || this._loadingIds.has(organId)) return;
 
+    const loadEpoch = this._dataSourceEpoch;
     this._loadingIds = new Set([...this._loadingIds, organId]);
 
     try {
@@ -383,6 +386,10 @@ export class BodyMapExplorer extends LitElement {
         provider.fetchSymptoms(organId),
       ]);
 
+      if (loadEpoch !== this._dataSourceEpoch) {
+        return;
+      }
+
       const nextDiseases = new Map(this._diseasesMap);
       nextDiseases.set(organId, diseases);
       this._diseasesMap = nextDiseases;
@@ -391,13 +398,38 @@ export class BodyMapExplorer extends LitElement {
       nextSymptoms.set(organId, symptoms);
       this._symptomsMap = nextSymptoms;
     } catch (err) {
+      if (loadEpoch !== this._dataSourceEpoch) {
+        return;
+      }
+
       const nextErr = new Map(this._errorIds);
       nextErr.set(organId, String(err));
       this._errorIds = nextErr;
     } finally {
+      if (loadEpoch !== this._dataSourceEpoch) {
+        return;
+      }
+
       const next = new Set(this._loadingIds);
       next.delete(organId);
       this._loadingIds = next;
+    }
+  }
+
+  protected override updated(changedProperties: PropertyValues<this>) {
+    if (
+      changedProperties.has("externalData") ||
+      changedProperties.has("assetBase")
+    ) {
+      this._dataSourceEpoch += 1;
+      this._diseasesMap = new Map();
+      this._symptomsMap = new Map();
+      this._errorIds = new Map();
+      this._loadingIds = new Set();
+
+      for (const organId of this._panelOrganIds) {
+        void this._loadOrganData(organId);
+      }
     }
   }
 
