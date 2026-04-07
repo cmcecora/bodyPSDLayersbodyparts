@@ -521,10 +521,24 @@ export class BodyMapModel extends LitElement {
 
   private _setView(view: ViewMode) {
     this.currentView = view;
+    this.dispatchEvent(
+      new CustomEvent("view-change", {
+        detail: { view },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _setGender(gender: Gender) {
     this.currentGender = gender;
+    this.dispatchEvent(
+      new CustomEvent("gender-change", {
+        detail: { gender },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _handleOrganClick(event: MouseEvent) {
@@ -594,11 +608,14 @@ export class BodyMapModel extends LitElement {
 
     this.requestUpdate();
 
+    const isNowSelected = this._selectedSections.has(partId);
+
     this.dispatchEvent(
       new CustomEvent("section-click", {
         detail: {
           sectionId: partId,
           sectionName: partName,
+          selected: isNowSelected,
           clientX: event.clientX,
           clientY: event.clientY,
         },

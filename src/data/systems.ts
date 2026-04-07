@@ -114,7 +114,7 @@ export const BODY_SYSTEMS: BodySystemDefinition[] = [
     color: "#422c88",
     thumbnail: "/assets/systems/respiratory.webp",
     description: `Due to the number of opioid analgesics and potentially deadly combination of muscle relaxants and opioid analgesics, Anne was at a high risk of overdose and respiratory depression. Opioid analgesics decrease the brain\u2019s ability to sense high levels of carbon dioxide in the blood and also diminish the amount of air breathed in by the lungs. This is the most common way that people die from opioid overdose \u2014 their breathing slows down, their breathing stops and they ultimately suffocate.`,
-    organIds: ["lungs_right", "larynx_trachea"],
+    organIds: ["lungs_left", "lungs_right", "larynx_trachea"],
   },
   {
     id: "skeletal",
