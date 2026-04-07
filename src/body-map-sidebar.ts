@@ -245,11 +245,31 @@ export class BodyMapSidebar extends LitElement {
 
   @property({ attribute: false }) selectedOrganIds: string[] = [];
 
+  /** bp_*-prefixed IDs of body parts selected from the sidebar panel. */
+  @property({ attribute: false }) selectedBodyPartIds: string[] = [];
+
   @property({ type: String, attribute: "asset-base" }) assetBase = "";
 
   @state() private _bodyPartsExpanded = true;
   @state() private _bodyPartsSearch = "";
   @state() private _bodyPartsSortAZ = false;
+
+  private get _isAllSelected(): boolean {
+    return (
+      BODY_PARTS.length > 0 &&
+      BODY_PARTS.every((bp) => this.selectedBodyPartIds.includes(bp.id))
+    );
+  }
+
+  private _emitAllToggle() {
+    this.dispatchEvent(
+      new CustomEvent("body-parts-all-toggle-request", {
+        detail: { selectAll: !this._isAllSelected },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
 
   private _emitToggle(systemId: BodySystemId) {
     this.dispatchEvent(
@@ -337,6 +357,17 @@ export class BodyMapSidebar extends LitElement {
           <span>Body Parts</span>
           <div class="body-parts-header-right">
             <button
+              class="sort-toggle ${this._isAllSelected ? "active" : ""}"
+              type="button"
+              title="Select all body parts"
+              @click=${(e: Event) => {
+                e.stopPropagation();
+                this._emitAllToggle();
+              }}
+            >
+              All
+            </button>
+            <button
               class="sort-toggle ${this._bodyPartsSortAZ ? "active" : ""}"
               type="button"
               title="Sort A-Z"
@@ -375,11 +406,9 @@ export class BodyMapSidebar extends LitElement {
               : html`
                   <ul class="body-parts-list">
                     ${filteredBodyParts.map((bp) => {
-                      const isSelected =
-                        bp.organIds.length > 0 &&
-                        bp.organIds.some((id) =>
-                          this.selectedOrganIds.includes(id),
-                        );
+                      const isSelected = this.selectedBodyPartIds.includes(
+                        bp.id,
+                      );
                       return html`
                         <li>
                           <button

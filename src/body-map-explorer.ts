@@ -465,6 +465,26 @@ export class BodyMapExplorer extends LitElement {
     }
   }
 
+  private _handleAllBodyPartsToggle(
+    event: CustomEvent<{ selectAll: boolean }>,
+  ) {
+    const { selectAll } = event.detail;
+    this.activeSystemId = null;
+    this._detailBodyPartId = null;
+    if (selectAll) {
+      this._selectedBodyPartIds = BODY_PARTS.map((bp) => bp.id);
+      this.selectedOrganIds = [
+        ...new Set(BODY_PARTS.flatMap((bp) => bp.organIds)),
+      ];
+      for (const bp of BODY_PARTS) {
+        void this._loadOrganData(bp.id);
+      }
+    } else {
+      this._selectedBodyPartIds = [];
+      this.selectedOrganIds = [];
+    }
+  }
+
   private _handleRetryOrgan(event: CustomEvent<{ organId: string }>) {
     const { organId } = event.detail;
     const nextErr = new Map(this._errorIds);
@@ -585,10 +605,12 @@ export class BodyMapExplorer extends LitElement {
             .systems=${BODY_SYSTEMS}
             .activeSystemId=${this.activeSystemId}
             .selectedOrganIds=${this.selectedOrganIds}
+            .selectedBodyPartIds=${this._selectedBodyPartIds}
             .assetBase=${this.assetBase}
             @system-toggle-request=${this._handleSystemToggleRequest}
             @organ-select-request=${this._handleOrganSelectRequest}
             @body-part-select-request=${this._handleBodyPartSelectRequest}
+            @body-parts-all-toggle-request=${this._handleAllBodyPartsToggle}
           ></body-map-sidebar>
         </div>
         <div class="body-model-area">
