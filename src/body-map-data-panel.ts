@@ -1,4 +1,4 @@
-import { LitElement, html, css, nothing } from "lit";
+import { LitElement, html, css, nothing, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { designTokens } from "./styles/tokens.css.js";
 import type { DiseaseEntry } from "./data/data-service.js";
@@ -280,8 +280,32 @@ export class BodyMapDataPanel extends LitElement {
   @property({ attribute: false }) filterQuery = "";
 
   @state() private _collapsedIds: Set<string> = new Set();
-  @state() private _collapsedDiseases: Set<string> = new Set();
-  @state() private _collapsedSymptoms: Set<string> = new Set();
+  @state() private _expandedDiseases: Set<string> = new Set();
+  @state() private _expandedSymptoms: Set<string> = new Set();
+
+  protected updated(changedProperties: PropertyValues<this>) {
+    if (!changedProperties.has("selectedOrganIds")) {
+      return;
+    }
+
+    const previous = new Set<string>(
+      (changedProperties.get("selectedOrganIds") as string[] | undefined) ?? [],
+    );
+    const current = new Set(this.selectedOrganIds);
+
+    const nextExpandedDiseases = new Set(this._expandedDiseases);
+    const nextExpandedSymptoms = new Set(this._expandedSymptoms);
+
+    for (const organId of previous) {
+      if (!current.has(organId)) {
+        nextExpandedDiseases.delete(organId);
+        nextExpandedSymptoms.delete(organId);
+      }
+    }
+
+    this._expandedDiseases = nextExpandedDiseases;
+    this._expandedSymptoms = nextExpandedSymptoms;
+  }
 
   // Debounced filter-change dispatcher — created as class field (not inside render)
   private _debouncedFilterChange = debounce((query: string) => {
@@ -324,9 +348,7 @@ export class BodyMapDataPanel extends LitElement {
 
   private _toggleSubsection(organId: string, section: "diseases" | "symptoms") {
     const set =
-      section === "diseases"
-        ? this._collapsedDiseases
-        : this._collapsedSymptoms;
+      section === "diseases" ? this._expandedDiseases : this._expandedSymptoms;
     const next = new Set(set);
     if (next.has(organId)) {
       next.delete(organId);
@@ -334,9 +356,9 @@ export class BodyMapDataPanel extends LitElement {
       next.add(organId);
     }
     if (section === "diseases") {
-      this._collapsedDiseases = next;
+      this._expandedDiseases = next;
     } else {
-      this._collapsedSymptoms = next;
+      this._expandedSymptoms = next;
     }
   }
 
@@ -395,8 +417,8 @@ export class BodyMapDataPanel extends LitElement {
 
     const totalCount = filteredDiseases.length + filteredSymptoms.length;
     const isCollapsed = this._collapsedIds.has(organId);
-    const diseasesCollapsed = this._collapsedDiseases.has(organId);
-    const symptomsCollapsed = this._collapsedSymptoms.has(organId);
+    const diseasesCollapsed = !this._expandedDiseases.has(organId);
+    const symptomsCollapsed = !this._expandedSymptoms.has(organId);
 
     return html`
       <div class="organ-card">

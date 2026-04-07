@@ -3936,43 +3936,10 @@
     }
 
     if (selectedBodyParts.has(bpId)) {
-      // Deselect
       selectedBodyParts.delete(bpId);
       systemSelectedBodyParts.delete(bpId);
-      // Remove organ highlights (only if not kept by active system or other nav selection)
-      bp.organIds.forEach((organId) => {
-        const keptBySystem =
-          activeSystem &&
-          BODY_SYSTEMS.find((s) => s.id === activeSystem) &&
-          BODY_SYSTEMS.find((s) => s.id === activeSystem).organs.includes(
-            organId,
-          );
-        const keptByOtherNav = [...selectedBodyParts].some((otherId) => {
-          const other = BODY_PARTS_DATA.find((b) => b.id === otherId);
-          return other && other.organIds.includes(organId);
-        });
-        if (!keptBySystem && !keptByOtherNav) {
-          selectedOrgans.delete(organId);
-          const group = document.getElementById("group-" + organId);
-          if (group) group.classList.remove("selected");
-          // Also handle paired groups (lungs etc)
-          document.querySelectorAll(`[data-part="${organId}"]`).forEach((g) => {
-            if (!selectedOrgans.has(organId)) g.classList.remove("selected");
-          });
-        }
-      });
     } else {
-      // Select
       selectedBodyParts.add(bpId);
-      bp.organIds.forEach((organId) => {
-        selectedOrgans.add(organId);
-        const group = document.getElementById("group-" + organId);
-        if (group) group.classList.add("selected");
-        // Handle paired groups (e.g. lungs_left / lungs_right have separate group els)
-        document.querySelectorAll(`[data-part="${organId}"]`).forEach((g) => {
-          g.classList.add("selected");
-        });
-      });
     }
 
     // Sync nav item active state
@@ -4157,6 +4124,7 @@
       symptomSec.classList.remove("collapsed");
       diseaseSec.style.animation = "";
       diseaseSec.style.opacity = "";
+      diseaseSec.classList.remove("collapsed");
       return;
     }
 
@@ -4174,7 +4142,8 @@
     renderSymptomSectionList();
 
     if (isFirstShow) {
-      symptomSec.classList.remove("collapsed");
+      symptomSec.classList.add("collapsed");
+      diseaseSec.classList.add("collapsed");
       symptomSec.style.animation = "dropDownJerk 0.45s ease-out both";
       symptomSec.style.opacity = "";
       diseaseSec.style.animation = "dropDownJerk 0.45s ease-out both";

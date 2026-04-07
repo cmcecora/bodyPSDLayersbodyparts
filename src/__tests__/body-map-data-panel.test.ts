@@ -250,8 +250,8 @@ describe("body-map-data-panel", () => {
     });
   });
 
-  describe("PANEL-07: collapsible cards", () => {
-    it("clicking a card header toggles the collapsed state of that card", async () => {
+  describe("PANEL-07: subsection collapse defaults", () => {
+    it("renders diseases and symptoms subsections collapsed by default for a selected organ", async () => {
       const el = await createPanel({
         selectedOrganIds: ["brain"],
         diseasesMap: new Map([["brain", [{ name: "Stroke" }]]]),
@@ -260,17 +260,23 @@ describe("body-map-data-panel", () => {
         errorIds: new Map(),
       });
 
-      const header = el.shadowRoot?.querySelector(
-        ".card-header",
-      ) as HTMLElement | null;
-      expect(header).not.toBeNull();
+      const cardContent = el.shadowRoot?.querySelector(".card-content");
+      expect(cardContent?.classList.contains("collapsed")).toBe(false);
 
-      // Click to collapse
-      header?.click();
+      const diseasesToggle = el.shadowRoot?.querySelector(
+        ".subsection-heading",
+      ) as HTMLElement | null;
+      expect(diseasesToggle).not.toBeNull();
+
+      const diseasesContent = el.shadowRoot?.querySelector(
+        ".subsection-content",
+      );
+      expect(diseasesContent?.classList.contains("collapsed")).toBe(true);
+
+      diseasesToggle?.click();
       await el.updateComplete;
 
-      const cardContent = el.shadowRoot?.querySelector(".card-content");
-      expect(cardContent?.classList.contains("collapsed")).toBe(true);
+      expect(diseasesContent?.classList.contains("collapsed")).toBe(false);
     });
   });
 });

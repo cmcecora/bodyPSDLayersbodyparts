@@ -92,7 +92,8 @@ export class BodyMapExplorer extends LitElement {
     reflect: true,
     converter: {
       fromAttribute: (value: string) => (value ? value.split(",") : []),
-      toAttribute: (value: string[]) => (value.length > 0 ? value.join(",") : null),
+      toAttribute: (value: string[]) =>
+        value.length > 0 ? value.join(",") : null,
     },
   })
   selectedOrganIds: string[] = [];
@@ -213,6 +214,18 @@ export class BodyMapExplorer extends LitElement {
   }
 
   private get _panelOrganIds(): string[] {
+    // Organs from selectedOrganIds that are "covered" by a body part selection
+    // (e.g. "heart" is covered when "bp_heart" is in _selectedBodyPartIds)
+    // are excluded to prevent duplicate cards in the data panel.
+    const coveredByBodyParts = new Set<string>();
+    for (const bpId of this._selectedBodyPartIds) {
+      const bp = BODY_PARTS.find((b) => b.id === bpId);
+      bp?.organIds.forEach((id) => coveredByBodyParts.add(id));
+    }
+    const filteredSelectedOrgans = this.selectedOrganIds.filter(
+      (id) => !coveredByBodyParts.has(id),
+    );
+
     // Deduplicate systemHighlightOrganIds by data key so e.g. lungs_left and
     // lungs_right don't produce two identical cards — keep first occurrence.
     const seenDataKeys = new Set<string>();
@@ -225,7 +238,7 @@ export class BodyMapExplorer extends LitElement {
 
     return Array.from(
       new Set([
-        ...this.selectedOrganIds,
+        ...filteredSelectedOrgans,
         ...this._selectedBodyPartIds,
         ...dedupedSystem,
       ]),
@@ -332,9 +345,9 @@ export class BodyMapExplorer extends LitElement {
     this._detailBodyPartId = isBodyPartSelected
       ? (nextSelectedBodyPartIds[nextSelectedBodyPartIds.length - 1] ?? null)
       : bodyPartId;
-    if (organIds.length === 0) {
-      this.activeSystemId = null;
-    }
+    // Body part selection always clears any active system — body part and system
+    // selections are mutually exclusive for column 3/4 display.
+    this.activeSystemId = null;
 
     // Toggle SVG highlighting via organIds (may be empty for non-SVG body parts)
     if (organIds.length > 0) {
@@ -350,8 +363,7 @@ export class BodyMapExplorer extends LitElement {
           ...this.selectedOrganIds,
           ...organIds.filter((id) => !this.selectedOrganIds.includes(id)),
         ];
-        const firstSystem = ORGAN_TO_SYSTEM[organIds[0]] ?? [];
-        if (firstSystem.length > 0) this.activeSystemId = firstSystem[0];
+        // NOTE: intentionally NOT activating activeSystemId here
       }
     }
   }
@@ -498,8 +510,12 @@ export class BodyMapExplorer extends LitElement {
 
       // Fetch diseases and symptoms for all body parts in this section
       const [diseasesArrays, symptomsArrays] = await Promise.all([
-        Promise.all(bpKeys.map((key) => provider.fetchDiseases(key).catch(() => []))),
-        Promise.all(bpKeys.map((key) => provider.fetchSymptoms(key).catch(() => []))),
+        Promise.all(
+          bpKeys.map((key) => provider.fetchDiseases(key).catch(() => [])),
+        ),
+        Promise.all(
+          bpKeys.map((key) => provider.fetchSymptoms(key).catch(() => [])),
+        ),
       ]);
 
       // Flatten and deduplicate diseases by name
