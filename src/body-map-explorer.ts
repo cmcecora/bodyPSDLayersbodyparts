@@ -6,6 +6,7 @@ import "./body-map-detail-panel.js";
 import "./body-map-data-panel.js";
 import "./body-map-modal.js";
 import { designTokens } from "./styles/tokens.css.js";
+import { ORGANS } from "./data/organs.js";
 import {
   BODY_SYSTEMS,
   ORGAN_TO_SYSTEM,
@@ -53,6 +54,18 @@ export class BodyMapExplorer extends LitElement {
         min-height: 100vh;
         gap: var(--bme-space-md);
         padding: var(--bme-space-md);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
 
       .panel {
@@ -114,6 +127,7 @@ export class BodyMapExplorer extends LitElement {
 
   @state() private _currentGender: "male" | "female" = "male";
   @state() private _currentView: "organs" | "organs2" | "sections" = "organs";
+  @state() private _liveAnnouncement = "";
 
   // Modal state
   @state() private _modalSectionId: string | null = null;
@@ -353,6 +367,10 @@ export class BodyMapExplorer extends LitElement {
       system?.detailBodyPartIds?.forEach((id) => this._loadOrganData(id));
     }
 
+    if (this.activeSystemId === systemId) {
+      this._announce(`${this._systemTitle(systemId)} system selected.`);
+    }
+
     this.dispatchEvent(
       new CustomEvent("system-selected", {
         detail: { systemId, active: this.activeSystemId === systemId },
@@ -381,6 +399,7 @@ export class BodyMapExplorer extends LitElement {
       this._loadOrganData(organId);
       const mappedSystemIds = ORGAN_TO_SYSTEM[organId] ?? [];
       this.activeSystemId = mappedSystemIds[0] ?? this.activeSystemId;
+      this._announceSelection(this._organName(organId), mappedSystemIds[0]);
     } else if (this.activeSystemId !== null) {
       const mappedSystemIds = ORGAN_TO_SYSTEM[organId] ?? [];
       if (mappedSystemIds.includes(this.activeSystemId)) {
@@ -426,6 +445,7 @@ export class BodyMapExplorer extends LitElement {
       } finally {
         this._modalLoading = false;
       }
+      this._announceSelection(displayName, this._bodyPartSystemId(bodyPartId));
       return;
     }
 
@@ -464,6 +484,13 @@ export class BodyMapExplorer extends LitElement {
         ];
         // NOTE: intentionally NOT activating activeSystemId here
       }
+    }
+
+    if (!isBodyPartSelected) {
+      this._announceSelection(
+        this._bodyPartName(bodyPartId),
+        this._bodyPartSystemId(bodyPartId),
+      );
     }
   }
 
@@ -530,6 +557,7 @@ export class BodyMapExplorer extends LitElement {
     if (isSelected) {
       this.activeSystemId = mappedSystemIds[0] ?? this.activeSystemId;
       this._loadOrganData(lastToggled);
+      this._announceSelection(this._organName(lastToggled), mappedSystemIds[0]);
     } else {
       if (
         this.activeSystemId !== null &&
@@ -791,8 +819,48 @@ export class BodyMapExplorer extends LitElement {
     // Pass-through for now — selected symptom state lives in body-map-modal itself
   }
 
+  private _announceSelection(label: string, systemId?: BodySystemId) {
+    const systemTitle = systemId ? this._systemTitle(systemId) : null;
+    const message = systemTitle
+      ? `${label} selected. Body system: ${systemTitle}.`
+      : `${label} selected.`;
+    this._announce(message);
+  }
+
+  private _announce(message: string) {
+    if (this._liveAnnouncement === message) {
+      this._liveAnnouncement = "";
+      queueMicrotask(() => {
+        this._liveAnnouncement = message;
+      });
+      return;
+    }
+
+    this._liveAnnouncement = message;
+  }
+
+  private _organName(organId: string): string {
+    return ORGANS.find((organ) => organ.id === organId)?.name ?? organId;
+  }
+
+  private _bodyPartName(bodyPartId: string): string {
+    return BODY_PARTS.find((bodyPart) => bodyPart.id === bodyPartId)?.name ?? bodyPartId;
+  }
+
+  private _systemTitle(systemId: BodySystemId): string {
+    return BODY_SYSTEMS.find((system) => system.id === systemId)?.title ?? systemId;
+  }
+
+  private _bodyPartSystemId(bodyPartId: string): BodySystemId | undefined {
+    const bodyPart = BODY_PARTS.find((entry) => entry.id === bodyPartId);
+    return bodyPart?.organIds.flatMap((organId) => ORGAN_TO_SYSTEM[organId] ?? [])[0];
+  }
+
   render() {
     return html`
+      <div class="sr-only" aria-live="polite" data-testid="live-announcer">
+        ${this._liveAnnouncement}
+      </div>
       <div class="layout">
         <div class="panel">
           <body-map-sidebar

@@ -107,10 +107,26 @@ export class BodyMapSidebar extends LitElement {
         background: #3a4a5c;
       }
 
+      .body-parts-header-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        padding: 0;
+        text-align: left;
+      }
+
       .body-parts-header-right {
         display: flex;
         align-items: center;
         gap: 8px;
+        margin-left: 12px;
       }
 
       .sort-toggle {
@@ -348,22 +364,30 @@ export class BodyMapSidebar extends LitElement {
       </ul>
 
       <div class="body-parts-section">
-        <div
-          class="body-parts-header"
-          @click=${() => {
-            this._bodyPartsExpanded = !this._bodyPartsExpanded;
-          }}
-        >
-          <span>Body Parts</span>
+        <div class="body-parts-header">
+          <button
+            class="body-parts-header-toggle"
+            type="button"
+            aria-controls="body-parts-panel"
+            aria-expanded=${String(this._bodyPartsExpanded)}
+            @click=${() => {
+              this._bodyPartsExpanded = !this._bodyPartsExpanded;
+            }}
+          >
+            <span>Body Parts</span>
+            <span
+              class="body-parts-chevron ${this._bodyPartsExpanded
+                ? ""
+                : "collapsed"}"
+              >&#9660;</span
+            >
+          </button>
           <div class="body-parts-header-right">
             <button
               class="sort-toggle ${this._isAllSelected ? "active" : ""}"
               type="button"
               title="Select all body parts"
-              @click=${(e: Event) => {
-                e.stopPropagation();
-                this._emitAllToggle();
-              }}
+              @click=${() => this._emitAllToggle()}
             >
               All
             </button>
@@ -371,22 +395,16 @@ export class BodyMapSidebar extends LitElement {
               class="sort-toggle ${this._bodyPartsSortAZ ? "active" : ""}"
               type="button"
               title="Sort A-Z"
-              @click=${(e: Event) => {
-                e.stopPropagation();
+              @click=${() => {
                 this._bodyPartsSortAZ = !this._bodyPartsSortAZ;
               }}
             >
               A-Z
             </button>
-            <span
-              class="body-parts-chevron ${this._bodyPartsExpanded
-                ? ""
-                : "collapsed"}"
-              >&#9660;</span
-            >
           </div>
         </div>
         <div
+          id="body-parts-panel"
           class="body-parts-body ${this._bodyPartsExpanded ? "" : "collapsed"}"
         >
           <div class="body-parts-body-inner">
@@ -394,6 +412,7 @@ export class BodyMapSidebar extends LitElement {
               <input
                 class="body-parts-search-input"
                 type="text"
+                aria-label="Search body parts"
                 placeholder="Search body parts..."
                 .value=${this._bodyPartsSearch}
                 @input=${(e: Event) => {
@@ -416,6 +435,8 @@ export class BodyMapSidebar extends LitElement {
                             class="body-part-btn ${isSelected
                               ? "selected"
                               : ""}"
+                            data-body-part-id=${bp.id}
+                            aria-pressed=${String(isSelected)}
                             @click=${() =>
                               this._emitBodyPartSelect(bp.id, bp.organIds)}
                           >

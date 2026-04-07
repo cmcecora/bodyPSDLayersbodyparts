@@ -616,6 +616,94 @@ describe("body-map-explorer", () => {
     });
   });
 
+  describe("EXPLORER-07: accessibility announcements and sidebar semantics", () => {
+    it("renders a polite live announcer and updates it for organ selection events", async () => {
+      const { sidebar, model } = await getShadowChildren(el);
+      const announcer = () =>
+        el.shadowRoot?.querySelector(
+          '[data-testid="live-announcer"]',
+        ) as HTMLDivElement | null;
+
+      expect(announcer()?.getAttribute("aria-live")).toBe("polite");
+
+      model!.dispatchEvent(
+        new CustomEvent("organ-selection-change", {
+          detail: {
+            selected: ["heart"],
+            selectedOrganIds: ["heart"],
+            lastToggled: "heart",
+            isSelected: true,
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      expect(announcer()?.textContent?.trim()).toBe(
+        "Heart selected. Body system: Cardiovascular.",
+      );
+      expect(sidebar?.activeSystemId).toBe("cardiovascular");
+    });
+
+    it("announces system selection when the sidebar activates a system", async () => {
+      const { sidebar } = await getShadowChildren(el);
+      const announcer = () =>
+        el.shadowRoot?.querySelector(
+          '[data-testid="live-announcer"]',
+        ) as HTMLDivElement | null;
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("system-toggle-request", {
+          detail: { systemId: "cardiovascular" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      expect(announcer()?.textContent?.trim()).toBe(
+        "Cardiovascular system selected.",
+      );
+    });
+
+    it("exposes expanded, search, and pressed state on sidebar body-part controls", async () => {
+      const { sidebar } = await getShadowChildren(el);
+      const bodyPartsToggle = sidebar!.shadowRoot?.querySelector(
+        ".body-parts-header-toggle",
+      ) as HTMLButtonElement | null;
+      const searchInput = sidebar!.shadowRoot?.querySelector(
+        ".body-parts-search-input",
+      ) as HTMLInputElement | null;
+      let faceButton = sidebar!.shadowRoot?.querySelector(
+        '[data-body-part-id="bp_face"]',
+      ) as HTMLButtonElement | null;
+
+      expect(bodyPartsToggle?.getAttribute("aria-expanded")).toBe("true");
+      expect(bodyPartsToggle?.getAttribute("aria-controls")).toBe(
+        "body-parts-panel",
+      );
+      expect(searchInput?.getAttribute("aria-label")).toBe("Search body parts");
+      expect(faceButton?.getAttribute("aria-pressed")).toBe("false");
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_face", organIds: [] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+      await sidebar?.updateComplete;
+
+      faceButton = sidebar!.shadowRoot?.querySelector(
+        '[data-body-part-id="bp_face"]',
+      ) as HTMLButtonElement | null;
+
+      expect(faceButton?.getAttribute("aria-pressed")).toBe("true");
+    });
+  });
+
   describe("EXPLORER-05: 4th column data panel integration", () => {
     it("explorer renders body-map-data-panel element in shadow DOM", async () => {
       const dataPanel = el.shadowRoot?.querySelector(
