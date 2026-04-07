@@ -403,6 +403,42 @@ describe("body-map-model", () => {
       expect(rotateBtn?.getAttribute("aria-pressed")).toBe("true");
     });
 
+    it("omits the inactive face asset ref from the initial sections render", async () => {
+      await setSectionsState(el, "female", "front");
+
+      const frontFace = el.shadowRoot?.querySelector(
+        '.sections-face[data-facing="front"]',
+      );
+      const backFace = el.shadowRoot?.querySelector(
+        '.sections-face[data-facing="back"]',
+      );
+
+      expect(frontFace?.querySelector(".sections-base-body")).not.toBeNull();
+      expect(backFace?.querySelector(".sections-base-body")).toBeNull();
+      expect(
+        backFace?.querySelector('image[href*="sections-body-back"]'),
+      ).toBeNull();
+    });
+
+    it("swaps the face asset ref when rotating to the back view", async () => {
+      await setSectionsState(el, "female", "back");
+
+      const frontFace = el.shadowRoot?.querySelector(
+        '.sections-face[data-facing="front"]',
+      );
+      const backFace = el.shadowRoot?.querySelector(
+        '.sections-face[data-facing="back"]',
+      );
+
+      expect(frontFace?.querySelector(".sections-base-body")).toBeNull();
+      expect(backFace?.querySelector(".sections-base-body")).not.toBeNull();
+      expect(
+        backFace
+          ?.querySelector(".sections-base-body")
+          ?.getAttribute("href"),
+      ).toContain("sections-body-back.webp");
+    });
+
     it("uses the correct asset and visible section count for female front", async () => {
       await setSectionsState(el, "female", "front");
 

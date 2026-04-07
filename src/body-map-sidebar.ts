@@ -321,7 +321,7 @@ export class BodyMapSidebar extends LitElement {
 
   @property({ type: String, attribute: "asset-base" }) assetBase = "";
 
-  @state() private _bodyPartsExpanded = true;
+  @state() private _bodyPartsExpanded = false;
   @state() private _bodyPartsSearch = "";
   @state() private _bodyPartsSortAZ = false;
 
@@ -410,6 +410,8 @@ export class BodyMapSidebar extends LitElement {
                   class="system-thumb"
                   src=${this._systemThumbnailUrl(system.thumbnail)}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                 />
                 <span class="system-title">${system.title}</span>
               </button>
@@ -462,55 +464,65 @@ export class BodyMapSidebar extends LitElement {
           id="body-parts-panel"
           class="body-parts-body ${this._bodyPartsExpanded ? "" : "collapsed"}"
         >
-          <div class="body-parts-body-inner">
-            <div class="body-parts-search">
-              <input
-                class="body-parts-search-input"
-                type="text"
-                aria-label="Search body parts"
-                placeholder="Search body parts..."
-                .value=${this._bodyPartsSearch}
-                @input=${(e: Event) => {
-                  this._bodyPartsSearch = (e.target as HTMLInputElement).value;
-                }}
-              />
-            </div>
-            ${filteredBodyParts.length === 0
-              ? html`<p class="empty-parts">No results</p>`
-              : html`
-                  <ul class="body-parts-list">
-                    ${filteredBodyParts.map((bp) => {
-                      const isSelected = this.selectedBodyPartIds.includes(
-                        bp.id,
-                      );
-                      return html`
-                        <li>
-                          <button
-                            type="button"
-                            class="body-part-btn ${isSelected
-                              ? "selected"
-                              : ""}"
-                            data-body-part-id=${bp.id}
-                            aria-pressed=${String(isSelected)}
-                            @click=${() =>
-                              this._emitBodyPartSelect(bp.id, bp.organIds)}
-                          >
-                            <img
-                              class="body-part-icon"
-                              src=${this._bodyPartImageUrl(bp.imageFile)}
-                              alt=""
-                            />
-                            <span class="body-part-check"
-                              >${isSelected ? "✓" : nothing}</span
-                            >
-                            ${bp.name}
-                          </button>
-                        </li>
-                      `;
-                    })}
-                  </ul>
-                `}
-          </div>
+          ${this._bodyPartsExpanded
+            ? html`
+                <div class="body-parts-body-inner">
+                  <div class="body-parts-search">
+                    <input
+                      class="body-parts-search-input"
+                      type="text"
+                      aria-label="Search body parts"
+                      placeholder="Search body parts..."
+                      .value=${this._bodyPartsSearch}
+                      @input=${(e: Event) => {
+                        this._bodyPartsSearch = (
+                          e.target as HTMLInputElement
+                        ).value;
+                      }}
+                    />
+                  </div>
+                  ${filteredBodyParts.length === 0
+                    ? html`<p class="empty-parts">No results</p>`
+                    : html`
+                        <ul class="body-parts-list">
+                          ${filteredBodyParts.map((bp) => {
+                            const isSelected =
+                              this.selectedBodyPartIds.includes(bp.id);
+                            return html`
+                              <li>
+                                <button
+                                  type="button"
+                                  class="body-part-btn ${isSelected
+                                    ? "selected"
+                                    : ""}"
+                                  data-body-part-id=${bp.id}
+                                  aria-pressed=${String(isSelected)}
+                                  @click=${() =>
+                                    this._emitBodyPartSelect(
+                                      bp.id,
+                                      bp.organIds,
+                                    )}
+                                >
+                                  <img
+                                    class="body-part-icon"
+                                    src=${this._bodyPartImageUrl(bp.imageFile)}
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                  />
+                                  <span class="body-part-check"
+                                    >${isSelected ? "✓" : nothing}</span
+                                  >
+                                  ${bp.name}
+                                </button>
+                              </li>
+                            `;
+                          })}
+                        </ul>
+                      `}
+                </div>
+              `
+            : nothing}
         </div>
       </div>
     `;

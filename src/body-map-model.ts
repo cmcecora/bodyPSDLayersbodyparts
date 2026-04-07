@@ -586,16 +586,20 @@ export class BodyMapModel extends LitElement {
               style=${`opacity: ${isActive ? "1" : "0"}; pointer-events: ${isActive ? "auto" : "none"}`}
               @click=${this._handleSectionClick}
             >
-              <image
-                id=${isActive ? "sections-base-body" : `sections-base-body-${facing}`}
-                class="sections-base-body"
-                x="0"
-                y="0"
-                width=${String(bodyW)}
-                height=${String(bodyH)}
-                href=${this._sectionsBodyUrl(facing)}
-                pointer-events="none"
-              />
+              ${isActive
+                ? svg`
+                    <image
+                      id="sections-base-body"
+                      class="sections-base-body"
+                      x="0"
+                      y="0"
+                      width=${String(bodyW)}
+                      height=${String(bodyH)}
+                      href=${this._sectionsBodyUrl(facing)}
+                      pointer-events="none"
+                    />
+                  `
+                : nothing}
               ${this._visibleSectionsFor(facing).map((section) =>
                 this._renderSectionGroup(section, isActive),
               )}

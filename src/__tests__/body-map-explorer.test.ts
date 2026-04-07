@@ -6,6 +6,8 @@ import { BodyMapModel } from "../body-map-model.js";
 import { BodyMapDetailPanel } from "../body-map-detail-panel.js";
 import { BodyMapDataPanel } from "../body-map-data-panel.js";
 import { BodyMapModal } from "../body-map-modal.js";
+import { BODY_PARTS, BODY_PARTS_BY_ID } from "../data/body-parts.js";
+import { BODY_SYSTEMS, BODY_SYSTEMS_BY_ID } from "../data/systems.js";
 import { designTokens } from "../styles/tokens.css.js";
 
 // Mock fetchDiseases and fetchSymptomsForPart to avoid real network calls in explorer tests
@@ -59,6 +61,18 @@ describe("body-map-explorer", () => {
       expect(sidebar).not.toBeNull();
       expect(model).not.toBeNull();
       expect(detail).not.toBeNull();
+    });
+
+    it("exports body-part and system lookup maps keyed by id", () => {
+      expect(BODY_PARTS_BY_ID).toBeInstanceOf(Map);
+      expect(BODY_PARTS_BY_ID.size).toBe(BODY_PARTS.length);
+      expect(BODY_PARTS_BY_ID.get("bp_heart")?.name).toBe("Heart");
+
+      expect(BODY_SYSTEMS_BY_ID).toBeInstanceOf(Map);
+      expect(BODY_SYSTEMS_BY_ID.size).toBe(BODY_SYSTEMS.length);
+      expect(BODY_SYSTEMS_BY_ID.get("cardiovascular")?.title).toBe(
+        "Cardiovascular",
+      );
     });
 
     it("starts with no active system — detail panel shows empty state", async () => {
@@ -425,6 +439,33 @@ describe("body-map-explorer", () => {
         "/preview/assets/body-parts/heart.webp",
       );
     });
+
+    it("renders detail images with lazy loading and async decoding", async () => {
+      const { sidebar, detail } = await getShadowChildren(el);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("system-toggle-request", {
+          detail: { systemId: "cardiovascular" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const thumbnail = detail!.shadowRoot?.querySelector(
+        ".detail-thumb",
+      ) as HTMLImageElement | null;
+      const photo = detail!.shadowRoot?.querySelector(
+        ".detail-photo",
+      ) as HTMLImageElement | null;
+
+      expect(thumbnail?.getAttribute("loading")).toBe("lazy");
+      expect(thumbnail?.getAttribute("decoding")).toBe("async");
+      expect(photo?.getAttribute("loading")).toBe("lazy");
+      expect(photo?.getAttribute("decoding")).toBe("async");
+    });
   });
 
   describe("EXPLORER-04: state isolation", () => {
@@ -567,6 +608,7 @@ describe("body-map-explorer", () => {
       const { sidebar, model } = await getShadowChildren(el);
 
       model!.currentView = "organs2";
+      await model?.updateComplete;
       model!.dispatchEvent(
         new CustomEvent("view-change", {
           detail: { view: "organs2" },
@@ -576,25 +618,6 @@ describe("body-map-explorer", () => {
       );
       await el.updateComplete;
       await model?.updateComplete;
-
-      const heartGroup =
-        model!.shadowRoot?.querySelector("#group-heart") ?? null;
-      expect(heartGroup).not.toBeNull();
-      const rectSpy = vi
-        .spyOn(heartGroup as Element, "getBoundingClientRect")
-        .mockReturnValue({
-          x: 200,
-          y: 100,
-          left: 200,
-          top: 100,
-          right: 240,
-          bottom: 130,
-          width: 40,
-          height: 30,
-          toJSON() {
-            return this;
-          },
-        } as DOMRect);
 
       sidebar!.dispatchEvent(
         new CustomEvent("body-part-select-request", {
@@ -612,10 +635,56 @@ describe("body-map-explorer", () => {
       ) as BodyMapModal | null;
       expect(modal).not.toBeNull();
       expect(modal?.sectionId).toBe("bp_heart");
-      expect(modal?.anchorX).toBe(220);
-      expect(modal?.anchorY).toBe(115);
+      expect(modal?.anchorX).toBe(349);
+      expect(modal?.anchorY).toBe(340);
+    });
 
-      rectSpy.mockRestore();
+    it("Organs 2 modal anchoring does not depend on querying body-map-model from renderRoot", async () => {
+      const { sidebar, model } = await getShadowChildren(el);
+
+      model!.currentView = "organs2";
+      await model?.updateComplete;
+      model!.dispatchEvent(
+        new CustomEvent("view-change", {
+          detail: { view: "organs2" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+      await model?.updateComplete;
+
+      const originalQuerySelector = el.renderRoot.querySelector.bind(
+        el.renderRoot,
+      );
+      const querySpy = vi
+        .spyOn(el.renderRoot, "querySelector")
+        .mockImplementation((selector: string) => {
+          if (selector === "body-map-model") {
+            throw new Error("explorer should use a cached model reference");
+          }
+          return originalQuerySelector(selector);
+        });
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_heart", organIds: ["heart"] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await model?.updateComplete;
+
+      const modal = el.shadowRoot?.querySelector(
+        "body-map-modal",
+      ) as BodyMapModal | null;
+      expect(modal).not.toBeNull();
+      expect(modal?.anchorX).toBe(349);
+      expect(modal?.anchorY).toBe(340);
+
+      querySpy.mockRestore();
     });
   });
 
@@ -675,6 +744,22 @@ describe("body-map-explorer", () => {
       const bodyPartsToggle = sidebar!.shadowRoot?.querySelector(
         ".body-parts-header-toggle",
       ) as HTMLButtonElement | null;
+      expect(bodyPartsToggle?.getAttribute("aria-expanded")).toBe("false");
+      expect(bodyPartsToggle?.getAttribute("aria-controls")).toBe(
+        "body-parts-panel",
+      );
+      expect(
+        sidebar!.shadowRoot?.querySelector(".body-parts-search-input"),
+      ).toBeNull();
+      expect(
+        sidebar!.shadowRoot?.querySelector('[data-body-part-id="bp_face"]'),
+      ).toBeNull();
+
+      bodyPartsToggle?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await sidebar?.updateComplete;
+
       const searchInput = sidebar!.shadowRoot?.querySelector(
         ".body-parts-search-input",
       ) as HTMLInputElement | null;
@@ -683,9 +768,6 @@ describe("body-map-explorer", () => {
       ) as HTMLButtonElement | null;
 
       expect(bodyPartsToggle?.getAttribute("aria-expanded")).toBe("true");
-      expect(bodyPartsToggle?.getAttribute("aria-controls")).toBe(
-        "body-parts-panel",
-      );
       expect(searchInput?.getAttribute("aria-label")).toBe("Search body parts");
       expect(faceButton?.getAttribute("aria-pressed")).toBe("false");
 

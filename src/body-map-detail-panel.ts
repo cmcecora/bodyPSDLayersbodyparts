@@ -156,6 +156,8 @@ export class BodyMapDetailPanel extends LitElement {
                       class="detail-thumb"
                       src=${this._systemThumbnailUrl(this.system.thumbnail)}
                       alt=${this.system.title}
+                      loading="lazy"
+                      decoding="async"
                     />
                   `
                 : nothing}
@@ -183,6 +185,8 @@ export class BodyMapDetailPanel extends LitElement {
                                   this.assetBase,
                                 )}
                                 alt=${entry.label}
+                                loading="lazy"
+                                decoding="async"
                               />
                               <figcaption class="photo-caption">
                                 ${entry.label}
