@@ -3,6 +3,7 @@ import { customElement, state } from "lit/decorators.js";
 import "./body-map-model.js";
 import "./body-map-sidebar.js";
 import "./body-map-detail-panel.js";
+import "./body-map-data-panel.js";
 import { designTokens } from "./styles/tokens.css.js";
 import {
   BODY_SYSTEMS,
@@ -10,6 +11,11 @@ import {
   type BodySystemId,
   type BodySystemDefinition,
 } from "./data/systems.js";
+import {
+  fetchDiseases,
+  fetchSymptomsForPart,
+  type DiseaseEntry,
+} from "./data/data-service.js";
 
 @customElement("body-map-explorer")
 export class BodyMapExplorer extends LitElement {
@@ -25,7 +31,7 @@ export class BodyMapExplorer extends LitElement {
 
       .layout {
         display: grid;
-        grid-template-columns: 260px 1fr 300px;
+        grid-template-columns: 260px 1fr 300px minmax(280px, 1fr);
         min-height: 100vh;
         gap: var(--bme-space-md);
         padding: var(--bme-space-md);
@@ -53,12 +59,25 @@ export class BodyMapExplorer extends LitElement {
       body-map-model {
         width: min(100%, 380px);
       }
+
+      .data-panel-col {
+        overflow-y: auto;
+        max-height: 100vh;
+        position: sticky;
+        top: var(--bme-space-md);
+      }
     `,
   ];
 
   @state() private activeSystemId: BodySystemId | null = null;
 
   @state() private selectedOrganIds: string[] = [];
+
+  @state() private _diseasesMap: Map<string, DiseaseEntry[]> = new Map();
+  @state() private _symptomsMap: Map<string, string[]> = new Map();
+  @state() private _loadingIds: Set<string> = new Set();
+  @state() private _errorIds: Map<string, string> = new Map();
+  @state() private _filterQuery = "";
 
   private get activeSystem(): BodySystemDefinition | null {
     if (this.activeSystemId === null) return null;
@@ -93,6 +112,7 @@ export class BodyMapExplorer extends LitElement {
 
     if (event.detail.isSelected) {
       this.activeSystemId = mappedSystemIds[0] ?? this.activeSystemId;
+      this._loadOrganData(event.detail.lastToggled);
     } else {
       if (
         this.activeSystemId !== null &&
@@ -107,6 +127,47 @@ export class BodyMapExplorer extends LitElement {
         }
       }
     }
+  }
+
+  private async _loadOrganData(organId: string) {
+    if (this._diseasesMap.has(organId) || this._loadingIds.has(organId)) return;
+
+    this._loadingIds = new Set([...this._loadingIds, organId]);
+
+    try {
+      const [diseases, symptoms] = await Promise.all([
+        fetchDiseases(organId),
+        fetchSymptomsForPart(organId),
+      ]);
+
+      const nextDiseases = new Map(this._diseasesMap);
+      nextDiseases.set(organId, diseases);
+      this._diseasesMap = nextDiseases;
+
+      const nextSymptoms = new Map(this._symptomsMap);
+      nextSymptoms.set(organId, symptoms);
+      this._symptomsMap = nextSymptoms;
+    } catch (err) {
+      const nextErr = new Map(this._errorIds);
+      nextErr.set(organId, String(err));
+      this._errorIds = nextErr;
+    } finally {
+      const next = new Set(this._loadingIds);
+      next.delete(organId);
+      this._loadingIds = next;
+    }
+  }
+
+  private _handleRetryOrgan(event: CustomEvent<{ organId: string }>) {
+    const { organId } = event.detail;
+    const nextErr = new Map(this._errorIds);
+    nextErr.delete(organId);
+    this._errorIds = nextErr;
+    this._loadOrganData(organId);
+  }
+
+  private _handleFilterChange(event: CustomEvent<{ query: string }>) {
+    this._filterQuery = event.detail.query;
   }
 
   render() {
@@ -130,6 +191,19 @@ export class BodyMapExplorer extends LitElement {
           <body-map-detail-panel
             .system=${this.activeSystem}
           ></body-map-detail-panel>
+        </div>
+        <!-- col 4: data panel -->
+        <div class="panel data-panel-col">
+          <body-map-data-panel
+            .selectedOrganIds=${this.selectedOrganIds}
+            .diseasesMap=${this._diseasesMap}
+            .symptomsMap=${this._symptomsMap}
+            .loadingIds=${this._loadingIds}
+            .errorIds=${this._errorIds}
+            .filterQuery=${this._filterQuery}
+            @filter-change=${this._handleFilterChange}
+            @retry-organ=${this._handleRetryOrgan}
+          ></body-map-data-panel>
         </div>
       </div>
     `;

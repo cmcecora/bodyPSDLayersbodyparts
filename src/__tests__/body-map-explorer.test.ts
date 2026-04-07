@@ -1,9 +1,17 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../body-map-explorer.js";
 import { BodyMapExplorer } from "../body-map-explorer.js";
 import { BodyMapSidebar } from "../body-map-sidebar.js";
 import { BodyMapModel } from "../body-map-model.js";
 import { BodyMapDetailPanel } from "../body-map-detail-panel.js";
+import { BodyMapDataPanel } from "../body-map-data-panel.js";
+
+// Mock fetchDiseases and fetchSymptomsForPart to avoid real network calls in explorer tests
+vi.mock("../data/data-service.js", () => ({
+  fetchDiseases: vi.fn().mockResolvedValue([{ name: "Test Disease" }]),
+  fetchSymptomsForPart: vi.fn().mockResolvedValue(["Test Symptom"]),
+  clearCache: vi.fn(),
+}));
 
 async function createFixture(): Promise<BodyMapExplorer> {
   const el = document.createElement("body-map-explorer") as BodyMapExplorer;
@@ -294,7 +302,7 @@ describe("body-map-explorer", () => {
       expect(model!.selectedOrganIds).toEqual([]);
     });
 
-    it("expect(model.systemHighlightOrganIds).toEqual([\"heart\"])", async () => {
+    it('expect(model.systemHighlightOrganIds).toEqual(["heart"])', async () => {
       const { sidebar, model } = await getShadowChildren(el);
 
       sidebar!.dispatchEvent(
@@ -311,7 +319,7 @@ describe("body-map-explorer", () => {
       expect(sidebar!.activeSystemId).toBe("cardiovascular");
     });
 
-    it("expect(detail.system?.id).toBe(\"cardiovascular\")", async () => {
+    it('expect(detail.system?.id).toBe("cardiovascular")', async () => {
       const { sidebar, detail } = await getShadowChildren(el);
 
       sidebar!.dispatchEvent(
@@ -350,6 +358,48 @@ describe("body-map-explorer", () => {
       await detail?.updateComplete;
 
       expect(detail!.system).toBeNull();
+    });
+  });
+
+  describe("EXPLORER-05: 4th column data panel integration", () => {
+    it("explorer renders body-map-data-panel element in shadow DOM", async () => {
+      const dataPanel = el.shadowRoot?.querySelector(
+        "body-map-data-panel",
+      ) as BodyMapDataPanel | null;
+      expect(dataPanel).not.toBeNull();
+    });
+
+    it("explorer grid has 4 columns (minmax(280px, 1fr) present in styles)", () => {
+      // Check the static styles contain the 4-column declaration
+      const stylesText = BodyMapExplorer.styles
+        .map((s) => s.toString())
+        .join(" ");
+      expect(stylesText).toContain("minmax(280px");
+    });
+
+    it("selecting an organ causes the data panel to receive that organ ID in selectedOrganIds", async () => {
+      const { model } = await getShadowChildren(el);
+
+      model!.dispatchEvent(
+        new CustomEvent("organ-selection-change", {
+          detail: {
+            selectedOrganIds: ["heart"],
+            lastToggled: "heart",
+            isSelected: true,
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+
+      const dataPanel = el.shadowRoot?.querySelector(
+        "body-map-data-panel",
+      ) as BodyMapDataPanel | null;
+      await dataPanel?.updateComplete;
+
+      expect(dataPanel?.selectedOrganIds).toContain("heart");
     });
   });
 });
