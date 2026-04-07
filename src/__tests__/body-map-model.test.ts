@@ -338,6 +338,109 @@ describe("body-map-model", () => {
     });
   });
 
+  describe("section-click event", () => {
+    async function switchToSections(element: BodyMapModel): Promise<void> {
+      element.currentView = "sections";
+      await element.updateComplete;
+    }
+
+    function getSectionGroup(element: BodyMapModel): Element | null {
+      return element.shadowRoot?.querySelector(".body-section-group") ?? null;
+    }
+
+    function clickSectionGroup(sectionGroup: Element): void {
+      const hitArea =
+        sectionGroup.querySelector(".section-hit-area") ?? sectionGroup;
+      hitArea.dispatchEvent(
+        new MouseEvent("click", {
+          bubbles: true,
+          composed: true,
+          clientX: 350,
+          clientY: 200,
+        }),
+      );
+    }
+
+    it("dispatches a section-click CustomEvent when a section group is clicked", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      let fired = false;
+      el.addEventListener("section-click", () => {
+        fired = true;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(fired).toBe(true);
+    });
+
+    it("section-click event detail contains sectionId matching data-part attribute", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      const expectedId = sectionGroup?.getAttribute("data-part");
+      let receivedId: string | undefined;
+      el.addEventListener("section-click", (event) => {
+        receivedId = (event as CustomEvent).detail.sectionId;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(receivedId).toBe(expectedId);
+    });
+
+    it("section-click event detail contains sectionName matching data-name attribute", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      const expectedName = sectionGroup?.getAttribute("data-name");
+      let receivedName: string | undefined;
+      el.addEventListener("section-click", (event) => {
+        receivedName = (event as CustomEvent).detail.sectionName;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(receivedName).toBe(expectedName);
+    });
+
+    it("section-click event detail contains clientX and clientY numbers", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      let receivedX: number | undefined;
+      let receivedY: number | undefined;
+      el.addEventListener("section-click", (event) => {
+        receivedX = (event as CustomEvent).detail.clientX;
+        receivedY = (event as CustomEvent).detail.clientY;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(typeof receivedX).toBe("number");
+      expect(typeof receivedY).toBe("number");
+    });
+
+    it("section-click event has bubbles: true and composed: true", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      let receivedEvent: CustomEvent | undefined;
+      el.addEventListener("section-click", (event) => {
+        receivedEvent = event as CustomEvent;
+      });
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(receivedEvent?.bubbles).toBe(true);
+      expect(receivedEvent?.composed).toBe(true);
+    });
+
+    it("existing section toggle selection behavior still works after click", async () => {
+      await switchToSections(el);
+      const sectionGroup = getSectionGroup(el);
+      // First click — should add to selection
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(sectionGroup?.classList.contains("selected")).toBe(true);
+      // Second click — should remove from selection
+      clickSectionGroup(sectionGroup!);
+      await el.updateComplete;
+      expect(sectionGroup?.classList.contains("selected")).toBe(false);
+    });
+  });
+
   describe("MODEL-10: organ-selection-change event detail", () => {
     it("clicking an organ emits organ-selection-change with lastToggled and selectedOrganIds", async () => {
       let detail: {
