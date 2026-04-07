@@ -15,8 +15,10 @@ import {
 import {
   fetchDiseases,
   fetchSymptomsForPart,
+  getDefaultDataProvider,
   ORGAN_TO_DATA_KEY,
   type DiseaseEntry,
+  type DataProvider,
 } from "./data/data-service.js";
 import { SECTION_TO_BP_KEYS } from "./data/section-mapping.js";
 import {
@@ -115,6 +117,38 @@ export class BodyMapExplorer extends LitElement {
 
   @property({ type: String, attribute: "asset-base", reflect: true })
   assetBase = "";
+
+  /**
+   * Optional external data source. Can be:
+   * 1. A DataProvider object with fetchDiseases and fetchSymptoms methods.
+   * 2. A static object with diseases and symptoms maps.
+   */
+  @property({ type: Object, attribute: "external-data" })
+  externalData: any = null;
+
+  private get _activeDataProvider(): DataProvider {
+    const data = this.externalData;
+
+    // 1. DataProvider instance
+    if (
+      data &&
+      typeof data.fetchDiseases === "function" &&
+      typeof data.fetchSymptoms === "function"
+    ) {
+      return data as DataProvider;
+    }
+
+    // 2. Static object
+    if (data && (data.diseases || data.symptoms)) {
+      return {
+        fetchDiseases: async (id: string) => data.diseases?.[id] ?? [],
+        fetchSymptoms: async (id: string) => data.symptoms?.[id] ?? [],
+      };
+    }
+
+    // 3. Fallback to default
+    return getDefaultDataProvider(this.assetBase);
+  }
 
   private get activeSystem(): BodySystemDefinition | null {
     if (this.activeSystemId === null) return null;
@@ -343,9 +377,10 @@ export class BodyMapExplorer extends LitElement {
     this._loadingIds = new Set([...this._loadingIds, organId]);
 
     try {
+      const provider = this._activeDataProvider;
       const [diseases, symptoms] = await Promise.all([
-        fetchDiseases(organId, this.assetBase),
-        fetchSymptomsForPart(organId, this.assetBase),
+        provider.fetchDiseases(organId),
+        provider.fetchSymptoms(organId),
       ]);
 
       const nextDiseases = new Map(this._diseasesMap);
@@ -407,18 +442,12 @@ export class BodyMapExplorer extends LitElement {
     const bpKeys = SECTION_TO_BP_KEYS[sectionId] ?? [];
 
     try {
+      const provider = this._activeDataProvider;
+
       // Fetch diseases and symptoms for all body parts in this section
       const [diseasesArrays, symptomsArrays] = await Promise.all([
-        Promise.all(
-          bpKeys.map((key) =>
-            fetchDiseases(key, this.assetBase).catch(() => []),
-          ),
-        ),
-        Promise.all(
-          bpKeys.map((key) =>
-            fetchSymptomsForPart(key, this.assetBase).catch(() => []),
-          ),
-        ),
+        Promise.all(bpKeys.map((key) => provider.fetchDiseases(key).catch(() => []))),
+        Promise.all(bpKeys.map((key) => provider.fetchSymptoms(key).catch(() => []))),
       ]);
 
       // Flatten and deduplicate diseases by name
