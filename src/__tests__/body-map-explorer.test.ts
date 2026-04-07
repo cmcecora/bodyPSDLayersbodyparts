@@ -566,6 +566,7 @@ describe("body-map-explorer", () => {
     it("Organs 2 body-part clicks anchor the modal to the selected body location", async () => {
       const { sidebar, model } = await getShadowChildren(el);
 
+      model!.currentView = "organs2";
       model!.dispatchEvent(
         new CustomEvent("view-change", {
           detail: { view: "organs2" },
@@ -574,6 +575,7 @@ describe("body-map-explorer", () => {
         }),
       );
       await el.updateComplete;
+      await model?.updateComplete;
 
       const heartGroup =
         model!.shadowRoot?.querySelector("#group-heart") ?? null;

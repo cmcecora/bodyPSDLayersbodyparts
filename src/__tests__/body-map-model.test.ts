@@ -24,15 +24,21 @@ describe("body-map-model", () => {
   });
 
   describe("MODEL-01: organ layer rendering", () => {
-    it("renders a body-map-model custom element with an SVG viewport", () => {
+    it("renders a body-map-model custom element with an SVG viewport", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       const svg = el.shadowRoot?.querySelector("svg");
 
       expect(el.shadowRoot).toBeTruthy();
       expect(el.tagName.toLowerCase()).toBe("body-map-model");
-      expect(svg?.getAttribute("viewBox")).toBe("0 0 960 2600");
+      expect(svg?.getAttribute("viewBox")).toBe("0 0 698 1698");
     });
 
-    it("renders 19 organ groups with hit-area paths and images", () => {
+    it("renders 19 organ groups with hit-area paths and images", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       const groups = el.shadowRoot?.querySelectorAll(".body-part-group") ?? [];
 
       expect(groups).toHaveLength(19);
@@ -47,14 +53,20 @@ describe("body-map-model", () => {
       });
     });
 
-    it("renders the body silhouette image", () => {
+    it("renders the body silhouette image", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       const silhouette = el.shadowRoot?.querySelector("#base-body");
 
       expect(silhouette).toBeTruthy();
       expect(silhouette?.getAttribute("href")).toContain("silhouette");
     });
 
-    it("every hit-area path has a transform matching its organ position", () => {
+    it("every hit-area path has a transform matching its organ position", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       const organsLayer = el.shadowRoot?.querySelector("#organs-layer");
       const hitAreas = organsLayer?.querySelectorAll(".hit-area") ?? [];
 
@@ -75,6 +87,9 @@ describe("body-map-model", () => {
 
   describe("MODEL-02: hit-area clickability", () => {
     it("clicking a hit-area fires organ-selection-change", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       let detail: string[] | null = null;
       const hitArea = el.shadowRoot?.querySelector(".hit-area");
 
@@ -107,6 +122,9 @@ describe("body-map-model", () => {
 
   describe("MODEL-04: click selection toggle", () => {
     it("toggles selected state on repeated clicks", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       const hitArea = el.shadowRoot?.querySelector(".hit-area");
 
       hitArea?.dispatchEvent(
@@ -127,6 +145,9 @@ describe("body-map-model", () => {
     });
 
     it("allows multiple organ selections at once", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       const hitAreas = el.shadowRoot?.querySelectorAll(".hit-area") ?? [];
 
       hitAreas[0]?.dispatchEvent(
@@ -155,6 +176,9 @@ describe("body-map-model", () => {
     });
 
     it("clears a hidden reproductive organ selection when gender changes", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       const maleGroup = el.shadowRoot?.querySelector(
         '[data-part="male_reproductive"] .hit-area',
       );
@@ -195,9 +219,11 @@ describe("body-map-model", () => {
       const organsLayer = el.shadowRoot?.querySelector("#organs-layer");
       const sectionsLayer = el.shadowRoot?.querySelector("#sections-layer");
       const sectionGroups =
-        el.shadowRoot?.querySelectorAll(".body-section-group") ?? [];
+        el.shadowRoot?.querySelectorAll(
+          '.sections-face.is-active .body-section-group',
+        ) ?? [];
 
-      expect(organsLayer?.getAttribute("style")).toContain("opacity: 0");
+      expect(organsLayer).toBeNull();
       expect(sectionsLayer?.getAttribute("style")).toContain("opacity: 1");
       expect(sectionGroups).toHaveLength(
         SECTIONS.filter(
@@ -248,32 +274,14 @@ describe("body-map-model", () => {
       );
     });
 
-    it("sections view renders male back image when gender is male and facing back", async () => {
-      el.currentView = "sections";
-      el.currentGender = "male";
-      await el.updateComplete;
-
-      const rotateBtn = el.shadowRoot?.querySelector(".rotate-btn");
-      rotateBtn?.dispatchEvent(
-        new MouseEvent("click", { bubbles: true, composed: true }),
-      );
-      await el.updateComplete;
-
-      const sectionsBaseBody = el.shadowRoot?.querySelector(
-        "#sections-base-body",
-      );
-
-      expect(sectionsBaseBody?.getAttribute("href")).toContain(
-        "sections-body-male-back",
-      );
-    });
-
     it("sections view shows only 7 male front sections when gender is male", async () => {
       el.currentView = "sections";
       el.currentGender = "male";
       await el.updateComplete;
       const sectionGroups =
-        el.shadowRoot?.querySelectorAll(".body-section-group") ?? [];
+        el.shadowRoot?.querySelectorAll(
+          '.sections-face.is-active .body-section-group',
+        ) ?? [];
       expect(sectionGroups).toHaveLength(7);
     });
 
@@ -282,7 +290,9 @@ describe("body-map-model", () => {
       el.currentGender = "female";
       await el.updateComplete;
       const sectionGroups =
-        el.shadowRoot?.querySelectorAll(".body-section-group") ?? [];
+        el.shadowRoot?.querySelectorAll(
+          '.sections-face.is-active .body-section-group',
+        ) ?? [];
       expect(sectionGroups).toHaveLength(7);
     });
 
@@ -301,31 +311,137 @@ describe("body-map-model", () => {
       const svg = el.shadowRoot?.querySelector("svg");
       expect(svg?.getAttribute("viewBox")).toBe("0 0 698 1698");
     });
+  });
 
-    it("sections view switches from male-back to female-back on gender toggle", async () => {
+  describe("MODEL-06B: sections front/back flip scene", () => {
+    function getActiveFace(element: BodyMapModel): Element | null {
+      return element.shadowRoot?.querySelector(".sections-face.is-active") ?? null;
+    }
+
+    function getActiveFaceAssetHref(element: BodyMapModel): string | null {
+      return (
+        getActiveFace(element)?.querySelector(".sections-base-body")?.getAttribute(
+          "href",
+        ) ?? null
+      );
+    }
+
+    async function setSectionsState(
+      element: BodyMapModel,
+      gender: "male" | "female",
+      facing: "front" | "back",
+    ): Promise<void> {
+      element.currentView = "sections";
+      element.currentGender = gender;
+      await element.updateComplete;
+
+      const shouldFaceBack = facing === "back";
+      const rotateBtn = element.shadowRoot?.querySelector(
+        ".rotate-btn",
+      ) as HTMLButtonElement | null;
+      if ((rotateBtn?.getAttribute("aria-pressed") === "true") !== shouldFaceBack) {
+        rotateBtn?.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, composed: true }),
+        );
+        await element.updateComplete;
+      }
+    }
+
+    it("declares a 3D flip scene with hidden backfaces in the component styles", () => {
+      const styleEntries = (
+        Array.isArray(BodyMapModel.styles)
+          ? BodyMapModel.styles
+          : [BodyMapModel.styles]
+      ) as Array<{ cssText: string }>;
+      const styles = styleEntries.map((style) => style.cssText).join("\n");
+
+      expect(styles).toContain(".flip-scene");
+      expect(styles).toContain(".flip-card");
+      expect(styles).toContain("backface-visibility: hidden");
+      expect(styles).toContain("rotateY(180deg)");
+    });
+
+    it("renders explicit front/back section faces and toggles the active face on rotate", async () => {
       el.currentView = "sections";
-      el.currentGender = "male";
+      el.currentGender = "female";
       await el.updateComplete;
 
-      const rotateBtn = el.shadowRoot?.querySelector(".rotate-btn");
+      const flipScene = el.shadowRoot?.querySelector(".flip-scene");
+      const flipCard = el.shadowRoot?.querySelector(".flip-card");
+      const frontFace = el.shadowRoot?.querySelector(
+        '.sections-face[data-facing="front"]',
+      );
+      const backFace = el.shadowRoot?.querySelector(
+        '.sections-face[data-facing="back"]',
+      );
+      const rotateBtn = el.shadowRoot?.querySelector(
+        ".rotate-btn",
+      ) as HTMLButtonElement | null;
+
+      expect(flipScene).not.toBeNull();
+      expect(flipCard).not.toBeNull();
+      expect(frontFace).not.toBeNull();
+      expect(backFace).not.toBeNull();
+      expect(frontFace?.classList.contains("is-active")).toBe(true);
+      expect(backFace?.classList.contains("is-active")).toBe(false);
+      expect(rotateBtn?.getAttribute("aria-label")).toBe("View Back");
+
       rotateBtn?.dispatchEvent(
         new MouseEvent("click", { bubbles: true, composed: true }),
       );
       await el.updateComplete;
 
-      el.currentGender = "female";
-      await el.updateComplete;
+      expect(flipCard?.classList.contains("is-back")).toBe(true);
+      expect(frontFace?.classList.contains("is-active")).toBe(false);
+      expect(backFace?.classList.contains("is-active")).toBe(true);
+      expect(rotateBtn?.getAttribute("aria-label")).toBe("View Front");
+      expect(rotateBtn?.getAttribute("aria-pressed")).toBe("true");
+    });
 
-      const sectionsBaseBody = el.shadowRoot?.querySelector(
-        "#sections-base-body",
-      );
+    it("uses the correct asset and visible section count for female front", async () => {
+      await setSectionsState(el, "female", "front");
 
-      expect(sectionsBaseBody?.getAttribute("href")).toContain(
-        "sections-body-back",
+      expect(getActiveFace(el)?.getAttribute("data-facing")).toBe("front");
+      expect(getActiveFaceAssetHref(el)).toContain("sections-body.webp");
+      expect(getActiveFaceAssetHref(el)).not.toContain("male");
+      expect(getActiveFaceAssetHref(el)).not.toContain("back");
+      expect(
+        getActiveFace(el)?.querySelectorAll(".body-section-group"),
+      ).toHaveLength(7);
+    });
+
+    it("uses the correct asset and visible section count for female back", async () => {
+      await setSectionsState(el, "female", "back");
+
+      expect(getActiveFace(el)?.getAttribute("data-facing")).toBe("back");
+      expect(getActiveFaceAssetHref(el)).toContain("sections-body-back.webp");
+      expect(getActiveFaceAssetHref(el)).not.toContain("male");
+      expect(
+        getActiveFace(el)?.querySelectorAll(".body-section-group"),
+      ).toHaveLength(7);
+    });
+
+    it("uses the correct asset and visible section count for male front", async () => {
+      await setSectionsState(el, "male", "front");
+
+      expect(getActiveFace(el)?.getAttribute("data-facing")).toBe("front");
+      expect(getActiveFaceAssetHref(el)).toContain("sections-body-male.webp");
+      expect(getActiveFaceAssetHref(el)).not.toContain("back");
+      expect(
+        getActiveFace(el)?.querySelectorAll(".body-section-group"),
+      ).toHaveLength(7);
+    });
+
+    it("uses the correct asset and visible section count for male back", async () => {
+      await setSectionsState(el, "male", "back");
+
+      expect(getActiveFace(el)?.getAttribute("data-facing")).toBe("back");
+      expect(getActiveFaceAssetHref(el)).toContain(
+        "sections-body-male-back.webp",
       );
-      expect(sectionsBaseBody?.getAttribute("href")).not.toContain(
-        "sections-body-male",
-      );
+      expect(
+        getActiveFace(el)?.querySelectorAll(".body-section-group"),
+      ).toHaveLength(7);
     });
   });
 
@@ -390,6 +506,7 @@ describe("body-map-model", () => {
 
   describe("MODEL-08: controlled organ selection via selectedOrganIds", () => {
     it("setting selectedOrganIds externally renders the heart group with selected class without any click", async () => {
+      el.currentView = "organs";
       el.selectedOrganIds = ["heart"];
       await el.updateComplete;
 
@@ -398,6 +515,7 @@ describe("body-map-model", () => {
     });
 
     it("setting selectedOrganIds to empty array clears all selected classes", async () => {
+      el.currentView = "organs";
       el.selectedOrganIds = ["heart"];
       await el.updateComplete;
       el.selectedOrganIds = [];
@@ -411,6 +529,7 @@ describe("body-map-model", () => {
 
   describe("MODEL-09: system-highlight via systemHighlightOrganIds", () => {
     it("setting systemHighlightOrganIds renders those groups with system-highlighted class", async () => {
+      el.currentView = "organs";
       el.systemHighlightOrganIds = ["heart", "lungs_left"];
       await el.updateComplete;
 
@@ -424,6 +543,7 @@ describe("body-map-model", () => {
     });
 
     it("systemHighlightOrganIds does not affect selectedOrganIds", async () => {
+      el.currentView = "organs";
       el.systemHighlightOrganIds = ["heart", "lungs_left"];
       await el.updateComplete;
 
@@ -434,6 +554,7 @@ describe("body-map-model", () => {
     });
 
     it("system-highlighted groups do not gain selected class", async () => {
+      el.currentView = "organs";
       el.systemHighlightOrganIds = ["heart"];
       await el.updateComplete;
 
@@ -548,6 +669,9 @@ describe("body-map-model", () => {
 
   describe("MODEL-10: organ-selection-change event detail", () => {
     it("clicking an organ emits organ-selection-change with lastToggled and selectedOrganIds", async () => {
+      el.currentView = "organs";
+      await el.updateComplete;
+
       let detail: {
         selected: string[];
         selectedOrganIds: string[];
@@ -574,6 +698,7 @@ describe("body-map-model", () => {
     });
 
     it("deselecting an organ emits isSelected false and excludes it from selectedOrganIds", async () => {
+      el.currentView = "organs";
       el.selectedOrganIds = ["brain"];
       await el.updateComplete;
 

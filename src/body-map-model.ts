@@ -33,10 +33,47 @@ export class BodyMapModel extends LitElement {
         aspect-ratio: 698 / 1698;
       }
 
+      .svg-wrapper.sections-mode {
+        perspective: 1600px;
+      }
+
       .svg-inner {
         position: relative;
         transform-style: preserve-3d;
         height: 100%;
+      }
+
+      .flip-scene {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      .flip-card {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .flip-card.is-back {
+        transform: rotateY(180deg);
+      }
+
+      .sections-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
+      }
+
+      .sections-face[data-facing="back"] {
+        transform: rotateY(180deg);
+      }
+
+      .sections-face:not(.is-active) {
+        pointer-events: none;
       }
 
       svg {
@@ -328,6 +365,11 @@ export class BodyMapModel extends LitElement {
   }
 
   render() {
+    const sectionsFaceGeometry =
+      this.currentView === "sections"
+        ? this._sectionsFaceGeometry(this._sectionsFacing)
+        : null;
+
     return html`
       <div class="model-container">
         ${this._renderViewTabs()}
@@ -351,8 +393,19 @@ export class BodyMapModel extends LitElement {
               </div>
             `
           : nothing}
-        <div class="svg-wrapper">
-          <div class="svg-inner">${this._renderSvg()}</div>
+        <div
+          class=${`svg-wrapper ${this.currentView === "sections"
+            ? "sections-mode"
+            : ""}`.trim()}
+          style=${sectionsFaceGeometry === null
+            ? nothing
+            : `aspect-ratio: ${sectionsFaceGeometry.bodyW} / ${sectionsFaceGeometry.bodyH};`}
+        >
+          <div class="svg-inner">
+            ${this.currentView === "sections"
+              ? this._renderSectionsScene()
+              : this._renderOrgansSvg()}
+          </div>
         </div>
         ${this._renderGenderToggle()}
       </div>
@@ -419,18 +472,9 @@ export class BodyMapModel extends LitElement {
     `;
   }
 
-  private _renderSvg() {
-    const organsVisible = this.currentView !== "sections";
-    const sectionsVisible = this.currentView === "sections";
-    const showingBack = sectionsVisible && this._sectionsFacing === "back";
-    const useLargeViewBox =
-      showingBack || (sectionsVisible && this.currentGender === "male");
-    const viewBox = useLargeViewBox ? "0 0 960 2600" : "0 0 698 1698";
-    const bodyW = useLargeViewBox ? 960 : 698;
-    const bodyH = useLargeViewBox ? 2600 : 1698;
-
+  private _renderOrgansSvg() {
     return svg`
-      <svg viewBox=${viewBox} xmlns="http://www.w3.org/2000/svg" aria-label="Interactive body map">
+      <svg viewBox="0 0 698 1698" xmlns="http://www.w3.org/2000/svg" aria-label="Interactive body map">
         <defs>
           <filter id="blue-glow">
             <feDropShadow
@@ -469,44 +513,98 @@ export class BodyMapModel extends LitElement {
           height="1698"
           href=${this._silhouetteUrl()}
           pointer-events="none"
-          style=${`opacity: ${sectionsVisible ? "0" : "1"}; transition: opacity 0.35s ease-in-out`}
         />
 
         <g
           id="organs-layer"
           class="svg-layer"
-          style=${`opacity: ${organsVisible ? "1" : "0"}; pointer-events: ${organsVisible ? "auto" : "none"}`}
+          style="opacity: 1; pointer-events: auto"
           @click=${this._handleOrganClick}
           @mouseover=${this._handleOrganHover}
           @mouseout=${this._handleOrganOut}
         >
           ${ORGANS.map((organ) => this._renderOrganGroup(organ))}
         </g>
-
-        <g
-          id="sections-layer"
-          class=${`svg-layer ${sectionsVisible && this.highlightedBodyPartIds.length > 0 ? "sections-disabled" : ""}`.trim()}
-          style=${`opacity: ${sectionsVisible ? "1" : "0"}; pointer-events: ${sectionsVisible ? "auto" : "none"}`}
-          @click=${this._handleSectionClick}
-        >
-          <image
-            id="sections-base-body"
-            x="0"
-            y="0"
-            width=${String(bodyW)}
-            height=${String(bodyH)}
-            href=${this._sectionsBodyUrl()}
-            pointer-events="none"
-          />
-          ${SECTIONS.filter(
-            (section) =>
-              section.side === this._sectionsFacing &&
-              (!section.gender || section.gender === this.currentGender),
-          ).map((section) => this._renderSectionGroup(section))}
-        </g>
-
-        ${sectionsVisible ? this._renderBpHighlightLayer(useLargeViewBox) : nothing}
       </svg>
+    `;
+  }
+
+  private _renderSectionsScene() {
+    const isBack = this._sectionsFacing === "back";
+
+    return html`
+      <div class="flip-scene">
+        <div class=${`flip-card ${isBack ? "is-back" : ""}`.trim()}>
+          ${this._renderSectionsFace("front", !isBack)}
+          ${this._renderSectionsFace("back", isBack)}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderSectionsFace(
+    facing: "front" | "back",
+    isActive: boolean,
+  ) {
+    const { viewBox, bodyW, bodyH, useLargeViewBox } =
+      this._sectionsFaceGeometry(facing);
+
+    return html`
+      <div
+        class=${`sections-face ${isActive ? "is-active" : ""}`.trim()}
+        data-facing=${facing}
+        aria-hidden=${String(!isActive)}
+      >
+        ${svg`
+          <svg viewBox=${viewBox} xmlns="http://www.w3.org/2000/svg" aria-label="Interactive body map">
+            <defs>
+              <filter id="green-glow">
+                <feDropShadow
+                  dx="0"
+                  dy="0"
+                  stdDeviation="4"
+                  flood-color="#4caf50"
+                  flood-opacity="0.6"
+                />
+              </filter>
+              <filter id="bp-glow">
+                <feDropShadow
+                  dx="0"
+                  dy="0"
+                  stdDeviation="5"
+                  flood-color="#4caf50"
+                  flood-opacity="0.55"
+                />
+              </filter>
+            </defs>
+
+            <g
+              id=${facing === this._sectionsFacing
+                ? "sections-layer"
+                : `sections-layer-${facing}`}
+              class=${`svg-layer ${isActive && this.highlightedBodyPartIds.length > 0 ? "sections-disabled" : ""}`.trim()}
+              style=${`opacity: ${isActive ? "1" : "0"}; pointer-events: ${isActive ? "auto" : "none"}`}
+              @click=${this._handleSectionClick}
+            >
+              <image
+                id=${isActive ? "sections-base-body" : `sections-base-body-${facing}`}
+                class="sections-base-body"
+                x="0"
+                y="0"
+                width=${String(bodyW)}
+                height=${String(bodyH)}
+                href=${this._sectionsBodyUrl(facing)}
+                pointer-events="none"
+              />
+              ${this._visibleSectionsFor(facing).map((section) =>
+                this._renderSectionGroup(section, isActive),
+              )}
+            </g>
+
+            ${isActive ? this._renderBpHighlightLayer(useLargeViewBox) : nothing}
+          </svg>
+        `}
+      </div>
     `;
   }
 
@@ -559,9 +657,11 @@ export class BodyMapModel extends LitElement {
     `;
   }
 
-  private _renderSectionGroup(section: SectionDefinition) {
+  private _renderSectionGroup(
+    section: SectionDefinition,
+    interactive = true,
+  ) {
     const isSelected = this._selectedSections.has(section.id);
-    const active = this.currentView === "sections";
     const keyboardId = section.entryId;
 
     return svg`
@@ -571,8 +671,8 @@ export class BodyMapModel extends LitElement {
         data-part=${section.id}
         data-name=${section.name}
         data-keyboard-id=${keyboardId}
-        tabindex=${this._isKeyboardTargetActive(keyboardId) ? "0" : "-1"}
-        focusable="true"
+        tabindex=${interactive && this._isKeyboardTargetActive(keyboardId) ? "0" : "-1"}
+        focusable=${interactive ? "true" : "false"}
         role="button"
         aria-label=${`Select ${section.name}`}
         aria-pressed=${String(isSelected)}
@@ -580,7 +680,7 @@ export class BodyMapModel extends LitElement {
         @keydown=${(event: KeyboardEvent) =>
           this._handleSectionKeydown(event, section)}
       >
-        <path class="section-hit-area" d=${section.hitAreaPath} fill="transparent" pointer-events=${active ? "all" : "none"} />
+        <path class="section-hit-area" d=${section.hitAreaPath} fill="transparent" pointer-events=${interactive ? "all" : "none"} />
       </g>
     `;
   }
@@ -600,9 +700,13 @@ export class BodyMapModel extends LitElement {
   }
 
   private _visibleSections(): SectionDefinition[] {
+    return this._visibleSectionsFor(this._sectionsFacing);
+  }
+
+  private _visibleSectionsFor(facing: "front" | "back"): SectionDefinition[] {
     return SECTIONS.filter(
       (section) =>
-        section.side === this._sectionsFacing &&
+        section.side === facing &&
         (!section.gender || section.gender === this.currentGender),
     );
   }
@@ -905,10 +1009,21 @@ export class BodyMapModel extends LitElement {
     return `${this._assetPrefix()}/silhouette.webp`;
   }
 
-  private _sectionsBodyUrl(): string {
+  private _sectionsBodyUrl(facing: "front" | "back"): string {
     const genderPart = this.currentGender === "male" ? "-male" : "";
-    const facingPart = this._sectionsFacing === "back" ? "-back" : "";
+    const facingPart = facing === "back" ? "-back" : "";
     return `${this._assetPrefix()}/sections-body${genderPart}${facingPart}.webp`;
+  }
+
+  private _sectionsFaceGeometry(facing: "front" | "back") {
+    const useLargeViewBox = facing === "back" || this.currentGender === "male";
+
+    return {
+      useLargeViewBox,
+      viewBox: useLargeViewBox ? "0 0 960 2600" : "0 0 698 1698",
+      bodyW: useLargeViewBox ? 960 : 698,
+      bodyH: useLargeViewBox ? 2600 : 1698,
+    };
   }
 
   private _toggleFacing() {
