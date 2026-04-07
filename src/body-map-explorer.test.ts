@@ -60,6 +60,25 @@ describe("BodyMapExplorer API", () => {
       await el.updateComplete;
       expect(el.getAttribute("asset-base")).toBe("/custom/assets/");
     });
+
+    test("prefixes system thumbnails with asset-base in the sidebar and detail panel", async () => {
+      el.assetBase = "/cdn";
+      el.activeSystemId = "nervous";
+      await el.updateComplete;
+
+      const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
+      const detail = el.shadowRoot!.querySelector("body-map-detail-panel")!;
+      await sidebar.updateComplete;
+      await detail.updateComplete;
+
+      const sidebarThumb = sidebar.shadowRoot!.querySelector(".system-thumb")!;
+      const detailThumb = detail.shadowRoot!.querySelector(".detail-thumb")!;
+
+      expect(sidebarThumb.getAttribute("src")?.startsWith("/cdn/")).toBe(true);
+      expect(detailThumb.getAttribute("src")).toBe(
+        "/cdn/assets/systems/nervous.webp",
+      );
+    });
   });
 
   describe("Events", () => {
