@@ -100,9 +100,9 @@ Plans:
 
 Plans:
 
-- [ ] 04-01-PLAN.md — DataService singleton with fetch/cache, split-diseases script, section mapping
-- [ ] 04-02-PLAN.md — Fix section-click event dispatch in body-map-model
-- [ ] 04-03-PLAN.md — 4th column data panel component with collapsible cards, search, skeleton states
+- [x] 04-01-PLAN.md — DataService singleton with fetch/cache, split-diseases script, section mapping
+- [x] 04-02-PLAN.md — Fix section-click event dispatch in body-map-model
+- [x] 04-03-PLAN.md — 4th column data panel component with collapsible cards, search, skeleton states
 - [ ] 04-04-PLAN.md — Body-section modal with tabs, checkboxes, positioned carat, dismiss behavior
 
 ### Phase 5: Web Component API
@@ -117,7 +117,11 @@ Plans:
 3. A host app can programmatically set selected body parts by writing to the component's property API
 4. Setting the `asset-base` attribute redirects all image loads to the specified URL prefix, enabling CDN or custom asset hosting
 5. The component operates in dual data mode: bundled JSON data used by default, external data accepted via props when provided
-   **Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 05-01-PLAN.md — Define public attributes, properties, and CustomEvents for orchestrator control
 
 ### Phase 6: Polish, Back View & Performance
 
@@ -145,6 +149,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Scaffolding & Asset Extraction             | 2/2            | Complete    | 2026-03-29 |
 | 2. Core SVG Body Model                        | 3/3            | Complete    | 2026-04-06 |
 | 3. Body Systems Sidebar & Detail Panel        | 2/2            | Complete    | 2026-04-06 |
-| 4. Data Layer, Disease/Symptom Panels & Modal | 0/4            | In progress | -          |
-| 5. Web Component API                          | 0/TBD          | Not started | -          |
+| 4. Data Layer, Disease/Symptom Panels & Modal | 4/4            | Complete    | 2026-04-07 |
+| 5. Web Component API                          | 0/1            | In progress | -          |
 | 6. Polish, Back View & Performance            | 0/TBD          | Not started | -          |
