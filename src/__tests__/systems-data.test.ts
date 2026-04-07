@@ -37,7 +37,7 @@ describe("systems data", () => {
   it("builds the reverse organ lookup for shared and reproductive systems", () => {
     expect(ORGAN_TO_SYSTEM.heart).toEqual(["cardiovascular"]);
     expect(ORGAN_TO_SYSTEM.thymus).toEqual(["endocrine", "immune"]);
-    expect(ORGAN_TO_SYSTEM.knee_joint).toEqual(["muscular", "skeletal"]);
+    expect(ORGAN_TO_SYSTEM.knee_joint).toEqual(["skeletal"]);
     expect(ORGAN_TO_SYSTEM.male_reproductive).toEqual(["reproductive"]);
     expect(ORGAN_TO_SYSTEM.female_reproductive).toEqual(["reproductive"]);
   });

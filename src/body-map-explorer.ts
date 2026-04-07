@@ -92,7 +92,8 @@ export class BodyMapExplorer extends LitElement {
     reflect: true,
     converter: {
       fromAttribute: (value: string) => (value ? value.split(",") : []),
-      toAttribute: (value: string[]) => (value.length > 0 ? value.join(",") : null),
+      toAttribute: (value: string[]) =>
+        value.length > 0 ? value.join(",") : null,
     },
   })
   selectedOrganIds: string[] = [];
@@ -170,12 +171,23 @@ export class BodyMapExplorer extends LitElement {
 
   private get _detailPhotoEntries(): BodyPartPhotoEntry[] {
     if (this.activeSystem !== null) {
-      const entries =
-        this.activeSystem.organIds.length > 0
-          ? getBodyPartPhotoEntriesForOrganIds(this.activeSystem.organIds)
-          : getBodyPartPhotoEntriesByIds(
-              this.activeSystem.detailBodyPartIds ?? [],
-            );
+      let entries: BodyPartPhotoEntry[];
+      if (this.activeSystem.organIds.length > 0) {
+        entries = getBodyPartPhotoEntriesForOrganIds(
+          this.activeSystem.organIds,
+        );
+        // Merge in any explicitly listed detailBodyPartIds not already present
+        const extraIds = (this.activeSystem.detailBodyPartIds ?? []).filter(
+          (id) => !entries.some((e) => e.id === id),
+        );
+        if (extraIds.length > 0) {
+          entries = [...entries, ...getBodyPartPhotoEntriesByIds(extraIds)];
+        }
+      } else {
+        entries = getBodyPartPhotoEntriesByIds(
+          this.activeSystem.detailBodyPartIds ?? [],
+        );
+      }
       const focusedBodyPartId = this._activeDetailBodyPart?.id;
 
       if (focusedBodyPartId === undefined) {
@@ -213,6 +225,18 @@ export class BodyMapExplorer extends LitElement {
   }
 
   private get _panelOrganIds(): string[] {
+    // Organs from selectedOrganIds that are "covered" by a body part selection
+    // (e.g. "heart" is covered when "bp_heart" is in _selectedBodyPartIds)
+    // are excluded to prevent duplicate cards in the data panel.
+    const coveredByBodyParts = new Set<string>();
+    for (const bpId of this._selectedBodyPartIds) {
+      const bp = BODY_PARTS.find((b) => b.id === bpId);
+      bp?.organIds.forEach((id) => coveredByBodyParts.add(id));
+    }
+    const filteredSelectedOrgans = this.selectedOrganIds.filter(
+      (id) => !coveredByBodyParts.has(id),
+    );
+
     // Deduplicate systemHighlightOrganIds by data key so e.g. lungs_left and
     // lungs_right don't produce two identical cards — keep first occurrence.
     const seenDataKeys = new Set<string>();
@@ -223,11 +247,15 @@ export class BodyMapExplorer extends LitElement {
       return true;
     });
 
+    // Include bp_ items explicitly listed in the active system's detailBodyPartIds
+    const systemDetailIds = this.activeSystem?.detailBodyPartIds ?? [];
+
     return Array.from(
       new Set([
-        ...this.selectedOrganIds,
+        ...filteredSelectedOrgans,
         ...this._selectedBodyPartIds,
         ...dedupedSystem,
+        ...systemDetailIds,
       ]),
     );
   }
@@ -267,9 +295,10 @@ export class BodyMapExplorer extends LitElement {
       this.activeSystemId = null;
     } else {
       this.activeSystemId = systemId;
-      // Load data for all organs in the newly selected system
+      // Load data for all organs and explicit body parts in the newly selected system
       const system = BODY_SYSTEMS.find((s) => s.id === systemId);
       system?.organIds.forEach((id) => this._loadOrganData(id));
+      system?.detailBodyPartIds?.forEach((id) => this._loadOrganData(id));
     }
 
     this.dispatchEvent(
@@ -332,9 +361,9 @@ export class BodyMapExplorer extends LitElement {
     this._detailBodyPartId = isBodyPartSelected
       ? (nextSelectedBodyPartIds[nextSelectedBodyPartIds.length - 1] ?? null)
       : bodyPartId;
-    if (organIds.length === 0) {
-      this.activeSystemId = null;
-    }
+    // Body part selection always clears any active system — body part and system
+    // selections are mutually exclusive for column 3/4 display.
+    this.activeSystemId = null;
 
     // Toggle SVG highlighting via organIds (may be empty for non-SVG body parts)
     if (organIds.length > 0) {
@@ -350,8 +379,7 @@ export class BodyMapExplorer extends LitElement {
           ...this.selectedOrganIds,
           ...organIds.filter((id) => !this.selectedOrganIds.includes(id)),
         ];
-        const firstSystem = ORGAN_TO_SYSTEM[organIds[0]] ?? [];
-        if (firstSystem.length > 0) this.activeSystemId = firstSystem[0];
+        // NOTE: intentionally NOT activating activeSystemId here
       }
     }
   }
@@ -453,6 +481,26 @@ export class BodyMapExplorer extends LitElement {
     }
   }
 
+  private _handleAllBodyPartsToggle(
+    event: CustomEvent<{ selectAll: boolean }>,
+  ) {
+    const { selectAll } = event.detail;
+    this.activeSystemId = null;
+    this._detailBodyPartId = null;
+    if (selectAll) {
+      this._selectedBodyPartIds = BODY_PARTS.map((bp) => bp.id);
+      this.selectedOrganIds = [
+        ...new Set(BODY_PARTS.flatMap((bp) => bp.organIds)),
+      ];
+      for (const bp of BODY_PARTS) {
+        void this._loadOrganData(bp.id);
+      }
+    } else {
+      this._selectedBodyPartIds = [];
+      this.selectedOrganIds = [];
+    }
+  }
+
   private _handleRetryOrgan(event: CustomEvent<{ organId: string }>) {
     const { organId } = event.detail;
     const nextErr = new Map(this._errorIds);
@@ -498,8 +546,12 @@ export class BodyMapExplorer extends LitElement {
 
       // Fetch diseases and symptoms for all body parts in this section
       const [diseasesArrays, symptomsArrays] = await Promise.all([
-        Promise.all(bpKeys.map((key) => provider.fetchDiseases(key).catch(() => []))),
-        Promise.all(bpKeys.map((key) => provider.fetchSymptoms(key).catch(() => []))),
+        Promise.all(
+          bpKeys.map((key) => provider.fetchDiseases(key).catch(() => [])),
+        ),
+        Promise.all(
+          bpKeys.map((key) => provider.fetchSymptoms(key).catch(() => [])),
+        ),
       ]);
 
       // Flatten and deduplicate diseases by name
@@ -569,10 +621,12 @@ export class BodyMapExplorer extends LitElement {
             .systems=${BODY_SYSTEMS}
             .activeSystemId=${this.activeSystemId}
             .selectedOrganIds=${this.selectedOrganIds}
+            .selectedBodyPartIds=${this._selectedBodyPartIds}
             .assetBase=${this.assetBase}
             @system-toggle-request=${this._handleSystemToggleRequest}
             @organ-select-request=${this._handleOrganSelectRequest}
             @body-part-select-request=${this._handleBodyPartSelectRequest}
+            @body-parts-all-toggle-request=${this._handleAllBodyPartsToggle}
           ></body-map-sidebar>
         </div>
         <div class="body-model-area">
