@@ -304,12 +304,12 @@ describe("body-map-model", () => {
       expect(svg?.getAttribute("viewBox")).toBe("0 0 960 2600");
     });
 
-    it("uses 698x1698 viewBox for female front sections", async () => {
+    it("uses 960x2600 viewBox for female front sections", async () => {
       el.currentView = "sections";
       el.currentGender = "female";
       await el.updateComplete;
       const svg = el.shadowRoot?.querySelector("svg");
-      expect(svg?.getAttribute("viewBox")).toBe("0 0 698 1698");
+      expect(svg?.getAttribute("viewBox")).toBe("0 0 960 2600");
     });
   });
 
@@ -433,9 +433,7 @@ describe("body-map-model", () => {
       expect(frontFace?.querySelector(".sections-base-body")).toBeNull();
       expect(backFace?.querySelector(".sections-base-body")).not.toBeNull();
       expect(
-        backFace
-          ?.querySelector(".sections-base-body")
-          ?.getAttribute("href"),
+        backFace?.querySelector(".sections-base-body")?.getAttribute("href"),
       ).toContain("sections-body-back.webp");
     });
 

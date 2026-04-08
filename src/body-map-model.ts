@@ -394,9 +394,9 @@ export class BodyMapModel extends LitElement {
             `
           : nothing}
         <div
-          class=${`svg-wrapper ${this.currentView === "sections"
-            ? "sections-mode"
-            : ""}`.trim()}
+          class=${`svg-wrapper ${
+            this.currentView === "sections" ? "sections-mode" : ""
+          }`.trim()}
           style=${sectionsFaceGeometry === null
             ? nothing
             : `aspect-ratio: ${sectionsFaceGeometry.bodyW} / ${sectionsFaceGeometry.bodyH};`}
@@ -542,10 +542,7 @@ export class BodyMapModel extends LitElement {
     `;
   }
 
-  private _renderSectionsFace(
-    facing: "front" | "back",
-    isActive: boolean,
-  ) {
+  private _renderSectionsFace(facing: "front" | "back", isActive: boolean) {
     const { viewBox, bodyW, bodyH, useLargeViewBox } =
       this._sectionsFaceGeometry(facing);
 
@@ -579,15 +576,18 @@ export class BodyMapModel extends LitElement {
             </defs>
 
             <g
-              id=${facing === this._sectionsFacing
-                ? "sections-layer"
-                : `sections-layer-${facing}`}
+              id=${
+                facing === this._sectionsFacing
+                  ? "sections-layer"
+                  : `sections-layer-${facing}`
+              }
               class=${`svg-layer ${isActive && this.highlightedBodyPartIds.length > 0 ? "sections-disabled" : ""}`.trim()}
               style=${`opacity: ${isActive ? "1" : "0"}; pointer-events: ${isActive ? "auto" : "none"}`}
               @click=${this._handleSectionClick}
             >
-              ${isActive
-                ? svg`
+              ${
+                isActive
+                  ? svg`
                     <image
                       id="sections-base-body"
                       class="sections-base-body"
@@ -599,7 +599,8 @@ export class BodyMapModel extends LitElement {
                       pointer-events="none"
                     />
                   `
-                : nothing}
+                  : nothing
+              }
               ${this._visibleSectionsFor(facing).map((section) =>
                 this._renderSectionGroup(section, isActive),
               )}
@@ -661,10 +662,7 @@ export class BodyMapModel extends LitElement {
     `;
   }
 
-  private _renderSectionGroup(
-    section: SectionDefinition,
-    interactive = true,
-  ) {
+  private _renderSectionGroup(section: SectionDefinition, interactive = true) {
     const isSelected = this._selectedSections.has(section.id);
     const keyboardId = section.entryId;
 
@@ -912,7 +910,11 @@ export class BodyMapModel extends LitElement {
       return;
     }
 
-    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+    if (
+      event.key === "Enter" ||
+      event.key === " " ||
+      event.key === "Spacebar"
+    ) {
       event.preventDefault();
       this._setActiveKeyboardTarget(organId);
       this._toggleOrganSelection(organId);
@@ -927,11 +929,16 @@ export class BodyMapModel extends LitElement {
       return;
     }
 
-    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+    if (
+      event.key === "Enter" ||
+      event.key === " " ||
+      event.key === "Spacebar"
+    ) {
       event.preventDefault();
       this._setActiveKeyboardTarget(section.entryId);
-      const rect = (event.currentTarget as SVGGraphicsElement | null)
-        ?.getBoundingClientRect();
+      const rect = (
+        event.currentTarget as SVGGraphicsElement | null
+      )?.getBoundingClientRect();
       const clientX = rect ? rect.left + rect.width / 2 : 0;
       const clientY = rect ? rect.top + rect.height / 2 : 0;
       this._toggleSectionSelection(section, clientX, clientY);
@@ -1019,14 +1026,12 @@ export class BodyMapModel extends LitElement {
     return `${this._assetPrefix()}/sections-body${genderPart}${facingPart}.webp`;
   }
 
-  private _sectionsFaceGeometry(facing: "front" | "back") {
-    const useLargeViewBox = facing === "back" || this.currentGender === "male";
-
+  private _sectionsFaceGeometry(_facing: "front" | "back") {
     return {
-      useLargeViewBox,
-      viewBox: useLargeViewBox ? "0 0 960 2600" : "0 0 698 1698",
-      bodyW: useLargeViewBox ? 960 : 698,
-      bodyH: useLargeViewBox ? 2600 : 1698,
+      useLargeViewBox: true,
+      viewBox: "0 0 960 2600",
+      bodyW: 960,
+      bodyH: 2600,
     };
   }
 
