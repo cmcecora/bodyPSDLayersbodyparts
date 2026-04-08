@@ -12,6 +12,20 @@ async function createSidebar(): Promise<BodyMapSidebar> {
   return el;
 }
 
+/** Click a collapsible section toggle to expand it, then wait for re-render. */
+async function expandSection(
+  sidebar: BodyMapSidebar,
+  panelId: string,
+): Promise<void> {
+  const toggle = sidebar.shadowRoot?.querySelector(
+    `[aria-controls="${panelId}"]`,
+  ) as HTMLButtonElement | null;
+  toggle?.dispatchEvent(
+    new MouseEvent("click", { bubbles: true, composed: true }),
+  );
+  await sidebar.updateComplete;
+}
+
 async function createDetailPanel(): Promise<BodyMapDetailPanel> {
   const el = document.createElement(
     "body-map-detail-panel",
@@ -34,6 +48,8 @@ describe("body-map-sidebar", () => {
   });
 
   it("renders 11 system buttons with dot, thumb, and title for each row", async () => {
+    await expandSection(sidebar, "systems-panel");
+
     const buttons = sidebar.shadowRoot?.querySelectorAll(
       "button.system-button",
     );
@@ -48,7 +64,9 @@ describe("body-map-sidebar", () => {
     });
   });
 
-  it("each button carries the system id as data-system-id", () => {
+  it("each button carries the system id as data-system-id", async () => {
+    await expandSection(sidebar, "systems-panel");
+
     const buttons = sidebar.shadowRoot?.querySelectorAll(
       "button.system-button",
     );
@@ -59,6 +77,8 @@ describe("body-map-sidebar", () => {
   });
 
   it("clicking a row dispatches system-toggle-request with systemId, bubbles, and composed", async () => {
+    await expandSection(sidebar, "systems-panel");
+
     let event: CustomEvent<{ systemId: string }> | null = null;
 
     sidebar.addEventListener("system-toggle-request", (e) => {
@@ -80,13 +100,8 @@ describe("body-map-sidebar", () => {
   });
 
   it("renders sidebar imagery with lazy loading and async decoding", async () => {
-    const toggle = sidebar.shadowRoot?.querySelector(
-      ".body-parts-header-toggle",
-    ) as HTMLButtonElement | null;
-    toggle?.dispatchEvent(
-      new MouseEvent("click", { bubbles: true, composed: true }),
-    );
-    await sidebar.updateComplete;
+    await expandSection(sidebar, "systems-panel");
+    await expandSection(sidebar, "body-parts-panel");
 
     const systemThumb = sidebar.shadowRoot?.querySelector(
       ".system-thumb",
@@ -118,10 +133,11 @@ describe("body-map-sidebar", () => {
     expect(sidebar.shadowRoot?.querySelector(".body-part-icon")).not.toBeNull();
   });
 
-  it("renders a secondary page-links list for the shared site navigation", () => {
-    const pageLinks = sidebar.shadowRoot?.querySelectorAll(
-      "[data-site-nav-id]",
-    );
+  it("renders a secondary page-links list for the shared site navigation", async () => {
+    await expandSection(sidebar, "directory-panel");
+
+    const pageLinks =
+      sidebar.shadowRoot?.querySelectorAll("[data-site-nav-id]");
 
     expect(pageLinks).toHaveLength(5);
     expect(pageLinks?.[0]?.textContent).toContain("Body Part");
@@ -129,6 +145,8 @@ describe("body-map-sidebar", () => {
   });
 
   it("clicking the body-part page link dispatches site-nav-request", async () => {
+    await expandSection(sidebar, "directory-panel");
+
     let event: CustomEvent<{ navId: string }> | null = null;
 
     sidebar.addEventListener("site-nav-request", (e) => {

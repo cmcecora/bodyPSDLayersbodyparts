@@ -36,6 +36,70 @@ export class BodyMapSidebar extends LitElement {
         margin: 0;
       }
 
+      /* Shared collapsible section styles */
+      .collapsible-section {
+        border-top: 1px solid var(--bme-divider);
+      }
+
+      .collapsible-section:first-child {
+        border-top: none;
+      }
+
+      .collapsible-header {
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, var(--bme-header-bg), #32485d);
+        color: var(--bme-header-text);
+        cursor: pointer;
+        user-select: none;
+        font-size: var(--bme-font-size-heading);
+        font-weight: 600;
+      }
+
+      .collapsible-header:hover {
+        background: linear-gradient(135deg, #2d4055, #3b5369);
+      }
+
+      .collapsible-header-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        padding: var(--bme-space-sm) var(--bme-panel-padding);
+        border-radius: var(--bme-radius-sm);
+        text-align: left;
+      }
+
+      .collapsible-chevron {
+        font-size: 10px;
+        transition: transform 0.2s ease;
+      }
+
+      .collapsible-chevron.collapsed {
+        transform: rotate(-90deg);
+      }
+
+      .collapsible-body {
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: 1fr;
+        transition: grid-template-rows 0.2s ease;
+      }
+
+      .collapsible-body.collapsed {
+        grid-template-rows: 0fr;
+      }
+
+      .collapsible-body-inner {
+        overflow: hidden;
+      }
+
       .systems-list {
         list-style: none;
         margin: 0;
@@ -89,6 +153,7 @@ export class BodyMapSidebar extends LitElement {
       }
 
       .system-button:focus-visible,
+      .collapsible-header-toggle:focus-visible,
       .body-parts-header-toggle:focus-visible,
       .sort-toggle:focus-visible,
       .body-part-btn:focus-visible,
@@ -410,9 +475,11 @@ export class BodyMapSidebar extends LitElement {
   @property({ type: String, attribute: "active-nav-id" })
   activeNavId: SiteNavId = DEFAULT_SITE_NAV_ID;
 
+  @state() private _systemsExpanded = false;
   @state() private _bodyPartsExpanded = false;
   @state() private _bodyPartsSearch = "";
   @state() private _bodyPartsSortAZ = false;
+  @state() private _directoryExpanded = false;
 
   private get _isAllSelected(): boolean {
     return (
@@ -491,37 +558,71 @@ export class BodyMapSidebar extends LitElement {
     const filteredBodyParts = this._filteredBodyParts();
 
     return html`
-      <div class="panel-header">Body Systems</div>
-      <ul class="systems-list">
-        ${this.systems.map(
-          (system) => html`
-            <li>
-              <button
-                type="button"
-                class="system-button${system.id === this.activeSystemId
-                  ? " active"
-                  : ""}"
-                data-system-id=${system.id}
-                aria-pressed=${String(system.id === this.activeSystemId)}
-                @click=${() => this._emitToggle(system.id)}
-              >
-                <span
-                  class="system-dot"
-                  style="background:${system.color}"
-                ></span>
-                <img
-                  class="system-thumb"
-                  src=${this._systemThumbnailUrl(system.thumbnail)}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span class="system-title">${system.title}</span>
-              </button>
-            </li>
-          `,
-        )}
-      </ul>
+      <div class="collapsible-section">
+        <div class="collapsible-header">
+          <button
+            class="collapsible-header-toggle"
+            type="button"
+            aria-controls="systems-panel"
+            aria-expanded=${String(this._systemsExpanded)}
+            @click=${() => {
+              this._systemsExpanded = !this._systemsExpanded;
+            }}
+          >
+            <span>Body Systems</span>
+            <span
+              class="collapsible-chevron ${this._systemsExpanded
+                ? ""
+                : "collapsed"}"
+              >&#9660;</span
+            >
+          </button>
+        </div>
+        <div
+          id="systems-panel"
+          class="collapsible-body ${this._systemsExpanded ? "" : "collapsed"}"
+        >
+          ${this._systemsExpanded
+            ? html`
+                <div class="collapsible-body-inner">
+                  <ul class="systems-list">
+                    ${this.systems.map(
+                      (system) => html`
+                        <li>
+                          <button
+                            type="button"
+                            class="system-button${system.id ===
+                            this.activeSystemId
+                              ? " active"
+                              : ""}"
+                            data-system-id=${system.id}
+                            aria-pressed=${String(
+                              system.id === this.activeSystemId,
+                            )}
+                            @click=${() => this._emitToggle(system.id)}
+                          >
+                            <span
+                              class="system-dot"
+                              style="background:${system.color}"
+                            ></span>
+                            <img
+                              class="system-thumb"
+                              src=${this._systemThumbnailUrl(system.thumbnail)}
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span class="system-title">${system.title}</span>
+                          </button>
+                        </li>
+                      `,
+                    )}
+                  </ul>
+                </div>
+              `
+            : nothing}
+        </div>
+      </div>
 
       <div class="body-parts-section">
         <div class="body-parts-header">
@@ -629,36 +730,68 @@ export class BodyMapSidebar extends LitElement {
         </div>
       </div>
 
-      <div class="site-pages-section">
-        <div class="panel-header">Directory Pages</div>
-        <ul class="site-pages-list">
-          ${this.pageLinks.map(
-            (item) => html`
-              <li>
-                <button
-                  type="button"
-                  class="site-page-button ${item.id === this.activeNavId
-                    ? "active"
-                    : ""}"
-                  data-site-nav-id=${item.id}
-                  ?disabled=${!item.enabled}
-                  aria-current=${item.id === this.activeNavId
-                    ? "page"
-                    : nothing}
-                  @click=${() => this._emitSiteNav(item)}
-                >
-                  <span class="site-page-copy">
-                    <span class="site-page-title">${item.label}</span>
-                    <span class="site-page-meta">${item.description}</span>
-                  </span>
-                  <span class="site-page-badge"
-                    >${item.enabled ? "Live" : "Soon"}</span
-                  >
-                </button>
-              </li>
-            `,
-          )}
-        </ul>
+      <div class="collapsible-section site-pages-section">
+        <div class="collapsible-header">
+          <button
+            class="collapsible-header-toggle"
+            type="button"
+            aria-controls="directory-panel"
+            aria-expanded=${String(this._directoryExpanded)}
+            @click=${() => {
+              this._directoryExpanded = !this._directoryExpanded;
+            }}
+          >
+            <span>Directory Pages</span>
+            <span
+              class="collapsible-chevron ${this._directoryExpanded
+                ? ""
+                : "collapsed"}"
+              >&#9660;</span
+            >
+          </button>
+        </div>
+        <div
+          id="directory-panel"
+          class="collapsible-body ${this._directoryExpanded ? "" : "collapsed"}"
+        >
+          ${this._directoryExpanded
+            ? html`
+                <div class="collapsible-body-inner">
+                  <ul class="site-pages-list">
+                    ${this.pageLinks.map(
+                      (item) => html`
+                        <li>
+                          <button
+                            type="button"
+                            class="site-page-button ${item.id ===
+                            this.activeNavId
+                              ? "active"
+                              : ""}"
+                            data-site-nav-id=${item.id}
+                            ?disabled=${!item.enabled}
+                            aria-current=${item.id === this.activeNavId
+                              ? "page"
+                              : nothing}
+                            @click=${() => this._emitSiteNav(item)}
+                          >
+                            <span class="site-page-copy">
+                              <span class="site-page-title">${item.label}</span>
+                              <span class="site-page-meta"
+                                >${item.description}</span
+                              >
+                            </span>
+                            <span class="site-page-badge"
+                              >${item.enabled ? "Live" : "Soon"}</span
+                            >
+                          </button>
+                        </li>
+                      `,
+                    )}
+                  </ul>
+                </div>
+              `
+            : nothing}
+        </div>
       </div>
     `;
   }

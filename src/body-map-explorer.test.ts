@@ -71,6 +71,15 @@ describe("BodyMapExplorer API", () => {
       await sidebar.updateComplete;
       await detail.updateComplete;
 
+      // Expand the collapsed systems panel so thumbnails render
+      const systemsToggle = sidebar.shadowRoot!.querySelector(
+        '[aria-controls="systems-panel"]',
+      ) as HTMLButtonElement;
+      systemsToggle.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, composed: true }),
+      );
+      await sidebar.updateComplete;
+
       const sidebarThumb = sidebar.shadowRoot!.querySelector(".system-thumb")!;
       const detailThumb = detail.shadowRoot!.querySelector(".detail-thumb")!;
 
@@ -87,86 +96,96 @@ describe("BodyMapExplorer API", () => {
       el.addEventListener("system-selected", (e: any) => {
         eventDetail = e.detail;
       });
-      
+
       // Simulate internal system toggle request from sidebar
       const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
-      sidebar.dispatchEvent(new CustomEvent("system-toggle-request", {
-        detail: { systemId: "nervous" },
-        bubbles: true,
-        composed: true
-      }));
+      sidebar.dispatchEvent(
+        new CustomEvent("system-toggle-request", {
+          detail: { systemId: "nervous" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
 
       expect(eventDetail).toEqual({ systemId: "nervous", active: true });
     });
 
     test("dispatches organ-selected event when an organ is selected", async () => {
-        let eventDetail: any = null;
-        el.addEventListener("organ-selected", (e: any) => {
-            eventDetail = e.detail;
-        });
-        
-        const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
-        sidebar.dispatchEvent(new CustomEvent("organ-select-request", {
-            detail: { organId: "heart" },
-            bubbles: true,
-            composed: true
-        }));
+      let eventDetail: any = null;
+      el.addEventListener("organ-selected", (e: any) => {
+        eventDetail = e.detail;
+      });
 
-        expect(eventDetail).toEqual({ organId: "heart" });
+      const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
+      sidebar.dispatchEvent(
+        new CustomEvent("organ-select-request", {
+          detail: { organId: "heart" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      expect(eventDetail).toEqual({ organId: "heart" });
     });
 
     test("dispatches organ-deselected event when an organ is deselected", async () => {
-        el.selectedOrganIds = ["heart"];
-        await el.updateComplete;
+      el.selectedOrganIds = ["heart"];
+      await el.updateComplete;
 
-        let eventDetail: any = null;
-        el.addEventListener("organ-deselected", (e: any) => {
-            eventDetail = e.detail;
-        });
-        
-        const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
-        sidebar.dispatchEvent(new CustomEvent("organ-select-request", {
-            detail: { organId: "heart" },
-            bubbles: true,
-            composed: true
-        }));
+      let eventDetail: any = null;
+      el.addEventListener("organ-deselected", (e: any) => {
+        eventDetail = e.detail;
+      });
 
-        expect(eventDetail).toEqual({ organId: "heart" });
+      const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
+      sidebar.dispatchEvent(
+        new CustomEvent("organ-select-request", {
+          detail: { organId: "heart" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      expect(eventDetail).toEqual({ organId: "heart" });
     });
 
     test("dispatches body-part-selected event when an organ is selected", async () => {
-        let eventDetail: any = null;
-        el.addEventListener("body-part-selected", (e: any) => {
-            eventDetail = e.detail;
-        });
+      let eventDetail: any = null;
+      el.addEventListener("body-part-selected", (e: any) => {
+        eventDetail = e.detail;
+      });
 
-        const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
-        sidebar.dispatchEvent(new CustomEvent("organ-select-request", {
-            detail: { organId: "heart" },
-            bubbles: true,
-            composed: true
-        }));
+      const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
+      sidebar.dispatchEvent(
+        new CustomEvent("organ-select-request", {
+          detail: { organId: "heart" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
 
-        expect(eventDetail).toEqual({ organId: "heart", bodyPartId: "heart" });
+      expect(eventDetail).toEqual({ organId: "heart", bodyPartId: "heart" });
     });
 
     test("dispatches body-part-deselected event when an organ is deselected", async () => {
-        el.selectedOrganIds = ["heart"];
-        await el.updateComplete;
+      el.selectedOrganIds = ["heart"];
+      await el.updateComplete;
 
-        let eventDetail: any = null;
-        el.addEventListener("body-part-deselected", (e: any) => {
-            eventDetail = e.detail;
-        });
+      let eventDetail: any = null;
+      el.addEventListener("body-part-deselected", (e: any) => {
+        eventDetail = e.detail;
+      });
 
-        const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
-        sidebar.dispatchEvent(new CustomEvent("organ-select-request", {
-            detail: { organId: "heart" },
-            bubbles: true,
-            composed: true
-        }));
+      const sidebar = el.shadowRoot!.querySelector("body-map-sidebar")!;
+      sidebar.dispatchEvent(
+        new CustomEvent("organ-select-request", {
+          detail: { organId: "heart" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
 
-        expect(eventDetail).toEqual({ organId: "heart", bodyPartId: "heart" });
+      expect(eventDetail).toEqual({ organId: "heart", bodyPartId: "heart" });
     });
   });
 
@@ -223,7 +242,7 @@ describe("BodyMapExplorer API", () => {
 
       const dataPanel = el.shadowRoot!.querySelector("body-map-data-panel")!;
       await dataPanel.updateComplete;
-      
+
       const content = dataPanel.shadowRoot!.innerHTML;
       expect(content).toContain("Static Disease");
       expect(content).toContain("Static Symptom");
@@ -231,7 +250,9 @@ describe("BodyMapExplorer API", () => {
 
     test("supports custom DataProvider injection via externalData", async () => {
       const mockProvider = {
-        fetchDiseases: vi.fn().mockResolvedValue([{ name: "Provider Disease" }]),
+        fetchDiseases: vi
+          .fn()
+          .mockResolvedValue([{ name: "Provider Disease" }]),
         fetchSymptoms: vi.fn().mockResolvedValue(["Provider Symptom"]),
       };
 
@@ -322,7 +343,9 @@ describe("BodyMapExplorer API", () => {
       expect(await readDataPanelText()).toContain("Internal Disease");
 
       const mockProvider = {
-        fetchDiseases: vi.fn().mockResolvedValue([{ name: "Provider Disease" }]),
+        fetchDiseases: vi
+          .fn()
+          .mockResolvedValue([{ name: "Provider Disease" }]),
         fetchSymptoms: vi.fn().mockResolvedValue(["Provider Symptom"]),
       };
 
@@ -374,15 +397,17 @@ describe("BodyMapExplorer API", () => {
       const modal = el.shadowRoot!.querySelector("body-map-modal");
       expect(modal).not.toBeNull();
       await modal!.updateComplete;
-      
+
       const modalContent = modal!.shadowRoot!.innerHTML;
       expect(modalContent).toContain("Head Section Symptom");
 
       // Switch to diseases tab
-      const diseasesTab = modal!.shadowRoot!.querySelectorAll(".tab")[1] as HTMLElement;
+      const diseasesTab = modal!.shadowRoot!.querySelectorAll(
+        ".tab",
+      )[1] as HTMLElement;
       diseasesTab.click();
       await modal!.updateComplete;
-      
+
       const modalContentDiseases = modal!.shadowRoot!.innerHTML;
       expect(modalContentDiseases).toContain("Head Section Disease");
     });
