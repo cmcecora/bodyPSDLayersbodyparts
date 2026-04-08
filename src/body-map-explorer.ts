@@ -288,6 +288,10 @@ export class BodyMapExplorer extends LitElement {
     return BODY_PARTS_BY_ID.get(this._detailBodyPartId) ?? null;
   }
 
+  private get _standaloneDetailPhotoEntries(): BodyPartPhotoEntry[] {
+    return getBodyPartPhotoEntriesByIds(this._selectedBodyPartIds);
+  }
+
   private get _detailPhotoEntries(): BodyPartPhotoEntry[] {
     if (this.activeSystem !== null) {
       let entries: BodyPartPhotoEntry[];
@@ -350,19 +354,7 @@ export class BodyMapExplorer extends LitElement {
       ];
     }
 
-    const activeBodyPart = this._activeDetailBodyPart;
-    if (activeBodyPart === null) {
-      return [];
-    }
-
-    return [
-      {
-        id: activeBodyPart.id,
-        label: activeBodyPart.name,
-        imageFile: activeBodyPart.imageFile,
-        organIds: [...activeBodyPart.organIds],
-      },
-    ];
+    return this._standaloneDetailPhotoEntries;
   }
 
   private get _panelOrganIds(): string[] {
@@ -1080,7 +1072,8 @@ export class BodyMapExplorer extends LitElement {
                 <div class="panel detail-panel-col">
                   <body-map-detail-panel
                     .system=${this.activeSystem}
-                    .bodyPart=${this.activeSystem === null
+                    .bodyPart=${this.activeSystem === null &&
+                      this._selectedBodyPartIds.length === 1
                       ? this._activeDetailBodyPart
                       : null}
                     .photoEntries=${this._detailPhotoEntries}

@@ -1,5 +1,6 @@
 .env
 .claude/settings.local.json
+.worktrees/
 node_modules/
 dist/
 *.local

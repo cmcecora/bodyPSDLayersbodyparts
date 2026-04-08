@@ -398,6 +398,24 @@
       .tooltip-panel-content.visible {
         display: block;
       }
+      .tooltip-body-parts {
+        display: none;
+        padding: 20px;
+      }
+      .tooltip-body-parts.visible {
+        display: block;
+      }
+      .tooltip-body-parts-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #434448;
+        margin: 0 0 12px 0;
+      }
+      .tooltip-body-part-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
       .tooltip-panel-header {
         display: flex;
         align-items: center;
@@ -2449,7 +2467,7 @@
         <div class="tooltip-panel" id="tooltipPanel">
           <div class="tooltip-panel-system-bar" id="tooltipSystemBar"></div>
           <p class="tooltip-panel-empty" id="tooltipEmpty">
-            Click a body system to see details
+            Click a body system or select a body part to see details
           </p>
           <div class="tooltip-panel-content" id="tooltipContent">
             <button class="tooltip-panel-close" id="tooltipClose">
@@ -2473,6 +2491,10 @@
             />
             <p class="tooltip-panel-description" id="tooltipDesc"></p>
             <div class="tooltip-panel-processes" id="tooltipProcesses"></div>
+          </div>
+          <div class="tooltip-body-parts" id="tooltipBodyParts">
+            <h3 class="tooltip-body-parts-title">Selected Body Parts</h3>
+            <div class="tooltip-body-part-stack" id="tooltipBodyPartStack"></div>
           </div>
         </div>
       </div>

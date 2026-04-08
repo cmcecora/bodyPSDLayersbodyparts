@@ -378,6 +378,92 @@ describe("body-map-explorer", () => {
       expect(detail!.shadowRoot?.textContent ?? "").toContain("Face");
     });
 
+    it("stacks multiple standalone body-part photos in selection order", async () => {
+      const { sidebar, detail } = await getShadowChildren(el);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_face", organIds: [] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_heart", organIds: ["heart"] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: {
+            bodyPartId: "bp_lungs",
+            organIds: ["lungs_left", "lungs_right"],
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const photoIds = Array.from(
+        detail!.shadowRoot?.querySelectorAll("[data-photo-id]") ?? [],
+      ).map((node) => node.getAttribute("data-photo-id"));
+
+      expect(detail!.system).toBeNull();
+      expect(photoIds).toEqual(["bp_face", "bp_heart", "bp_lungs"]);
+    });
+
+    it("removes only the deselected middle body-part photo and preserves the remaining order", async () => {
+      const { sidebar, detail } = await getShadowChildren(el);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_face", organIds: [] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_heart", organIds: ["heart"] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: {
+            bodyPartId: "bp_lungs",
+            organIds: ["lungs_left", "lungs_right"],
+          },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_heart", organIds: ["heart"] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const photoIds = Array.from(
+        detail!.shadowRoot?.querySelectorAll("[data-photo-id]") ?? [],
+      ).map((node) => node.getAttribute("data-photo-id"));
+
+      expect(photoIds).toEqual(["bp_face", "bp_lungs"]);
+    });
+
     it("selecting a standalone body part overrides a previously active system", async () => {
       const { sidebar, detail } = await getShadowChildren(el);
 
@@ -408,6 +494,49 @@ describe("body-map-explorer", () => {
       expect(detail!.system).toBeNull();
       expect(photoIds).toEqual(["bp_face"]);
       expect(detail!.shadowRoot?.textContent ?? "").toContain("Face");
+    });
+
+    it("selecting a system replaces the standalone body-part photo stack", async () => {
+      const { sidebar, detail } = await getShadowChildren(el);
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_face", organIds: [] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      sidebar!.dispatchEvent(
+        new CustomEvent("body-part-select-request", {
+          detail: { bodyPartId: "bp_heart", organIds: ["heart"] },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      sidebar!.dispatchEvent(
+        new CustomEvent("system-toggle-request", {
+          detail: { systemId: "respiratory" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await detail?.updateComplete;
+
+      const photoIds = Array.from(
+        detail!.shadowRoot?.querySelectorAll("[data-photo-id]") ?? [],
+      ).map((node) => node.getAttribute("data-photo-id"));
+
+      expect(detail!.system?.id).toBe("respiratory");
+      expect(photoIds).toEqual([
+        "bp_lungs",
+        "bp_neck",
+        "bp_throat",
+        "bp_esophagus",
+      ]);
     });
 
     it("passes asset-base through to detail photo urls", async () => {

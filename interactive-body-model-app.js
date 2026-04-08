@@ -753,6 +753,7 @@
     if (!sys) return;
 
     document.getElementById("tooltipEmpty").style.display = "none";
+    document.getElementById("tooltipBodyParts").classList.remove("visible");
     const content = document.getElementById("tooltipContent");
     content.classList.add("visible");
 
@@ -866,6 +867,7 @@
     document.getElementById("tooltipEmpty").style.display = "";
     const content = document.getElementById("tooltipContent");
     content.classList.remove("visible");
+    document.getElementById("tooltipBodyParts").classList.remove("visible");
     document.getElementById("tooltipSystemBar").style.backgroundColor = "";
     const sysImg = document.getElementById("tooltipSystemImage");
     sysImg.style.display = "none";
@@ -873,6 +875,31 @@
     var processesEl = document.getElementById("tooltipProcesses");
     processesEl.textContent = "";
     processesEl.classList.remove("visible");
+    updateRightColumnDetailState();
+  }
+
+  function updateRightColumnDetailState() {
+    var emptyEl = document.getElementById("tooltipEmpty");
+    var contentEl = document.getElementById("tooltipContent");
+    var bodyPartsEl = document.getElementById("tooltipBodyParts");
+    var shouldShowBodyParts =
+      currentView === "sections" && !activeSystem && selectedBodyParts.size > 0;
+
+    if (shouldShowBodyParts) {
+      emptyEl.style.display = "none";
+      contentEl.classList.remove("visible");
+      bodyPartsEl.classList.add("visible");
+      document.getElementById("tooltipSystemBar").style.backgroundColor = "";
+      return;
+    }
+
+    bodyPartsEl.classList.remove("visible");
+
+    if (!activeSystem) {
+      emptyEl.style.display = "";
+      contentEl.classList.remove("visible");
+      document.getElementById("tooltipSystemBar").style.backgroundColor = "";
+    }
   }
 
   // --- Select a body system ---
@@ -2400,6 +2427,8 @@
     // Hide rotate button on organs/organs2 tab, show on sections tab
     document.getElementById("rotateLink").style.display =
       view === "sections" ? "" : "none";
+
+    renderBodyPartCards();
   };
 
   // --- Gender toggle ---
@@ -3891,6 +3920,10 @@
       return;
     }
 
+    if (activeSystem) {
+      deselectSystem();
+    }
+
     // Sections mode: highlight body part regions on the body silhouette
     if (currentView === "sections") {
       const bpLayer = document.getElementById("bp-highlight-layer");
@@ -3952,45 +3985,82 @@
     renderSelectedList();
   };
 
-  // --- Render body part cards as 2-per-row grid ---
+  function createBodyPartCard(bp) {
+    var card = document.createElement("div");
+    var closeButton = document.createElement("button");
+    var title = document.createElement("h4");
+    var image = document.createElement("img");
+    var desc = document.createElement("p");
+
+    card.className = "body-part-card";
+    card.setAttribute("data-bp-id", bp.id);
+    card.style.animation = "dropDownJerk 0.45s ease-out both";
+
+    closeButton.className = "body-part-card-close";
+    closeButton.type = "button";
+    closeButton.setAttribute("aria-label", "Remove " + bp.name);
+    closeButton.textContent = "\u00D7";
+    closeButton.addEventListener("click", function () {
+      toggleBodyPart(bp.id);
+    });
+
+    title.className = "body-part-card-title";
+    title.textContent = bp.name;
+
+    image.className = "body-part-card-image";
+    image.src = bp.image;
+    image.alt = bp.name;
+
+    desc.className = "body-part-card-desc";
+    desc.textContent = bp.description;
+
+    card.appendChild(closeButton);
+    card.appendChild(title);
+    card.appendChild(image);
+    card.appendChild(desc);
+
+    return card;
+  }
+
+  function renderTooltipBodyPartStack() {
+    var stack = document.getElementById("tooltipBodyPartStack");
+    var shouldShowTooltipStack =
+      currentView === "sections" && !activeSystem && selectedBodyParts.size > 0;
+
+    stack.textContent = "";
+
+    if (shouldShowTooltipStack) {
+      [...selectedBodyParts].forEach(function (bpId) {
+        var bp = BODY_PARTS_DATA.find(function (b) {
+          return b.id === bpId;
+        });
+        if (!bp) return;
+        stack.appendChild(createBodyPartCard(bp));
+      });
+    }
+
+    updateRightColumnDetailState();
+  }
+
+  // --- Render body part cards ---
   function renderBodyPartCards() {
     var container = document.getElementById("bodyPartCardsContainer");
-    var existingIds = new Set();
-    container.querySelectorAll(".body-part-card").forEach(function (card) {
-      var id = card.getAttribute("data-bp-id");
-      if (selectedBodyParts.has(id)) {
-        existingIds.add(id);
-      } else {
-        card.remove();
-      }
-    });
-    [...selectedBodyParts].forEach(function (bpId) {
-      if (existingIds.has(bpId)) return;
-      var bp = BODY_PARTS_DATA.find(function (b) {
-        return b.id === bpId;
+    var showColumnFourCards = currentView !== "sections";
+
+    container.textContent = "";
+    container.style.display = showColumnFourCards ? "" : "none";
+
+    if (showColumnFourCards) {
+      [...selectedBodyParts].forEach(function (bpId) {
+        var bp = BODY_PARTS_DATA.find(function (b) {
+          return b.id === bpId;
+        });
+        if (!bp) return;
+        container.appendChild(createBodyPartCard(bp));
       });
-      if (!bp) return;
-      var card = document.createElement("div");
-      card.className = "body-part-card";
-      card.setAttribute("data-bp-id", bp.id);
-      card.style.animation = "dropDownJerk 0.45s ease-out both";
-      card.innerHTML =
-        '<button class="body-part-card-close" onclick="toggleBodyPart(\'' +
-        bp.id +
-        "')\">&times;</button>" +
-        '<h4 class="body-part-card-title">' +
-        bp.name +
-        "</h4>" +
-        '<img class="body-part-card-image" src="' +
-        bp.image +
-        '" alt="' +
-        bp.name +
-        '" />' +
-        '<p class="body-part-card-desc">' +
-        bp.description +
-        "</p>";
-      container.appendChild(card);
-    });
+    }
+
+    renderTooltipBodyPartStack();
     renderSpanningSections();
   }
 
