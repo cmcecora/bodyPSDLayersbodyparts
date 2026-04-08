@@ -78,6 +78,45 @@ describe("body-map-sidebar", () => {
     expect(event?.bubbles).toBe(true);
     expect(event?.composed).toBe(true);
   });
+
+  it("renders sidebar imagery with lazy loading and async decoding", async () => {
+    const toggle = sidebar.shadowRoot?.querySelector(
+      ".body-parts-header-toggle",
+    ) as HTMLButtonElement | null;
+    toggle?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, composed: true }),
+    );
+    await sidebar.updateComplete;
+
+    const systemThumb = sidebar.shadowRoot?.querySelector(
+      ".system-thumb",
+    ) as HTMLImageElement | null;
+    const bodyPartIcon = sidebar.shadowRoot?.querySelector(
+      ".body-part-icon",
+    ) as HTMLImageElement | null;
+
+    expect(systemThumb?.getAttribute("loading")).toBe("lazy");
+    expect(systemThumb?.getAttribute("decoding")).toBe("async");
+    expect(bodyPartIcon?.getAttribute("loading")).toBe("lazy");
+    expect(bodyPartIcon?.getAttribute("decoding")).toBe("async");
+  });
+
+  it("keeps body-part icons out of the DOM until the panel is expanded", async () => {
+    const toggle = sidebar.shadowRoot?.querySelector(
+      ".body-parts-header-toggle",
+    ) as HTMLButtonElement | null;
+
+    expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+    expect(sidebar.shadowRoot?.querySelector(".body-part-icon")).toBeNull();
+
+    toggle?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, composed: true }),
+    );
+    await sidebar.updateComplete;
+
+    expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+    expect(sidebar.shadowRoot?.querySelector(".body-part-icon")).not.toBeNull();
+  });
 });
 
 describe("body-map-detail-panel", () => {

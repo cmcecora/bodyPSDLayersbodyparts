@@ -135,6 +135,10 @@ export const BODY_SYSTEMS: BodySystemDefinition[] = [
   },
 ];
 
+export const BODY_SYSTEMS_BY_ID = new Map(
+  BODY_SYSTEMS.map((system) => [system.id, system] as const),
+);
+
 export const ORGAN_TO_SYSTEM: Record<string, BodySystemId[]> =
   BODY_SYSTEMS.reduce<Record<string, BodySystemId[]>>((lookup, system) => {
     system.organIds.forEach((organId) => {

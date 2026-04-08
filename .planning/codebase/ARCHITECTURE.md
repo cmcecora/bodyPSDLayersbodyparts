@@ -1,198 +1,148 @@
 # Architecture
 
-**Analysis Date:** 2026-03-29
+**Analysis Date:** 2026-04-07
 
 ## Pattern Overview
 
-**Overall:** Single-file monolithic web application with inline CSS, SVG, and JavaScript, supplemented by three external data-only JS files.
+**Overall:** Stateful root web component with event-driven child components, static domain catalogs, and asset-backed data loading.
 
 **Key Characteristics:**
-
-- Zero build system -- the entire app runs by opening `interactive-body-model.html` in a browser
-- All presentation logic (CSS), markup (HTML/SVG), and behavior (JS) coexist in one ~7000-line file
-- External data is loaded via `<script src="...">` tags that assign global `window.*` variables
-- All JavaScript is wrapped in a single IIFE `(function () { ... })()` to avoid polluting global scope, with explicit `window.*` assignments for functions called from inline `onclick` handlers
-- DOM manipulation is imperative -- no framework, no virtual DOM, no templating engine
+- `src/body-map-explorer.ts` is the only stateful application shell. It owns selection state, active system/view/gender state, async data maps, live announcements, and modal state.
+- Child components in `src/body-map-model.ts`, `src/body-map-sidebar.ts`, `src/body-map-detail-panel.ts`, `src/body-map-data-panel.ts`, and `src/body-map-modal.ts` communicate upward with bubbling `CustomEvent`s and receive all shared state via properties.
+- Runtime content is driven by lookup tables and assets rather than a backend API: domain definitions live in `src/data/*.ts`, while shipped images and JSON live in `public/assets/` and `public/data/`.
 
 ## Layers
 
-**Presentation Layer (CSS):**
+**Build and Runtime Layer:**
+- Purpose: Build the library and provide a local dev harness.
+- Location: `package.json`, `vite.config.ts`, `tsconfig.json`, `index.html`
+- Contains: Vite library build config, TypeScript compiler settings, npm scripts, and a dev page that mounts `<body-map-explorer>`.
+- Depends on: `src/body-map-explorer.ts` as the library entry and `public/` for copied runtime assets.
+- Used by: Local development, `npm run build`, and downstream consumers of the generated bundle in `dist/`.
 
-- Purpose: All visual styling, layout, animations, and responsive breakpoints
-- Location: `interactive-body-model.html` lines 7-1277 (inline `<style>` block)
-- Contains: Grid layout, component styles, hover/selected states, keyframe animations, responsive media queries
-- Depends on: Nothing external
-- Used by: HTML markup and dynamically created DOM elements
+**Application Shell Layer:**
+- Purpose: Coordinate all shared application state and compose the four-column layout plus modal.
+- Location: `src/body-map-explorer.ts`
+- Contains: Root `LitElement`, shared reactive state, async loading orchestration, event handlers, live-region announcements, and view-specific branching.
+- Depends on: All child components, domain catalogs in `src/data/`, and the `DataProvider` abstraction from `src/data/data-service.ts`.
+- Used by: `index.html`, the Vite library build, and any external page that renders `<body-map-explorer>`.
 
-**Markup Layer (HTML + SVG):**
+**Interactive Model Layer:**
+- Purpose: Render the anatomical SVG scene and translate direct model interactions into semantic events.
+- Location: `src/body-map-model.ts`
+- Contains: Organs view, Organs 2 view, front/back sections scene, roving-tabindex keyboard interaction, gender toggle, view toggle, and highlight overlay rendering.
+- Depends on: `src/data/organs.ts`, `src/data/sections.ts`, `src/data/body-part-highlight-regions.ts`, and `src/styles/tokens.css.ts`.
+- Used by: `src/body-map-explorer.ts`.
 
-- Purpose: Page structure, interactive body model with two SVGs (front view + back view)
-- Location: `interactive-body-model.html` lines 1279-2573
-- Contains: Four-column grid layout, left sidebar panels, center body model with layered SVG, right detail panel, column 4 disease/symptom sections, symptom selection modal
-- Depends on: CSS styles
-- Used by: JavaScript event handlers and DOM queries
+**Panel and Modal Presentation Layer:**
+- Purpose: Render the sidebar, detail panel, diseases/symptoms panel, and contextual modal without owning application-wide state.
+- Location: `src/body-map-sidebar.ts`, `src/body-map-detail-panel.ts`, `src/body-map-data-panel.ts`, `src/body-map-modal.ts`
+- Contains: Visual panels, local UI state like expanded/collapsed sections and search input debounce, and retry/close/toggle events.
+- Depends on: Design tokens from `src/styles/tokens.css.ts` plus strongly typed data passed in from `src/body-map-explorer.ts`.
+- Used by: `src/body-map-explorer.ts`.
 
-**Data Layer (Constants + External Files):**
+**Domain Catalog and Mapping Layer:**
+- Purpose: Define the canonical IDs, labels, thumbnails, image filenames, hit areas, and crosswalk tables that the UI depends on.
+- Location: `src/data/body-parts.ts`, `src/data/organs.ts`, `src/data/systems.ts`, `src/data/sections.ts`, `src/data/section-mapping.ts`, `src/data/body-part-modal-anchor.ts`, `src/data/body-part-highlight-regions.ts`
+- Contains: Immutable arrays, reverse lookup maps such as `BODY_PARTS_BY_ID` and `BODY_SYSTEMS_BY_ID`, and helper functions that translate IDs into assets or modal anchors.
+- Depends on: Stable asset and JSON filenames in `public/assets/` and `public/data/`.
+- Used by: Every component under `src/`, especially `src/body-map-explorer.ts` and `src/body-map-model.ts`.
 
-- Purpose: All medical/anatomical data -- body systems, organ mappings, body parts, symptoms, diseases
-- Location: Inline constants at `interactive-body-model.html` lines 2579-4745, plus three external files:
-  - `symptoms-data.js` (~440KB, assigns `window.SYMPTOMS_DATA` -- array of ~18K symptom strings)
-  - `diseases-data.js` (~7.6MB, assigns `window.DISEASES_BY_BODY_PART` -- object keyed by body part ID)
-  - `symptoms-by-bodypart-data.js` (~100KB, assigns `window.SYMPTOMS_BY_BODY_PART` -- object keyed by body part ID)
-- Contains: `BODY_SYSTEMS` array (11 systems with base64 thumbnails), `ORGAN_TO_SYSTEM` reverse lookup, `SYSTEM_TO_BODY_PARTS` mapping, `BODY_PARTS_DATA` (57 body parts), `SECTION_SYMPTOMS`, `ORGAN2_SYMPTOMS`, various coordinate/region lookup tables
-- Depends on: Nothing
-- Used by: Behavior layer functions
-
-**Behavior Layer (JavaScript):**
-
-- Purpose: All interactivity -- event handling, state management, DOM rendering, view switching
-- Location: `interactive-body-model.html` lines 2577-7009 (inline `<script>` block)
-- Contains: State variables, rendering functions, event listeners, view/gender/rotation logic
-- Depends on: Data layer, Markup layer (DOM queries by ID and class selectors)
-- Used by: Inline `onclick` handlers in HTML, and self-registered event listeners
+**Data Access Layer:**
+- Purpose: Load disease and symptom content from shipped JSON or an injected external provider.
+- Location: `src/data/data-service.ts`
+- Contains: `DataProvider`, cache state, organ-to-data-key translation, default fetch implementation, and cache reset for tests.
+- Depends on: Browser `fetch`, `public/data/diseases/*.json`, and `public/data/symptoms-by-part.json`.
+- Used by: `src/body-map-explorer.ts` directly and any consumer that passes a compatible `external-data` provider into `<body-map-explorer>`.
 
 ## Data Flow
 
-**System Selection Flow:**
+**Primary Selection Flow:**
 
-1. User clicks a system in the left sidebar (`.systems-list li a`)
-2. `selectSystem(systemId)` is called
-3. Previous system is deselected (organ highlights removed, body part ellipses cleaned up)
-4. `activeSystem` state variable is set
-5. Organs mapped to the system are highlighted via `.selected` CSS class on `<g>` groups
-6. Body parts mapped via `SYSTEM_TO_BODY_PARTS` are added to `selectedBodyParts` Set and `systemSelectedBodyParts` Set
-7. SVG ellipse highlights are drawn in `bp-highlight-layer` for sections view
-8. `showTooltip(systemId)` populates the right-column detail panel
-9. `renderBodyPartsNavPanel()` updates the left-column body parts list
-10. `renderBodyPartCards()` updates column 4 body part cards
-11. `renderSpanningSections()` shows column 4 disease/symptom panels
+1. `src/body-map-sidebar.ts` and `src/body-map-model.ts` emit semantic events such as `system-toggle-request`, `body-part-select-request`, `organ-selection-change`, `section-click`, `organ2-click`, `gender-change`, and `view-change`.
+2. `src/body-map-explorer.ts` receives those events, mutates its reactive state, and decides which UI mode is authoritative: active system, selected organs, selected body parts, detail focus, or open modal.
+3. When a selection needs medical content, `src/body-map-explorer.ts` calls the active `DataProvider` from `src/data/data-service.ts` and stores results in `_diseasesMap`, `_symptomsMap`, `_loadingIds`, `_errorIds`, or modal-specific state.
+4. The root shell recomputes derived props such as `_panelOrganIds`, `_detailPhotoEntries`, `systemHighlightOrganIds`, and live-region text using crosswalk tables from `src/data/body-parts.ts`, `src/data/systems.ts`, `src/data/section-mapping.ts`, and `src/data/body-part-modal-anchor.ts`.
+5. Updated props flow back down into `src/body-map-model.ts`, `src/body-map-detail-panel.ts`, `src/body-map-data-panel.ts`, and `src/body-map-modal.ts`.
+6. Presentation components render the current state and emit follow-up events like `retry-organ`, `modal-retry`, and `symptom-toggle` when user action is needed.
 
-**Organ Click Flow (Organs/Organs2 View):**
+**Sections Modal Flow:**
 
-1. User clicks a hit-area `<path>` inside a `body-part-group` `<g>`
-2. Event listener on `.body-part-group .hit-area` fires
-3. In Organs view: toggles organ in `selectedOrgans` Set, adds/removes `.selected` class
-4. `syncBodyPartsFromOrgan(organId, isSelected)` updates `selectedBodyParts` based on `BODY_PARTS_DATA[].organIds` mapping
-5. `renderSelectedList()`, `renderBodyPartsNavPanel()`, `renderBodyPartCards()` update UI
-6. In Organs2 view: opens symptom modal instead of toggling selection
+1. `src/body-map-model.ts` emits `section-click` with a semantic section ID and screen coordinates.
+2. `src/body-map-explorer.ts` resolves the section to multiple `bp_` keys using `SECTION_TO_BP_KEYS` from `src/data/section-mapping.ts`.
+3. The root loads all disease and symptom arrays in parallel, deduplicates them, and passes the merged result into `src/body-map-modal.ts`.
 
-**Section Click Flow (Sections View):**
+**Organs 2 Modal Flow:**
 
-1. User clicks a `section-hit-area` inside a `body-section-group`
-2. Toggles section in `selectedSections` Set
-3. Opens `symptomModal` positioned near click point via `positionModal(e)`
-4. User can search/select symptoms within the modal
-
-**Body Part Toggle Flow (Nav Panel):**
-
-1. User clicks a body part in the left-column Body Parts nav list
-2. `window.toggleBodyPart(bpId)` is called
-3. In Sections view: toggles body part in `selectedBodyParts` Set, creates/removes SVG ellipse highlights in `bp-highlight-layer`
-4. In Organs2 view: opens organ2 symptom modal
-5. In Organs view: toggles body part in `selectedBodyParts`, highlights/unhighlights mapped organs
-6. `renderBodyPartsNavPanel()` and `renderBodyPartCards()` update UI
-7. `renderSpanningSections()` shows/hides column 4 disease/symptom data
+1. `src/body-map-model.ts` emits `organ2-click`, or `src/body-map-sidebar.ts` emits `body-part-select-request` while the current view is `organs2`.
+2. `src/body-map-explorer.ts` resolves the best anchor using `getOrganGroupModalAnchor` and `getBodyPartModalAnchor` from `src/data/body-part-modal-anchor.ts`.
+3. The root fetches body-part keyed data and opens `src/body-map-modal.ts` in a fixed-position overlay near the clicked anatomy.
 
 **State Management:**
-
-- `selectedOrgans` (Set): Currently selected organ IDs in organs view
-- `selectedSections` (Set): Currently selected section IDs in sections view
-- `selectedSymptoms` (Map): Key is `"sectionId::symptomName"`, value is `{ section, symptom, sectionName }`
-- `selectedBodyParts` (Set): Currently selected body part IDs (from nav panel or system selection)
-- `systemSelectedBodyParts` (Set): Body parts auto-added by system selection (tracked separately for cleanup)
-- `activeSystem` (string|null): Currently active body system ID
-- `currentView` (string): `'organs'`, `'organs2'`, or `'sections'`
-- `currentGender` (string): `'male'` or `'female'`
-- `isFlipped` (boolean): Whether the model is showing the back view
-- `organ2HighlightedGroup` (Element|null): Tracks temporarily highlighted organ in organs2 mode
-- `currentModalContext` (object|null): `{ type: 'section'|'organ2', key, name }` for open symptom modal
-
-All state is held in plain JavaScript variables within the IIFE closure. There is no centralized state store or reactive binding system. UI updates are triggered manually by calling render functions after state changes.
+- Shared application state stays inside `src/body-map-explorer.ts`; there is no external store, router, context provider, or URL state.
+- Child components only own ephemeral UI state that does not need to be shared, such as collapsed cards in `src/body-map-data-panel.ts`, expanded body-part search in `src/body-map-sidebar.ts`, selected symptoms in `src/body-map-modal.ts`, and the active keyboard target and section facing in `src/body-map-model.ts`.
 
 ## Key Abstractions
 
-**Body Part Group (`body-part-group`):**
+**`DataProvider`:**
+- Purpose: Decouple UI state management from the source of disease and symptom data.
+- Examples: `src/data/data-service.ts`, `src/body-map-explorer.ts`
+- Pattern: Interface-plus-default-adapter. The root accepts an injected provider through the `external-data` property and falls back to the fetch-based implementation in `getDefaultDataProvider()`.
 
-- Purpose: Represents a single interactive organ in the SVG (organs view)
-- Examples: `<g id="group-brain" class="body-part-group" data-part="brain" data-name="Brain">`
-- Pattern: Each group contains a `<image class="part-image">` with base64 PNG and a `<path class="hit-area">` defining the clickable polygon
-- 20 organ groups total (lines 1374-2031)
+**Domain Definition Catalogs:**
+- Purpose: Keep runtime IDs, display names, thumbnails, organ mappings, and geometry in source-controlled TypeScript rather than scattering them through components.
+- Examples: `src/data/systems.ts`, `src/data/organs.ts`, `src/data/body-parts.ts`, `src/data/sections.ts`
+- Pattern: Immutable exported arrays plus derived lookup maps like `BODY_SYSTEMS_BY_ID` and `BODY_PARTS_BY_ID`.
 
-**Body Section Group (`body-section-group`):**
+**Mapping Helpers:**
+- Purpose: Bridge mismatched ID spaces between SVG organs, sidebar body parts, grouped sections, modal anchors, and JSON filenames.
+- Examples: `src/data/data-service.ts`, `src/data/section-mapping.ts`, `src/data/body-part-modal-anchor.ts`, `src/data/body-part-highlight-regions.ts`
+- Pattern: Explicit translation tables and narrow helper functions instead of implicit string manipulation spread across components.
 
-- Purpose: Represents a clickable body region in the SVG (sections view)
-- Examples: `<g class="body-section-group" data-part="head_neck" data-name="Head / Neck">`
-- Pattern: Each group contains a `<path class="section-hit-area">` with a large polygon covering a body zone
-- 7 front sections, 7 back sections (some paired for arms/legs)
-
-**Body Part Data Entry (`BODY_PARTS_DATA[]`):**
-
-- Purpose: Represents a selectable body part in the nav panel (57 total)
-- Examples: `{ id: "bp_head", name: "Head", image: "bpart_images/head.png", organIds: [], description: "..." }`
-- Pattern: Each entry has an `id`, display `name`, thumbnail `image` path, array of linked `organIds`, and a medical `description`
-- Location: `interactive-body-model.html` lines 5694-6383
-
-**Body System (`BODY_SYSTEMS[]`):**
-
-- Purpose: Represents one of 11 body systems with metadata
-- Examples: `{ id: "cardiovascular", title: "Cardiovascular", color: "#e87722", thumbnail: "data:image/png;base64,...", description: "...", organs: ["heart"], keyParts: "Heart, Blood Vessels, Blood", processes: [...] }`
-- Location: `interactive-body-model.html` lines 2579-3225
-
-**Highlight Region (`BODY_PART_HIGHLIGHT_REGIONS`):**
-
-- Purpose: Maps body part IDs to SVG ellipse coordinates for overlay highlights in sections view
-- Pattern: `{ bp_head: { cx: 348, cy: 110, rx: 50, ry: 55 }, bp_ears: [{ cx: 305, cy: 115, rx: 12, ry: 18 }, { cx: 392, cy: 115, rx: 12, ry: 18 }] }`
-- Location: `interactive-body-model.html` lines 4556-4744
+**Design Tokens:**
+- Purpose: Centralize colors, spacing, typography, radii, and shadows for all Lit components.
+- Examples: `src/styles/tokens.css.ts`
+- Pattern: Shared `css` template included in each component’s `static styles` array.
 
 ## Entry Points
 
-**Page Load:**
+**Library Entry Point:**
+- Location: `src/body-map-explorer.ts`
+- Triggers: Vite library build in `vite.config.ts` and direct import by downstream applications.
+- Responsibilities: Register `<body-map-explorer>`, compose child elements, coordinate state, and expose the public integration surface (`asset-base`, `selected-organ-ids`, `active-system-id`, `external-data`).
 
-- Location: `interactive-body-model.html` (open in browser)
-- Triggers: Browser loads HTML, parses CSS, renders SVG, executes inline script IIFE
-- Responsibilities: Builds sidebar, registers event listeners, calls `setView("sections")` as default, triggers entrance animations
+**Development Harness:**
+- Location: `index.html`
+- Triggers: `npm run dev` and `vite preview`.
+- Responsibilities: Mount `<body-map-explorer>` directly and point the browser at the TypeScript source module during development.
 
-**View Toggle Buttons:**
+**Legacy Standalone Prototype:**
+- Location: `interactive-body-model.html`, `interactive-body-model-app.js`
+- Triggers: Direct browser use outside the current Vite/Lit build.
+- Responsibilities: Preserve the earlier standalone implementation and reference data/behavior that later modules still cite, such as modal anchor heuristics noted in `src/data/body-part-modal-anchor.ts`.
 
-- Location: `interactive-body-model.html` lines 1316-1326 (HTML), line 4856 (`window.setView`)
-- Triggers: `onclick="setView('organs')"`, `onclick="setView('organs2')"`, `onclick="setView('sections')"`
-- Responsibilities: Crossfade SVG layers, update button active state, manage highlight overlays
-
-**Gender Toggle Buttons:**
-
-- Location: `interactive-body-model.html` lines 2404-2410 (HTML), line 5004 (`window.setGender`)
-- Triggers: `onclick="setGender('male')"` / `onclick="setGender('female')"`
-- Responsibilities: Show/hide reproductive organ layers, swap body parts if reproductive system active
-
-**Rotate Link:**
-
-- Location: `interactive-body-model.html` lines 2413-2421 (HTML), line 5101 (`window.rotateModel`)
-- Triggers: `onclick="rotateModel()"`
-- Responsibilities: CSS 3D flip via `.flipped` class, swap front/back section layers
+**Asset and Data Generation Scripts:**
+- Location: `scripts/split-diseases.js`, `scripts/validate-bp-coverage.js`, `scripts/extract-sections-body.mjs`, `scripts/extract-silhouette.mjs`, `scripts/extract-base64.mjs`, `scripts/convert-to-webp.sh`
+- Triggers: Manual maintenance workflows.
+- Responsibilities: Generate or validate runtime JSON and image assets that the current UI consumes from `public/`.
 
 ## Error Handling
 
-**Strategy:** Minimal -- defensive null checks but no structured error handling
+**Strategy:** Catch asynchronous fetch failures in the root shell, store errors in reactive state, and let presentation components render retry UI.
 
 **Patterns:**
-
-- Null/undefined guards: `if (!bp) return;`, `if (!sys) return;`
-- Graceful image fallback: `onerror="this.style.display='none'"` on body part thumbnails
-- Optional data: `window.SYMPTOMS_DATA || null` for external data that may not load
-- No try/catch blocks, no error boundaries, no user-facing error messages
+- `src/data/data-service.ts` throws descriptive `Error` objects that include the failing body-part key and URL.
+- `src/body-map-explorer.ts` catches per-item failures in `_loadOrganData()` and stores them in `_errorIds` instead of throwing through the render tree.
+- Modal-specific loading paths in `src/body-map-explorer.ts` capture failures into `_modalError` so `src/body-map-modal.ts` can render a local retry action.
+- Retry behavior stays event-driven: `src/body-map-data-panel.ts` emits `retry-organ`, and `src/body-map-modal.ts` emits `modal-retry`.
 
 ## Cross-Cutting Concerns
 
-**Logging:** None. No `console.log` statements or logging framework.
-
-**Validation:** None. No input validation beyond null checks on DOM elements.
-
-**Authentication:** Not applicable. This is a static client-side application with no auth.
-
-**Animation:** CSS transitions for hover/select states (`transition: fill 0.2s ease`), CSS 3D transforms for rotation (`transform: rotateY(180deg)`), opacity crossfade for view switching (`transition: opacity 0.35s ease-in-out`), keyframe animations for entrance effects (`slideDownBounce`, `dropDownJerk`, `slideFromRight`).
-
-**Responsive Design:** Single `@media (max-width: 900px)` breakpoint collapses the four-column grid to single-column layout. Defined at `interactive-body-model.html` lines 607-650.
+**Logging:** Not detected. The runtime components in `src/` do not centralize logs or analytics.
+**Validation:** TypeScript `strict` mode in `tsconfig.json`, explicit ID crosswalks in `src/data/*.ts`, and defensive fallback helpers such as `BODY_SYSTEMS_BY_ID.get(...) ?? null` and `SECTION_TO_BP_KEYS[sectionId] ?? []`.
+**Authentication:** Not applicable. The app serves static assets and JSON and does not implement user identity.
+**Accessibility:** Shared interaction accessibility is handled in the component layer: `src/body-map-model.ts` implements roving tabindex and keyboard activation, and `src/body-map-explorer.ts` owns a polite live region for announcements.
 
 ---
 
-_Architecture analysis: 2026-03-29_
+*Architecture analysis: 2026-04-07*

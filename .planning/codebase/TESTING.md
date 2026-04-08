@@ -1,65 +1,190 @@
-# Testing
+# Testing Patterns
 
-## Current State: No Automated Testing
+**Analysis Date:** 2026-04-07
 
-This project has **zero automated tests** — no test framework, no test runner, no CI/CD pipeline.
+## Test Framework
 
-## Manual QA Approach
+**Runner:**
+- Vitest `4.1.2`
+- Config: `vitest.config.ts`
+- Environment: `happy-dom`
+- Included files: `src/**/*.test.ts`
 
-### Visual Screenshot Verification
+**Assertion Library:**
+- Vitest `expect` with Jest-style matchers
 
-Testing is done by manually opening `interactive-body-model.html` in a browser and capturing screenshots to verify visual correctness. Approximately 15+ test screenshots exist in the project root:
+**Run Commands:**
+```bash
+npm test                         # Run all configured tests
+npx vitest                       # Watch mode via CLI; no package script
+npx vitest run --coverage        # Coverage attempt; currently fails without @vitest/coverage-v8
+```
 
-| Screenshot                          | Purpose                                     |
-| ----------------------------------- | ------------------------------------------- |
-| `test_initial.png`                  | Baseline: app loads correctly               |
-| `test_head_selected.png`            | Head body part selection highlight          |
-| `test_head_deselected.png`          | Head deselection clears highlight           |
-| `test_head_eyes_selected.png`       | Multiple sub-part selection                 |
-| `test_head_eyes_heart.png`          | Cross-region multi-selection                |
-| `test_multiple_parts.png`           | Multiple body parts selected simultaneously |
-| `test_many_highlights.png`          | Stress test: many highlights active         |
-| `test_all_57_parts.png`             | All body parts highlighted                  |
-| `test_with_feet.png`                | Feet body part rendering                    |
-| `test_restore_after_tab_switch.png` | State preservation across views             |
-| `test-body-parts-fullview.png`      | Full body model overview                    |
-| `test-ellipses-head-v1/v2/v3.png`   | Ellipse highlight iteration                 |
+## Test File Organization
 
-### Playwright MCP Browser Automation
+**Location:**
+- Tests are mostly centralized in `src/__tests__/`.
+- One older explorer API suite is still co-located at `src/body-map-explorer.test.ts`.
 
-A `.playwright-mcp/` directory exists with a console log file (`console-2026-03-23T03-46-02-313Z.log`), indicating that Playwright MCP was used for browser-based interactive testing. This appears to be ad-hoc rather than scripted test suites.
+**Naming:**
+- Use `*.test.ts` for every suite.
+- Use suite labels with scenario prefixes to group intent, such as `MODEL-01`, `EXPLORER-02`, `PANEL-05`, and `MODAL-07` in `src/__tests__/body-map-model.test.ts`, `src/__tests__/body-map-explorer.test.ts`, `src/__tests__/body-map-data-panel.test.ts`, and `src/__tests__/body-map-modal.test.ts`.
 
-## What Should Be Tested
+**Structure:**
+```text
+src/
+├── __tests__/
+│   ├── body-map-explorer.test.ts
+│   ├── body-map-model.test.ts
+│   ├── body-map-modal.test.ts
+│   ├── body-map-data-panel.test.ts
+│   ├── body-systems-panels.test.ts
+│   ├── data-service.test.ts
+│   ├── body-part-photos.test.ts
+│   └── systems-data.test.ts
+└── body-map-explorer.test.ts
+```
 
-### Critical Paths (no automated coverage)
+## Test Structure
 
-1. **Body part selection/deselection** — click toggles, multi-selection, pill list sync
-2. **Body system selection** — system click highlights mapped organs, tooltip updates
-3. **Bidirectional sync** — organ click activates system, system deselect clears organs
-4. **Gender toggle** — reproductive organs swap correctly, existing selections preserved
-5. **View switching** — organs/sections tabs, state preservation across views
-6. **Symptom modal** — opens on section click, displays correct symptoms/diseases
+**Suite Organization:**
+```typescript
+async function createFixture(): Promise<BodyMapModel> {
+  const el = document.createElement("body-map-model") as BodyMapModel;
+  document.body.appendChild(el);
+  await el.updateComplete;
+  return el;
+}
 
-### Data Integrity (no validation)
+describe("body-map-model", () => {
+  let el: BodyMapModel;
 
-- All body parts in `BODY_PARTS_DATA` have corresponding SVG groups
-- All organ IDs in `BODY_SYSTEMS` map to valid SVG elements
-- `ORGAN_TO_SYSTEM` reverse lookup is consistent with `BODY_SYSTEMS.organs`
-- `SYSTEM_TO_BODY_PARTS` maps all system IDs to valid body part IDs
+  beforeEach(async () => {
+    el = await createFixture();
+  });
 
-## Recommended Test Strategy (Future)
+  afterEach(() => {
+    el.remove();
+    document.body.innerHTML = "";
+  });
+});
+```
 
-### Tier 1: Data Validation (easiest to add)
+**Patterns:**
+- Mount real custom elements into `document.body`, then wait for Lit to flush with `await el.updateComplete`. This is the default setup in `src/__tests__/body-map-model.test.ts`, `src/__tests__/body-map-modal.test.ts`, `src/__tests__/body-systems-panels.test.ts`, and `src/body-map-explorer.test.ts`.
+- Query through `shadowRoot` and assert rendered DOM, attributes, and text rather than snapshotting markup. This is consistent across `src/__tests__/body-map-explorer.test.ts`, `src/__tests__/body-map-data-panel.test.ts`, and `src/__tests__/body-systems-panels.test.ts`.
+- Dispatch real DOM events with `{ bubbles: true, composed: true }` for component interaction tests. Examples are widespread in `src/__tests__/body-map-model.test.ts` and `src/__tests__/body-map-explorer.test.ts`.
+- Reset document state aggressively in teardown with `el.remove()` and `document.body.innerHTML = ""`. Tests that override globals also restore them explicitly, as in `src/__tests__/body-map-modal.test.ts`.
 
-- Node.js script to validate cross-references between data structures
-- Can run without a browser — pure JS assertions
+## Mocking
 
-### Tier 2: DOM Integration Tests
+**Framework:** Vitest `vi`
 
-- Playwright or Puppeteer tests against the static HTML file
-- Verify click handlers, visual states, element visibility
+**Patterns:**
+```typescript
+vi.mock("../data/data-service.js", () => ({
+  fetchDiseases: vi.fn().mockResolvedValue([{ name: "Test Disease" }]),
+  fetchSymptomsForPart: vi.fn().mockResolvedValue(["Test Symptom"]),
+  clearCache: vi.fn(),
+  ORGAN_TO_DATA_KEY: {},
+}));
 
-### Tier 3: Visual Regression
+vi.stubGlobal("fetch", makeFetchMock(SAMPLE_SYMPTOMS_BY_PART));
+```
 
-- Screenshot comparison (e.g., Playwright `toHaveScreenshot()`)
-- Baseline already exists as `test_*.png` files
+**What to Mock:**
+- Mock network boundaries and provider modules in integration-style component tests. `src/__tests__/body-map-explorer.test.ts` mocks `../data/data-service.js`, and `src/__tests__/data-service.test.ts` stubs global `fetch`.
+- Mock reference datasets only when a component test needs tight isolation from the full production data tables. `src/__tests__/body-map-data-panel.test.ts` replaces `../data/organs.js` with a tiny fixture list.
+- Override browser globals when layout calculations depend on viewport size, as in `src/__tests__/body-map-modal.test.ts` for `window.innerWidth` and `window.innerHeight`.
+
+**What NOT to Mock:**
+- Do not mock Lit rendering or custom-element registration. Tests mount real elements from `src/body-map-model.ts`, `src/body-map-sidebar.ts`, `src/body-map-detail-panel.ts`, and `src/body-map-modal.ts`.
+- Keep real typed data modules for integrity checks when the goal is coverage or lookup validation. `src/__tests__/systems-data.test.ts` and `src/__tests__/body-part-photos.test.ts` intentionally use the live exports from `src/data/`.
+- Avoid snapshots. The existing suite asserts DOM semantics, event payloads, and derived data explicitly.
+
+## Fixtures and Factories
+
+**Test Data:**
+```typescript
+function makeFetchMock(jsonData: unknown, ok = true): ReturnType<typeof vi.fn> {
+  return vi.fn().mockResolvedValue({
+    ok,
+    status: ok ? 200 : 404,
+    json: () => Promise.resolve(jsonData),
+  } as unknown as Response);
+}
+```
+
+**Location:**
+- Fixtures are defined inline at the top of each suite file rather than in a shared helper package.
+- Common patterns are `createFixture()` in `src/__tests__/body-map-model.test.ts`, `createPanel()` in `src/__tests__/body-map-data-panel.test.ts`, `createSidebar()` / `createDetailPanel()` in `src/__tests__/body-systems-panels.test.ts`, and `makeFetchMock()` in `src/__tests__/data-service.test.ts`.
+
+## Coverage
+
+**Requirements:** None enforced
+- No coverage thresholds or reporter settings are configured in `vitest.config.ts`.
+- Coverage support is incomplete. `npx vitest run --coverage` currently fails because `@vitest/coverage-v8` is not installed.
+- The effective test emphasis is concentrated in the two largest integration suites: `src/__tests__/body-map-model.test.ts` and `src/__tests__/body-map-explorer.test.ts`. The full configured suite currently spans 9 files and 162 tests.
+
+**View Coverage:**
+```bash
+npx vitest run --coverage
+```
+
+## Test Types
+
+**Unit Tests:**
+- Pure data and helper coverage lives in `src/__tests__/data-service.test.ts`, `src/__tests__/systems-data.test.ts`, and `src/__tests__/body-part-photos.test.ts`.
+- These tests validate mapping rules, asset URL construction, caching behavior, and dataset consistency without mounting the whole app.
+
+**Integration Tests:**
+- Integration-style DOM tests dominate the suite. `src/__tests__/body-map-explorer.test.ts`, `src/__tests__/body-map-model.test.ts`, `src/__tests__/body-map-modal.test.ts`, and `src/__tests__/body-systems-panels.test.ts` mount real Lit elements and verify cross-component event contracts.
+- The co-located suite in `src/body-map-explorer.test.ts` acts as an additional API-contract layer for the explorer custom element.
+
+**E2E Tests:**
+- Not used
+- No Playwright or Cypress config was detected in the repository root.
+
+## Verification Workflow
+
+**Local Workflow:**
+- Run `npm test` first. This is the only scripted automated test command in `package.json`.
+- Run `npm run build` to verify the distributable library build from `vite.config.ts`.
+- Run `npm run check:budget` after a build to enforce the payload budget defined in `scripts/check-build-budget.js`.
+- Run `node scripts/validate-bp-coverage.js` when changing `bp_*` mappings or source data in `src/data/` and `public/data/`.
+
+**Current State:**
+- `npm test` passes with 162 tests in 9 files on 2026-04-07.
+- In the current sandbox, `npm test` emits repeated `EPERM` connection attempts to `localhost:3000` before reporting success. The suite still passes, so treat those messages as environment noise unless a test starts failing.
+- `npm run build`, `npm run check:budget`, and `node scripts/validate-bp-coverage.js` all pass in the current repository state.
+- No CI configuration was detected in the repo root, so the workflow is currently local and script-driven.
+
+## Common Patterns
+
+**Async Testing:**
+```typescript
+el.currentView = "organs";
+await el.updateComplete;
+
+hitArea?.dispatchEvent(
+  new MouseEvent("click", { bubbles: true, composed: true }),
+);
+await el.updateComplete;
+
+expect(
+  hitArea?.closest(".body-part-group")?.classList.contains("selected"),
+).toBe(true);
+```
+
+**Error Testing:**
+```typescript
+vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+
+await expect(fetchDiseases("brain")).rejects.toThrow(
+  /data\/diseases\/bp_brain\.json/,
+);
+```
+
+---
+
+*Testing analysis: 2026-04-07*

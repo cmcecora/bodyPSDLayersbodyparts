@@ -351,6 +351,10 @@ export const BODY_PARTS: BodyPartDefinition[] = [
   },
 ];
 
+export const BODY_PARTS_BY_ID = new Map(
+  BODY_PARTS.map((bodyPart) => [bodyPart.id, bodyPart] as const),
+);
+
 export const LEGACY_REFERENCE_ORGAN_IDS = [
   "brain",
   "larynx_trachea",
@@ -411,9 +415,7 @@ export function getBodyPartPhotoEntriesByIds(
   const orderedUniqueBodyPartIds = Array.from(new Set(bodyPartIds));
 
   return orderedUniqueBodyPartIds
-    .map(
-      (bodyPartId) => BODY_PARTS.find((part) => part.id === bodyPartId) ?? null,
-    )
+    .map((bodyPartId) => BODY_PARTS_BY_ID.get(bodyPartId) ?? null)
     .filter((part): part is BodyPartDefinition => part !== null)
     .map((part) => ({
       id: part.id,

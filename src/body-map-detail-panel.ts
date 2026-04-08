@@ -16,60 +16,69 @@ export class BodyMapDetailPanel extends LitElement {
       :host {
         display: block;
         font-family: var(--bme-font-family);
+        color: var(--bme-text);
       }
 
       .panel-header {
-        background: var(--bme-header-bg);
+        background: linear-gradient(135deg, var(--bme-header-bg), #32485d);
         color: var(--bme-header-text);
-        padding: var(--bme-space-sm) var(--bme-space-md);
-        border-radius: 8px 8px 0 0;
+        padding: var(--bme-space-sm) var(--bme-panel-padding);
+        border-radius: var(--bme-radius-lg) var(--bme-radius-lg) 0 0;
         font-size: var(--bme-font-size-heading);
         font-weight: 600;
+        letter-spacing: 0.01em;
         margin: 0;
       }
 
       .empty-state {
-        padding: var(--bme-space-md);
-        color: #999;
+        padding: var(--bme-panel-padding);
+        color: var(--bme-text-muted);
         font-size: var(--bme-font-size-label);
         text-align: center;
       }
 
       .detail-content {
-        padding: var(--bme-space-md);
+        padding: var(--bme-panel-padding);
+        display: flex;
+        flex-direction: column;
+        gap: var(--bme-space-md);
       }
 
       .detail-thumb {
         width: 100%;
         height: auto;
-        border-radius: 6px;
-        margin-bottom: var(--bme-space-md);
+        border-radius: var(--bme-radius-lg);
         display: block;
+        border: 1px solid var(--bme-border);
+        box-shadow: var(--bme-shadow-soft);
+        background: var(--bme-surface-elevated);
       }
 
       .detail-title {
         font-size: var(--bme-font-size-display);
         font-weight: 600;
-        margin: 0 0 var(--bme-space-sm) 0;
-        color: #333;
+        margin: 0;
+        color: var(--bme-text);
       }
 
       .detail-description {
         font-size: var(--bme-font-size-body);
         line-height: 1.6;
-        color: #555;
+        color: var(--bme-text-muted);
         margin: 0;
       }
 
       .photo-section {
-        margin-top: var(--bme-space-md);
+        margin-top: 0;
+        padding-top: var(--bme-space-sm);
+        border-top: 1px solid var(--bme-divider);
       }
 
       .photo-section-title {
         font-size: var(--bme-font-size-heading);
         font-weight: 600;
         margin: 0 0 var(--bme-space-sm) 0;
-        color: #333;
+        color: var(--bme-text);
       }
 
       .photo-stack {
@@ -81,9 +90,14 @@ export class BodyMapDetailPanel extends LitElement {
       .photo-card {
         margin: 0;
         border: 1px solid var(--bme-border);
-        border-radius: 8px;
+        border-radius: var(--bme-radius-lg);
         overflow: hidden;
-        background: #fff;
+        background: linear-gradient(
+          180deg,
+          var(--bme-panel),
+          var(--bme-surface-elevated)
+        );
+        box-shadow: var(--bme-shadow-soft);
       }
 
       .detail-photo {
@@ -96,8 +110,9 @@ export class BodyMapDetailPanel extends LitElement {
       .photo-caption {
         padding: 10px 12px;
         font-size: var(--bme-font-size-label);
-        color: #444;
+        color: var(--bme-text-muted);
         border-top: 1px solid var(--bme-divider);
+        background: var(--bme-surface-elevated);
       }
     `,
   ];
@@ -141,6 +156,8 @@ export class BodyMapDetailPanel extends LitElement {
                       class="detail-thumb"
                       src=${this._systemThumbnailUrl(this.system.thumbnail)}
                       alt=${this.system.title}
+                      loading="lazy"
+                      decoding="async"
                     />
                   `
                 : nothing}
@@ -168,6 +185,8 @@ export class BodyMapDetailPanel extends LitElement {
                                   this.assetBase,
                                 )}
                                 alt=${entry.label}
+                                loading="lazy"
+                                decoding="async"
                               />
                               <figcaption class="photo-caption">
                                 ${entry.label}

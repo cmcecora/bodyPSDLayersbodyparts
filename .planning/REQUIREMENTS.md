@@ -21,9 +21,9 @@ Requirements for Milestone 1: Body Map App Refactor & Web Component. Each maps t
 - [x] **MODEL-02**: Organ regions are clickable with transparent hit-area overlays
 - [x] **MODEL-03**: Hover feedback displays blue highlight overlay and drop-shadow filter
 - [x] **MODEL-04**: Click toggles organ selection (multiple simultaneous selections supported)
-- [ ] **MODEL-05**: Gender toggle switches between male and female reproductive organs
-- [ ] **MODEL-06**: View switching between organs view and body sections view
-- [ ] **MODEL-07**: Organ images load from external files (not base64 inline)
+- [x] **MODEL-05**: Gender toggle switches between male and female reproductive organs
+- [x] **MODEL-06**: View switching between organs view and body sections view
+- [x] **MODEL-07**: Organ images load from external files (not base64 inline)
 
 ### Body Systems Sidebar
 
@@ -35,46 +35,46 @@ Requirements for Milestone 1: Body Map App Refactor & Web Component. Each maps t
 
 ### Disease & Symptom Panels
 
-- [ ] **DATA-01**: Selected body part displays related diseases in a scrollable list
-- [ ] **DATA-02**: Selected body part displays related symptoms in a scrollable list
-- [ ] **DATA-03**: Disease and symptom lists support search/filter with debounced input
-- [ ] **DATA-04**: Disease/symptom data is lazy-loaded per body part (not all upfront)
-- [ ] **DATA-05**: Data files split into per-body-part JSON chunks (~100-200 KB each)
+- [x] **DATA-01**: Selected body part displays related diseases in a scrollable list
+- [x] **DATA-02**: Selected body part displays related symptoms in a scrollable list
+- [x] **DATA-03**: Disease and symptom lists support search/filter with debounced input
+- [x] **DATA-04**: Disease/symptom data is lazy-loaded per body part (not all upfront)
+- [x] **DATA-05**: Data files split into per-body-part JSON chunks (~100-200 KB each)
 
 ### Organ Modal
 
-- [ ] **MODAL-01**: Clicking a body section opens a detail modal with symptoms and diseases
-- [ ] **MODAL-02**: Modal positions relative to the clicked region
-- [ ] **MODAL-03**: Modal displays skeleton loading state while data loads
-- [ ] **MODAL-04**: Modal can be closed by clicking outside or pressing Escape
+- [x] **MODAL-01**: Clicking a body section opens a detail modal with symptoms and diseases
+- [x] **MODAL-02**: Modal positions relative to the clicked region
+- [x] **MODAL-03**: Modal displays skeleton loading state while data loads
+- [x] **MODAL-04**: Modal can be closed by clicking outside or pressing Escape
 
 ### Web Component API
 
-- [ ] **API-01**: Full app packaged as `<body-map-explorer>` custom element using Shadow DOM
-- [ ] **API-02**: Dual data mode: bundled JSON data works standalone, props/attributes accept external data
-- [ ] **API-03**: Component dispatches CustomEvents for selection changes (`body-part-selected`, `body-part-deselected`, `system-selected`)
-- [ ] **API-04**: Programmatic selection API: host app can set selected body parts via properties
-- [ ] **API-05**: `asset-base` attribute allows host app to specify where image assets are served from
+- [x] **API-01**: Full app packaged as `<body-map-explorer>` custom element using Shadow DOM
+- [x] **API-02**: Dual data mode: bundled JSON data works standalone, props/attributes accept external data
+- [x] **API-03**: Component dispatches CustomEvents for selection changes (`body-part-selected`, `body-part-deselected`, `system-selected`)
+- [x] **API-04**: Programmatic selection API: host app can set selected body parts via properties
+- [x] **API-05**: `asset-base` attribute allows host app to specify where image assets are served from
 
 ### Visual & UX Polish
 
-- [ ] **UX-01**: Refined color palette, hover states, and selection indicators for professional look
-- [ ] **UX-02**: Mobile responsive layout using container queries (works at any component width)
-- [ ] **UX-03**: Keyboard navigation: tab through body systems, arrow keys through organs, Enter to select
-- [ ] **UX-04**: ARIA labels on all interactive organ regions and UI controls
-- [ ] **UX-05**: Screen reader announces selected body part name and system membership
+- [x] **UX-01**: Refined color palette, hover states, and selection indicators for professional look
+- [x] **UX-02**: Mobile responsive layout using container queries (works at any component width)
+- [x] **UX-03**: Keyboard navigation: tab through body systems, arrow keys through organs, Enter to select
+- [x] **UX-04**: ARIA labels on all interactive organ regions and UI controls
+- [x] **UX-05**: Screen reader announces selected body part name and system membership
 
 ### Back View
 
-- [ ] **BACK-01**: Back view rotation works for the female green body model (body sections tab)
-- [ ] **BACK-02**: Male back-view artwork sourced and integrated
-- [ ] **BACK-03**: Front/back toggle animates with CSS 3D flip transition
+- [x] **BACK-01**: Back view rotation works for the female green body model (body sections tab)
+- [x] **BACK-02**: Male back-view artwork sourced and integrated
+- [x] **BACK-03**: Front/back toggle animates with CSS 3D flip transition
 
 ### Performance
 
-- [ ] **PERF-01**: Initial page load under 500 KB (excluding lazy-loaded data)
-- [ ] **PERF-02**: DOM queries cached — no repeated getElementById/querySelectorAll in hot paths
-- [ ] **PERF-03**: Organ images lazy-loaded (only visible viewport organs load initially)
+- [x] **PERF-01**: Initial page load under 500 KB (excluding lazy-loaded data)
+- [x] **PERF-02**: DOM queries cached — no repeated getElementById/querySelectorAll in hot paths
+- [x] **PERF-03**: Organ images lazy-loaded (only visible viewport organs load initially)
 
 ## v2 Requirements
 
@@ -128,39 +128,39 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MODEL-02    | Phase 2 | Complete |
 | MODEL-03    | Phase 2 | Complete |
 | MODEL-04    | Phase 2 | Complete |
-| MODEL-05    | Phase 2 | Pending |
-| MODEL-06    | Phase 2 | Pending |
-| MODEL-07    | Phase 2 | Pending |
+| MODEL-05    | Phase 2 | Complete |
+| MODEL-06    | Phase 2 | Complete |
+| MODEL-07    | Phase 2 | Complete |
 | SYSTEM-01   | Phase 3 | Complete |
 | SYSTEM-02   | Phase 3 | Complete |
 | SYSTEM-03   | Phase 3 | Complete |
 | SYSTEM-04   | Phase 3 | Complete |
 | SYSTEM-05   | Phase 3 | Complete |
-| DATA-01     | Phase 4 | Pending |
-| DATA-02     | Phase 4 | Pending |
-| DATA-03     | Phase 4 | Pending |
-| DATA-04     | Phase 4 | Pending |
-| DATA-05     | Phase 4 | Pending |
-| MODAL-01    | Phase 4 | Pending |
-| MODAL-02    | Phase 4 | Pending |
-| MODAL-03    | Phase 4 | Pending |
-| MODAL-04    | Phase 4 | Pending |
-| API-01      | Phase 5 | Pending |
-| API-02      | Phase 5 | Pending |
-| API-03      | Phase 5 | Pending |
-| API-04      | Phase 5 | Pending |
-| API-05      | Phase 5 | Pending |
-| UX-01       | Phase 6 | Pending |
-| UX-02       | Phase 6 | Pending |
-| UX-03       | Phase 6 | Pending |
-| UX-04       | Phase 6 | Pending |
-| UX-05       | Phase 6 | Pending |
-| BACK-01     | Phase 6 | Pending |
-| BACK-02     | Phase 6 | Pending |
-| BACK-03     | Phase 6 | Pending |
-| PERF-01     | Phase 6 | Pending |
-| PERF-02     | Phase 6 | Pending |
-| PERF-03     | Phase 6 | Pending |
+| DATA-01     | Phase 4 | Complete |
+| DATA-02     | Phase 4 | Complete |
+| DATA-03     | Phase 4 | Complete |
+| DATA-04     | Phase 4 | Complete |
+| DATA-05     | Phase 4 | Complete |
+| MODAL-01    | Phase 4 | Complete |
+| MODAL-02    | Phase 4 | Complete |
+| MODAL-03    | Phase 4 | Complete |
+| MODAL-04    | Phase 4 | Complete |
+| API-01      | Phase 5 | Complete |
+| API-02      | Phase 5 | Complete |
+| API-03      | Phase 5 | Complete |
+| API-04      | Phase 5 | Complete |
+| API-05      | Phase 5 | Complete |
+| UX-01       | Phase 6 | Complete |
+| UX-02       | Phase 6 | Complete |
+| UX-03       | Phase 6 | Complete |
+| UX-04       | Phase 6 | Complete |
+| UX-05       | Phase 6 | Complete |
+| BACK-01     | Phase 6 | Complete |
+| BACK-02     | Phase 6 | Complete |
+| BACK-03     | Phase 6 | Complete |
+| PERF-01     | Phase 6 | Complete |
+| PERF-02     | Phase 6 | Complete |
+| PERF-03     | Phase 6 | Complete |
 
 **Coverage:**
 
@@ -171,4 +171,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 ---
 
 _Requirements defined: 2026-03-29_
-_Last updated: 2026-03-29 after roadmap creation — traceability populated, coverage corrected from 30 to 42_
+_Last updated: 2026-04-07 after Phase 06 completion — all Milestone 1 requirements are satisfied and traceability is complete_

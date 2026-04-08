@@ -16,22 +16,31 @@ export class BodyMapSidebar extends LitElement {
       :host {
         display: block;
         font-family: var(--bme-font-family);
+        color: var(--bme-text);
       }
 
       .panel-header {
-        background: var(--bme-header-bg);
+        background: linear-gradient(135deg, var(--bme-header-bg), #32485d);
         color: var(--bme-header-text);
-        padding: var(--bme-space-sm) var(--bme-space-md);
-        border-radius: 8px 8px 0 0;
+        padding: var(--bme-space-sm) var(--bme-panel-padding);
+        border-radius: var(--bme-radius-lg) var(--bme-radius-lg) 0 0;
         font-size: var(--bme-font-size-heading);
         font-weight: 600;
+        letter-spacing: 0.01em;
         margin: 0;
       }
 
       .systems-list {
         list-style: none;
         margin: 0;
-        padding: 0;
+        padding: var(--bme-space-sm);
+        display: grid;
+        gap: var(--bme-space-xs);
+        background: linear-gradient(
+          180deg,
+          var(--bme-panel),
+          var(--bme-surface-elevated)
+        );
       }
 
       .system-button {
@@ -39,25 +48,47 @@ export class BodyMapSidebar extends LitElement {
         align-items: center;
         gap: var(--bme-space-sm);
         width: 100%;
-        padding: var(--bme-space-sm) var(--bme-space-md);
-        background: none;
-        border: none;
-        border-bottom: 1px solid var(--bme-divider);
+        padding: 10px 14px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--bme-radius-md);
         cursor: pointer;
         text-align: left;
         font-family: var(--bme-font-family);
         font-size: var(--bme-font-size-body);
         color: inherit;
-        transition: background 0.15s ease;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease,
+          box-shadow 0.15s ease,
+          transform 0.15s ease;
       }
 
       .system-button:hover {
-        background: var(--bme-divider);
+        background: var(--bme-accent-soft);
+        border-color: rgba(79, 143, 206, 0.18);
+        transform: translateY(-1px);
       }
 
       .system-button.active {
-        background: var(--bme-hover-overlay);
+        background: linear-gradient(
+          180deg,
+          rgba(79, 143, 206, 0.18),
+          rgba(79, 143, 206, 0.08)
+        );
+        border-color: rgba(79, 143, 206, 0.24);
+        box-shadow: var(--bme-shadow-soft);
         font-weight: 600;
+        color: var(--bme-accent-strong);
+      }
+
+      .system-button:focus-visible,
+      .body-parts-header-toggle:focus-visible,
+      .sort-toggle:focus-visible,
+      .body-part-btn:focus-visible,
+      .body-parts-search-input:focus-visible {
+        outline: none;
+        box-shadow: var(--bme-focus-ring);
       }
 
       .system-dot {
@@ -72,7 +103,8 @@ export class BodyMapSidebar extends LitElement {
         width: 32px;
         height: 32px;
         object-fit: cover;
-        border-radius: 4px;
+        border-radius: var(--bme-radius-sm);
+        border: 1px solid var(--bme-border);
         flex-shrink: 0;
       }
 
@@ -86,16 +118,20 @@ export class BodyMapSidebar extends LitElement {
 
       /* Body Parts panel */
       .body-parts-section {
-        border-top: 2px solid var(--bme-divider);
-        margin-top: 4px;
+        border-top: 1px solid var(--bme-divider);
+        background: linear-gradient(
+          180deg,
+          var(--bme-panel),
+          var(--bme-surface-elevated)
+        );
       }
 
       .body-parts-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: var(--bme-space-sm) var(--bme-space-md);
-        background: var(--bme-header-bg);
+        padding: var(--bme-space-sm) var(--bme-panel-padding);
+        background: linear-gradient(135deg, var(--bme-header-bg), #32485d);
         color: var(--bme-header-text);
         cursor: pointer;
         user-select: none;
@@ -104,13 +140,30 @@ export class BodyMapSidebar extends LitElement {
       }
 
       .body-parts-header:hover {
-        background: #3a4a5c;
+        background: linear-gradient(135deg, #2d4055, #3b5369);
+      }
+
+      .body-parts-header-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        font: inherit;
+        padding: 0;
+        border-radius: var(--bme-radius-sm);
+        text-align: left;
       }
 
       .body-parts-header-right {
         display: flex;
         align-items: center;
         gap: 8px;
+        margin-left: 12px;
       }
 
       .sort-toggle {
@@ -120,15 +173,18 @@ export class BodyMapSidebar extends LitElement {
         font-size: 11px;
         font-weight: 600;
         padding: 2px 8px;
-        border-radius: 4px;
+        border-radius: var(--bme-radius-sm);
         cursor: pointer;
         font-family: inherit;
-        transition: background 0.15s ease;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease;
       }
 
       .sort-toggle:hover,
       .sort-toggle.active {
         background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.55);
       }
 
       .body-parts-chevron {
@@ -156,28 +212,36 @@ export class BodyMapSidebar extends LitElement {
       }
 
       .body-parts-search {
-        padding: 8px var(--bme-space-md) 4px;
+        padding: var(--bme-space-sm) var(--bme-panel-padding) 4px;
       }
 
       .body-parts-search-input {
         width: 100%;
         box-sizing: border-box;
-        padding: 7px 10px;
+        padding: 10px 12px;
         border: 1px solid var(--bme-border);
-        border-radius: 6px;
+        border-radius: var(--bme-radius-md);
         font-size: var(--bme-font-size-label);
         font-family: var(--bme-font-family);
+        background: var(--bme-surface-elevated);
         outline: none;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease,
+          background 0.15s ease;
       }
 
-      .body-parts-search-input:focus {
-        border-color: var(--bme-accent);
+      .body-parts-search-input:focus-visible {
+        border-color: var(--bme-accent-strong);
+        background: var(--bme-panel);
       }
 
       .body-parts-list {
         list-style: none;
         margin: 0;
-        padding: 4px 0;
+        padding: var(--bme-space-sm) var(--bme-space-sm) var(--bme-space-md);
+        display: grid;
+        gap: var(--bme-space-xs);
         max-height: 280px;
         overflow-y: auto;
       }
@@ -187,30 +251,36 @@ export class BodyMapSidebar extends LitElement {
         align-items: center;
         gap: 8px;
         width: 100%;
-        padding: 7px var(--bme-space-md);
-        background: none;
-        border: none;
-        border-bottom: 1px solid var(--bme-divider);
+        padding: 8px 12px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--bme-radius-md);
         cursor: pointer;
         text-align: left;
         font-family: var(--bme-font-family);
         font-size: var(--bme-font-size-body);
         color: inherit;
-        transition: background 0.15s ease;
-      }
-
-      .body-part-btn:last-child {
-        border-bottom: none;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
       }
 
       .body-part-btn:hover {
-        background: var(--bme-divider);
+        background: var(--bme-accent-soft);
+        border-color: rgba(79, 143, 206, 0.18);
       }
 
       .body-part-btn.selected {
-        background: var(--bme-hover-overlay);
+        background: linear-gradient(
+          180deg,
+          rgba(79, 143, 206, 0.18),
+          rgba(79, 143, 206, 0.08)
+        );
+        border-color: rgba(79, 143, 206, 0.24);
+        box-shadow: var(--bme-shadow-soft);
         font-weight: 600;
-        color: var(--bme-accent);
+        color: var(--bme-accent-strong);
       }
 
       .body-part-icon {
@@ -219,19 +289,20 @@ export class BodyMapSidebar extends LitElement {
         border-radius: 50%;
         object-fit: cover;
         flex-shrink: 0;
-        background: #f0f0f0;
+        background: var(--bme-surface);
+        border: 1px solid var(--bme-border);
       }
 
       .body-part-check {
         width: 14px;
         flex-shrink: 0;
-        color: var(--bme-accent);
+        color: var(--bme-accent-strong);
         font-size: 12px;
       }
 
       .empty-parts {
         padding: var(--bme-space-md);
-        color: #9ca3af;
+        color: var(--bme-text-muted);
         font-size: var(--bme-font-size-label);
         text-align: center;
       }
@@ -250,7 +321,7 @@ export class BodyMapSidebar extends LitElement {
 
   @property({ type: String, attribute: "asset-base" }) assetBase = "";
 
-  @state() private _bodyPartsExpanded = true;
+  @state() private _bodyPartsExpanded = false;
   @state() private _bodyPartsSearch = "";
   @state() private _bodyPartsSortAZ = false;
 
@@ -339,6 +410,8 @@ export class BodyMapSidebar extends LitElement {
                   class="system-thumb"
                   src=${this._systemThumbnailUrl(system.thumbnail)}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                 />
                 <span class="system-title">${system.title}</span>
               </button>
@@ -348,22 +421,30 @@ export class BodyMapSidebar extends LitElement {
       </ul>
 
       <div class="body-parts-section">
-        <div
-          class="body-parts-header"
-          @click=${() => {
-            this._bodyPartsExpanded = !this._bodyPartsExpanded;
-          }}
-        >
-          <span>Body Parts</span>
+        <div class="body-parts-header">
+          <button
+            class="body-parts-header-toggle"
+            type="button"
+            aria-controls="body-parts-panel"
+            aria-expanded=${String(this._bodyPartsExpanded)}
+            @click=${() => {
+              this._bodyPartsExpanded = !this._bodyPartsExpanded;
+            }}
+          >
+            <span>Body Parts</span>
+            <span
+              class="body-parts-chevron ${this._bodyPartsExpanded
+                ? ""
+                : "collapsed"}"
+              >&#9660;</span
+            >
+          </button>
           <div class="body-parts-header-right">
             <button
               class="sort-toggle ${this._isAllSelected ? "active" : ""}"
               type="button"
               title="Select all body parts"
-              @click=${(e: Event) => {
-                e.stopPropagation();
-                this._emitAllToggle();
-              }}
+              @click=${() => this._emitAllToggle()}
             >
               All
             </button>
@@ -371,70 +452,77 @@ export class BodyMapSidebar extends LitElement {
               class="sort-toggle ${this._bodyPartsSortAZ ? "active" : ""}"
               type="button"
               title="Sort A-Z"
-              @click=${(e: Event) => {
-                e.stopPropagation();
+              @click=${() => {
                 this._bodyPartsSortAZ = !this._bodyPartsSortAZ;
               }}
             >
               A-Z
             </button>
-            <span
-              class="body-parts-chevron ${this._bodyPartsExpanded
-                ? ""
-                : "collapsed"}"
-              >&#9660;</span
-            >
           </div>
         </div>
         <div
+          id="body-parts-panel"
           class="body-parts-body ${this._bodyPartsExpanded ? "" : "collapsed"}"
         >
-          <div class="body-parts-body-inner">
-            <div class="body-parts-search">
-              <input
-                class="body-parts-search-input"
-                type="text"
-                placeholder="Search body parts..."
-                .value=${this._bodyPartsSearch}
-                @input=${(e: Event) => {
-                  this._bodyPartsSearch = (e.target as HTMLInputElement).value;
-                }}
-              />
-            </div>
-            ${filteredBodyParts.length === 0
-              ? html`<p class="empty-parts">No results</p>`
-              : html`
-                  <ul class="body-parts-list">
-                    ${filteredBodyParts.map((bp) => {
-                      const isSelected = this.selectedBodyPartIds.includes(
-                        bp.id,
-                      );
-                      return html`
-                        <li>
-                          <button
-                            type="button"
-                            class="body-part-btn ${isSelected
-                              ? "selected"
-                              : ""}"
-                            @click=${() =>
-                              this._emitBodyPartSelect(bp.id, bp.organIds)}
-                          >
-                            <img
-                              class="body-part-icon"
-                              src=${this._bodyPartImageUrl(bp.imageFile)}
-                              alt=""
-                            />
-                            <span class="body-part-check"
-                              >${isSelected ? "✓" : nothing}</span
-                            >
-                            ${bp.name}
-                          </button>
-                        </li>
-                      `;
-                    })}
-                  </ul>
-                `}
-          </div>
+          ${this._bodyPartsExpanded
+            ? html`
+                <div class="body-parts-body-inner">
+                  <div class="body-parts-search">
+                    <input
+                      class="body-parts-search-input"
+                      type="text"
+                      aria-label="Search body parts"
+                      placeholder="Search body parts..."
+                      .value=${this._bodyPartsSearch}
+                      @input=${(e: Event) => {
+                        this._bodyPartsSearch = (
+                          e.target as HTMLInputElement
+                        ).value;
+                      }}
+                    />
+                  </div>
+                  ${filteredBodyParts.length === 0
+                    ? html`<p class="empty-parts">No results</p>`
+                    : html`
+                        <ul class="body-parts-list">
+                          ${filteredBodyParts.map((bp) => {
+                            const isSelected =
+                              this.selectedBodyPartIds.includes(bp.id);
+                            return html`
+                              <li>
+                                <button
+                                  type="button"
+                                  class="body-part-btn ${isSelected
+                                    ? "selected"
+                                    : ""}"
+                                  data-body-part-id=${bp.id}
+                                  aria-pressed=${String(isSelected)}
+                                  @click=${() =>
+                                    this._emitBodyPartSelect(
+                                      bp.id,
+                                      bp.organIds,
+                                    )}
+                                >
+                                  <img
+                                    class="body-part-icon"
+                                    src=${this._bodyPartImageUrl(bp.imageFile)}
+                                    alt=""
+                                    loading="lazy"
+                                    decoding="async"
+                                  />
+                                  <span class="body-part-check"
+                                    >${isSelected ? "✓" : nothing}</span
+                                  >
+                                  ${bp.name}
+                                </button>
+                              </li>
+                            `;
+                          })}
+                        </ul>
+                      `}
+                </div>
+              `
+            : nothing}
         </div>
       </div>
     `;
