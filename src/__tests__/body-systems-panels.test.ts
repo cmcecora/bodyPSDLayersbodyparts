@@ -117,6 +117,36 @@ describe("body-map-sidebar", () => {
     expect(toggle?.getAttribute("aria-expanded")).toBe("true");
     expect(sidebar.shadowRoot?.querySelector(".body-part-icon")).not.toBeNull();
   });
+
+  it("renders a secondary page-links list for the shared site navigation", () => {
+    const pageLinks = sidebar.shadowRoot?.querySelectorAll(
+      "[data-site-nav-id]",
+    );
+
+    expect(pageLinks).toHaveLength(5);
+    expect(pageLinks?.[0]?.textContent).toContain("Body Part");
+    expect(pageLinks?.[1]?.textContent).toContain("Disease");
+  });
+
+  it("clicking the body-part page link dispatches site-nav-request", async () => {
+    let event: CustomEvent<{ navId: string }> | null = null;
+
+    sidebar.addEventListener("site-nav-request", (e) => {
+      event = e as CustomEvent<{ navId: string }>;
+    });
+
+    const pageLink = sidebar.shadowRoot?.querySelector(
+      '[data-site-nav-id="body-part"]',
+    ) as HTMLButtonElement | null;
+
+    pageLink?.dispatchEvent(
+      new MouseEvent("click", { bubbles: true, composed: true }),
+    );
+    await sidebar.updateComplete;
+
+    expect(event).not.toBeNull();
+    expect(event?.detail).toEqual({ navId: "body-part" });
+  });
 });
 
 describe("body-map-detail-panel", () => {

@@ -7,6 +7,12 @@ import {
   type BodySystemId,
 } from "./data/systems.js";
 import { BODY_PARTS } from "./data/body-parts.js";
+import {
+  DEFAULT_SITE_NAV_ID,
+  SITE_NAV_ITEMS,
+  type SiteNavId,
+  type SiteNavItem,
+} from "./data/site-nav.js";
 
 @customElement("body-map-sidebar")
 export class BodyMapSidebar extends LitElement {
@@ -86,7 +92,8 @@ export class BodyMapSidebar extends LitElement {
       .body-parts-header-toggle:focus-visible,
       .sort-toggle:focus-visible,
       .body-part-btn:focus-visible,
-      .body-parts-search-input:focus-visible {
+      .body-parts-search-input:focus-visible,
+      .site-page-button:focus-visible {
         outline: none;
         box-shadow: var(--bme-focus-ring);
       }
@@ -306,6 +313,83 @@ export class BodyMapSidebar extends LitElement {
         font-size: var(--bme-font-size-label);
         text-align: center;
       }
+
+      .site-pages-section {
+        border-top: 1px solid var(--bme-divider);
+        background: linear-gradient(
+          180deg,
+          var(--bme-panel),
+          var(--bme-surface-elevated)
+        );
+      }
+
+      .site-pages-list {
+        list-style: none;
+        margin: 0;
+        padding: var(--bme-space-sm);
+        display: grid;
+        gap: var(--bme-space-xs);
+        max-height: 220px;
+        overflow-y: auto;
+      }
+
+      .site-page-button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--bme-space-sm);
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid transparent;
+        border-radius: var(--bme-radius-md);
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition:
+          background var(--bme-motion-fast),
+          border-color var(--bme-motion-fast),
+          transform var(--bme-motion-fast);
+      }
+
+      .site-page-button:hover:not(:disabled),
+      .site-page-button.active {
+        background: var(--bme-accent-soft);
+        border-color: rgba(79, 143, 206, 0.18);
+        transform: translateY(-1px);
+      }
+
+      .site-page-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.68;
+      }
+
+      .site-page-copy {
+        min-width: 0;
+      }
+
+      .site-page-title {
+        display: block;
+        font-weight: 600;
+      }
+
+      .site-page-meta {
+        display: block;
+        margin-top: 4px;
+        color: var(--bme-text-muted);
+        font-size: 12px;
+      }
+
+      .site-page-badge {
+        flex-shrink: 0;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(32, 50, 69, 0.08);
+        color: var(--bme-text-muted);
+        font-size: 11px;
+        font-weight: 600;
+      }
     `,
   ];
 
@@ -320,6 +404,11 @@ export class BodyMapSidebar extends LitElement {
   @property({ attribute: false }) selectedBodyPartIds: string[] = [];
 
   @property({ type: String, attribute: "asset-base" }) assetBase = "";
+
+  @property({ attribute: false }) pageLinks: SiteNavItem[] = SITE_NAV_ITEMS;
+
+  @property({ type: String, attribute: "active-nav-id" })
+  activeNavId: SiteNavId = DEFAULT_SITE_NAV_ID;
 
   @state() private _bodyPartsExpanded = false;
   @state() private _bodyPartsSearch = "";
@@ -382,6 +471,20 @@ export class BodyMapSidebar extends LitElement {
   private _systemThumbnailUrl(thumbnail: string): string {
     const base = this.assetBase.replace(/\/$/, "");
     return base ? `${base}${thumbnail}` : thumbnail;
+  }
+
+  private _emitSiteNav(item: SiteNavItem) {
+    if (!item.enabled) {
+      return;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent("site-nav-request", {
+        detail: { navId: item.id },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   render() {
@@ -524,6 +627,38 @@ export class BodyMapSidebar extends LitElement {
               `
             : nothing}
         </div>
+      </div>
+
+      <div class="site-pages-section">
+        <div class="panel-header">Directory Pages</div>
+        <ul class="site-pages-list">
+          ${this.pageLinks.map(
+            (item) => html`
+              <li>
+                <button
+                  type="button"
+                  class="site-page-button ${item.id === this.activeNavId
+                    ? "active"
+                    : ""}"
+                  data-site-nav-id=${item.id}
+                  ?disabled=${!item.enabled}
+                  aria-current=${item.id === this.activeNavId
+                    ? "page"
+                    : nothing}
+                  @click=${() => this._emitSiteNav(item)}
+                >
+                  <span class="site-page-copy">
+                    <span class="site-page-title">${item.label}</span>
+                    <span class="site-page-meta">${item.description}</span>
+                  </span>
+                  <span class="site-page-badge"
+                    >${item.enabled ? "Live" : "Soon"}</span
+                  >
+                </button>
+              </li>
+            `,
+          )}
+        </ul>
       </div>
     `;
   }

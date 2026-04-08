@@ -2,10 +2,12 @@ import { LitElement, html, css, nothing, type PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import "./body-map-model.js";
 import type { BodyMapModel } from "./body-map-model.js";
+import "./body-map-header.js";
 import "./body-map-sidebar.js";
 import "./body-map-detail-panel.js";
 import "./body-map-data-panel.js";
 import "./body-map-modal.js";
+import "./body-part-grid-view.js";
 import { designTokens } from "./styles/tokens.css.js";
 import { ORGANS } from "./data/organs.js";
 import {
@@ -36,6 +38,12 @@ import {
   getBodyPartModalAnchor,
   getOrganGroupModalAnchor,
 } from "./data/body-part-modal-anchor.js";
+import {
+  DEFAULT_SITE_NAV_ID,
+  SITE_NAV_ITEMS,
+  type SiteNavId,
+  type SiteShellView,
+} from "./data/site-nav.js";
 
 @customElement("body-map-explorer")
 export class BodyMapExplorer extends LitElement {
@@ -48,8 +56,19 @@ export class BodyMapExplorer extends LitElement {
         display: block;
         container-type: inline-size;
         font-family: var(--bme-font-family);
-        background: var(--bme-surface);
+        background:
+          radial-gradient(circle at top left, rgba(126, 181, 243, 0.18), transparent 34%),
+          linear-gradient(180deg, #eef4fa, #e6eef7);
         color: #333;
+      }
+
+      .shell {
+        min-height: 100vh;
+        padding: var(--bme-space-md);
+      }
+
+      .header-shell {
+        margin-bottom: var(--bme-space-md);
       }
 
       .layout {
@@ -62,8 +81,15 @@ export class BodyMapExplorer extends LitElement {
         grid-template-areas: "sidebar model detail data";
         min-height: 100vh;
         gap: var(--bme-space-md);
-        padding: var(--bme-space-md);
         align-items: start;
+      }
+
+      .layout.grid-mode {
+        grid-template-columns:
+          minmax(240px, 260px)
+          minmax(280px, 320px)
+          minmax(360px, 1.35fr);
+        grid-template-areas: "sidebar model detail";
       }
 
       .layout > * {
@@ -114,6 +140,10 @@ export class BodyMapExplorer extends LitElement {
         grid-area: detail;
       }
 
+      .grid-view-col {
+        min-height: 600px;
+      }
+
       .data-panel-col {
         grid-area: data;
         overflow-y: auto;
@@ -128,6 +158,13 @@ export class BodyMapExplorer extends LitElement {
           grid-template-areas:
             "model sidebar"
             "detail data";
+        }
+
+        .layout.grid-mode {
+          grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+          grid-template-areas:
+            "sidebar model"
+            "detail detail";
         }
       }
 
@@ -145,6 +182,14 @@ export class BodyMapExplorer extends LitElement {
           overflow: visible;
           position: static;
           max-height: none;
+        }
+
+        .layout.grid-mode {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-areas:
+            "sidebar"
+            "model"
+            "detail";
         }
       }
     `,
@@ -178,6 +223,9 @@ export class BodyMapExplorer extends LitElement {
   @state() private _currentGender: "male" | "female" = "male";
   @state() private _currentView: "organs" | "organs2" | "sections" = "organs";
   @state() private _liveAnnouncement = "";
+  @state() private _shellView: SiteShellView = "explorer";
+  @state() private _activeSiteNavId: SiteNavId = DEFAULT_SITE_NAV_ID;
+  @state() private _gridCompact = false;
 
   // Modal state
   @state() private _modalSectionId: string | null = null;
@@ -796,6 +844,10 @@ export class BodyMapExplorer extends LitElement {
   }
 
   private _handleModalClose() {
+    if (this._modalSectionId !== null) {
+      this._modelElement?.clearSectionSelection(this._modalSectionId);
+    }
+
     this._closeModal();
   }
 
@@ -832,6 +884,56 @@ export class BodyMapExplorer extends LitElement {
     event: CustomEvent<{ view: "organs" | "organs2" | "sections" }>,
   ) {
     this._currentView = event.detail.view;
+  }
+
+  private _handleHomeRequest() {
+    this._shellView = "explorer";
+    this._closeModal();
+  }
+
+  private _handleSiteNavRequest(event: CustomEvent<{ navId: SiteNavId }>) {
+    const { navId } = event.detail;
+    const item = SITE_NAV_ITEMS.find((entry) => entry.id === navId);
+
+    this._activeSiteNavId = navId;
+    if (item?.targetView !== null && item?.targetView !== undefined) {
+      this._shellView = item.targetView;
+      this._closeModal();
+    }
+  }
+
+  private _handleGridCompactToggle(
+    event: CustomEvent<{ compact: boolean }>,
+  ) {
+    this._gridCompact = event.detail.compact;
+  }
+
+  private _handleGridBodyPartOpen(
+    event: CustomEvent<{ bodyPartId: string }>,
+  ) {
+    const { bodyPartId } = event.detail;
+    const bodyPart = BODY_PARTS_BY_ID.get(bodyPartId);
+
+    if (bodyPart === undefined) {
+      return;
+    }
+
+    this._shellView = "explorer";
+    this._closeModal();
+    this.activeSystemId = null;
+    this._selectedBodyPartIds = [bodyPartId];
+    this._detailBodyPartId = bodyPartId;
+    this.selectedOrganIds = [...bodyPart.organIds];
+
+    void this._loadOrganData(bodyPartId);
+    bodyPart.organIds.forEach((organId) => {
+      void this._loadOrganData(organId);
+    });
+
+    this._announceSelection(
+      this._bodyPartName(bodyPartId),
+      this._bodyPartSystemId(bodyPartId),
+    );
   }
 
   private async _handleOrgan2Click(event: CustomEvent<{ organId: string }>) {
@@ -911,60 +1013,93 @@ export class BodyMapExplorer extends LitElement {
   }
 
   render() {
+    const isGridView = this._shellView === "body-part-grid";
+
     return html`
       <div class="sr-only" aria-live="polite" data-testid="live-announcer">
         ${this._liveAnnouncement}
       </div>
-      <div class="layout">
-        <div class="panel sidebar-col">
-          <body-map-sidebar
-            .systems=${BODY_SYSTEMS}
-            .activeSystemId=${this.activeSystemId}
-            .selectedOrganIds=${this.selectedOrganIds}
-            .selectedBodyPartIds=${this._selectedBodyPartIds}
-            .assetBase=${this.assetBase}
-            @system-toggle-request=${this._handleSystemToggleRequest}
-            @organ-select-request=${this._handleOrganSelectRequest}
-            @body-part-select-request=${this._handleBodyPartSelectRequest}
-            @body-parts-all-toggle-request=${this._handleAllBodyPartsToggle}
-          ></body-map-sidebar>
+      <div class="shell">
+        <div class="header-shell">
+          <body-map-header
+            .items=${SITE_NAV_ITEMS}
+            .activeNavId=${this._activeSiteNavId}
+            .currentViewLabel=${isGridView ? "Grid View" : "Explorer"}
+            @home-request=${this._handleHomeRequest}
+            @site-nav-request=${this._handleSiteNavRequest}
+          ></body-map-header>
         </div>
-        <div class="body-model-area">
-          <body-map-model
-            .selectedOrganIds=${this.selectedOrganIds}
-            .systemHighlightOrganIds=${this.systemHighlightOrganIds}
-            .highlightedBodyPartIds=${this._selectedBodyPartIds}
-            .assetBase=${this.assetBase}
-            @organ-selection-change=${this._handleOrganSelectionChange}
-            @section-click=${this._handleSectionClick}
-            @organ2-click=${this._handleOrgan2Click}
-            @gender-change=${this._handleGenderChange}
-            @view-change=${this._handleViewChange}
-            @bp-highlight-click=${this._handleBpHighlightClick}
-          ></body-map-model>
-        </div>
-        <div class="panel detail-panel-col">
-          <body-map-detail-panel
-            .system=${this.activeSystem}
-            .bodyPart=${this.activeSystem === null
-              ? this._activeDetailBodyPart
-              : null}
-            .photoEntries=${this._detailPhotoEntries}
-            .assetBase=${this.assetBase}
-          ></body-map-detail-panel>
-        </div>
-        <!-- col 4: data panel -->
-        <div class="panel data-panel-col">
-          <body-map-data-panel
-            .selectedOrganIds=${this._panelOrganIds}
-            .diseasesMap=${this._diseasesMap}
-            .symptomsMap=${this._symptomsMap}
-            .loadingIds=${this._loadingIds}
-            .errorIds=${this._errorIds}
-            .filterQuery=${this._filterQuery}
-            @filter-change=${this._handleFilterChange}
-            @retry-organ=${this._handleRetryOrgan}
-          ></body-map-data-panel>
+
+        <div class="layout ${isGridView ? "grid-mode" : ""}">
+          <div class="panel sidebar-col">
+            <body-map-sidebar
+              .systems=${BODY_SYSTEMS}
+              .activeSystemId=${this.activeSystemId}
+              .selectedOrganIds=${this.selectedOrganIds}
+              .selectedBodyPartIds=${this._selectedBodyPartIds}
+              .pageLinks=${SITE_NAV_ITEMS}
+              .activeNavId=${this._activeSiteNavId}
+              .assetBase=${this.assetBase}
+              @system-toggle-request=${this._handleSystemToggleRequest}
+              @organ-select-request=${this._handleOrganSelectRequest}
+              @body-part-select-request=${this._handleBodyPartSelectRequest}
+              @body-parts-all-toggle-request=${this._handleAllBodyPartsToggle}
+              @site-nav-request=${this._handleSiteNavRequest}
+            ></body-map-sidebar>
+          </div>
+          <div class="body-model-area">
+            <body-map-model
+              .selectedOrganIds=${this.selectedOrganIds}
+              .systemHighlightOrganIds=${this.systemHighlightOrganIds}
+              .highlightedBodyPartIds=${this._selectedBodyPartIds}
+              .assetBase=${this.assetBase}
+              @organ-selection-change=${this._handleOrganSelectionChange}
+              @section-click=${this._handleSectionClick}
+              @organ2-click=${this._handleOrgan2Click}
+              @gender-change=${this._handleGenderChange}
+              @view-change=${this._handleViewChange}
+              @bp-highlight-click=${this._handleBpHighlightClick}
+            ></body-map-model>
+          </div>
+
+          ${isGridView
+            ? html`
+                <div class="panel detail-panel-col grid-view-col">
+                  <body-part-grid-view
+                    .bodyParts=${BODY_PARTS}
+                    .compact=${this._gridCompact}
+                    .assetBase=${this.assetBase}
+                    @compact-mode-toggle-request=${this
+                      ._handleGridCompactToggle}
+                    @body-part-card-open-request=${this
+                      ._handleGridBodyPartOpen}
+                  ></body-part-grid-view>
+                </div>
+              `
+            : html`
+                <div class="panel detail-panel-col">
+                  <body-map-detail-panel
+                    .system=${this.activeSystem}
+                    .bodyPart=${this.activeSystem === null
+                      ? this._activeDetailBodyPart
+                      : null}
+                    .photoEntries=${this._detailPhotoEntries}
+                    .assetBase=${this.assetBase}
+                  ></body-map-detail-panel>
+                </div>
+                <div class="panel data-panel-col">
+                  <body-map-data-panel
+                    .selectedOrganIds=${this._panelOrganIds}
+                    .diseasesMap=${this._diseasesMap}
+                    .symptomsMap=${this._symptomsMap}
+                    .loadingIds=${this._loadingIds}
+                    .errorIds=${this._errorIds}
+                    .filterQuery=${this._filterQuery}
+                    @filter-change=${this._handleFilterChange}
+                    @retry-organ=${this._handleRetryOrgan}
+                  ></body-map-data-panel>
+                </div>
+              `}
         </div>
       </div>
       ${this._modalSectionId !== null

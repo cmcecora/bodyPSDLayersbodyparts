@@ -604,6 +604,58 @@ describe("body-map-explorer", () => {
       expect(modal?.sectionId).toBe("upper_body");
     });
 
+    it("closing a section modal clears the section highlight in the body model", async () => {
+      const { model } = await getShadowChildren(el);
+
+      model!.currentView = "sections";
+      await model?.updateComplete;
+
+      const hitArea = model!.shadowRoot?.querySelector(
+        '[data-part="head_neck"] .section-hit-area',
+      ) as SVGElement | null;
+      expect(hitArea).not.toBeNull();
+
+      hitArea?.dispatchEvent(
+        new MouseEvent("click", {
+          bubbles: true,
+          composed: true,
+          clientX: 200,
+          clientY: 300,
+        }),
+      );
+
+      await model?.updateComplete;
+      await el.updateComplete;
+
+      const selectedSectionBeforeClose = model!.shadowRoot?.querySelector(
+        '[data-part="head_neck"].selected',
+      );
+      expect(selectedSectionBeforeClose).not.toBeNull();
+
+      const modal = el.shadowRoot?.querySelector(
+        "body-map-modal",
+      ) as BodyMapModal | null;
+      expect(modal).not.toBeNull();
+
+      modal?.dispatchEvent(
+        new CustomEvent("modal-close", {
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+      await model?.updateComplete;
+
+      const selectedSectionAfterClose = model!.shadowRoot?.querySelector(
+        '[data-part="head_neck"].selected',
+      );
+      const closedModal = el.shadowRoot?.querySelector("body-map-modal");
+
+      expect(closedModal).toBeNull();
+      expect(selectedSectionAfterClose).toBeNull();
+    });
+
     it("Organs 2 body-part clicks anchor the modal to the selected body location", async () => {
       const { sidebar, model } = await getShadowChildren(el);
 
@@ -900,6 +952,77 @@ describe("body-map-explorer", () => {
       await dataPanel?.updateComplete;
 
       expect(dataPanel?.selectedOrganIds).toContain("heart");
+    });
+  });
+
+  describe("EXPLORER-10: shared shell header and body-part-grid mode", () => {
+    it("renders the shared site header above the explorer layout", () => {
+      const header = el.shadowRoot?.querySelector("body-map-header");
+
+      expect(header).not.toBeNull();
+    });
+
+    it("switches into body-part-grid mode from the shared header nav", async () => {
+      const header = el.shadowRoot?.querySelector(
+        "body-map-header",
+      ) as HTMLElement | null;
+
+      header?.dispatchEvent(
+        new CustomEvent("site-nav-request", {
+          detail: { navId: "body-part" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+
+      await el.updateComplete;
+
+      const layout = el.shadowRoot?.querySelector(".layout");
+      const gridView = el.shadowRoot?.querySelector("body-part-grid-view");
+      const dataPanel = el.shadowRoot?.querySelector("body-map-data-panel");
+      const detailPanel = el.shadowRoot?.querySelector("body-map-detail-panel");
+
+      expect(layout?.classList.contains("grid-mode")).toBe(true);
+      expect(gridView).not.toBeNull();
+      expect(dataPanel).toBeNull();
+      expect(detailPanel).toBeNull();
+    });
+
+    it("opens a body part from the grid and returns to the explorer detail panel", async () => {
+      const header = el.shadowRoot?.querySelector(
+        "body-map-header",
+      ) as HTMLElement | null;
+
+      header?.dispatchEvent(
+        new CustomEvent("site-nav-request", {
+          detail: { navId: "body-part" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      const gridView = el.shadowRoot?.querySelector(
+        "body-part-grid-view",
+      ) as HTMLElement | null;
+
+      gridView?.dispatchEvent(
+        new CustomEvent("body-part-card-open-request", {
+          detail: { bodyPartId: "bp_heart" },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+      await el.updateComplete;
+
+      const detailPanel = el.shadowRoot?.querySelector(
+        "body-map-detail-panel",
+      ) as BodyMapDetailPanel | null;
+      await detailPanel?.updateComplete;
+
+      expect(el.shadowRoot?.querySelector("body-part-grid-view")).toBeNull();
+      expect(detailPanel?.bodyPart?.id).toBe("bp_heart");
+      expect(detailPanel?.shadowRoot?.textContent).toContain("Heart");
     });
   });
 });

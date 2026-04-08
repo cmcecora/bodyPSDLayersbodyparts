@@ -323,6 +323,14 @@ export class BodyMapModel extends LitElement {
   @state() private _activeKeyboardTargetId: string | null = null;
   @state() private _sectionsFacing: "front" | "back" = "front";
 
+  clearSectionSelection(sectionId: string) {
+    if (!this._selectedSections.delete(sectionId)) {
+      return;
+    }
+
+    this.requestUpdate();
+  }
+
   protected firstUpdated(): void {
     this.shadowRoot
       ?.querySelector(".model-container")

@@ -8,6 +8,8 @@ export const designTokens = css`
     --bme-panel: #ffffff;
     --bme-header-bg: #253649;
     --bme-header-text: #ffffff;
+    --bme-header-glass: rgba(248, 251, 255, 0.82);
+    --bme-header-border: rgba(32, 50, 69, 0.08);
     --bme-accent: #4f8fce;
     --bme-accent-strong: #2d71b8;
     --bme-accent-soft: rgba(79, 143, 206, 0.14);
@@ -43,5 +45,10 @@ export const designTokens = css`
     --bme-shadow-strong: 0 18px 42px rgba(31, 52, 84, 0.16);
     --bme-focus-ring: 0 0 0 3px rgba(79, 143, 206, 0.26);
     --bme-panel-padding: 18px;
+    --bme-icon-button-size: 42px;
+
+    /* Motion */
+    --bme-motion-fast: 0.18s ease;
+    --bme-motion-medium: 0.28s ease;
   }
 `;
